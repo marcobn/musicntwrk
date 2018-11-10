@@ -56,6 +56,9 @@ class PCSet:
         if np.array(np.where(dist == dist.min())).shape[1] != 1: pcs_norm = self.pcs
         return(pcs_norm)
 
+    def normal0Order(self):
+        return((self.normalOrder()-self.normalOrder()[0])%self.TET)
+
     def transpose(self):
         return((self.pcs+self.T)%self.TET)
 
