@@ -13,6 +13,10 @@
 #
 
 import numpy as np
+import itertools as iter
+import pandas as pd
+import sklearn.metrics as sklm
+import music21 as m21
 
 class PCSet:
 
@@ -91,6 +95,9 @@ class PCSet:
         bins = np.linspace(1,self.TET/2+1,self.TET/2+1,dtype=int)
         return(np.histogram(itv,bins)[0])
 
+    def LISVector(self):
+        return((np.roll(self.pcs,-1)-self.pcs)%self.TET)
+
     def forteClass(self):
         if self.TET != 12:
             print('Forte class defined only for 12-TET')
@@ -148,3 +155,93 @@ class PCSet:
             print('set not found')
             Fname=None
         return(Fname)
+
+def pcsNetwork(Nc_i,Nc_f,order=0):
+    # Create network of pcs from a cardinality interval
+    name = []
+    prime = []
+    commonName = []
+    for n in range(Nc_i,Nc_f+1):
+        # generate all possible combinations of n integers
+        a = np.asarray(list(iter.combinations(range(12),n)))
+        # put all pcs in prime form
+        s = []
+        for i in range(a.shape[0]):
+            p = PCSet(a[i,:])
+            if order == 0:
+                s.append(p.primeForm()[:])
+            elif order == 1:
+                s.append(p.normal0Order()[:])
+            else:
+                print('no ordering specified')
+
+        s = np.asarray(s)
+        # eliminate duplicates
+        s = np.unique(s,axis=0)
+        # calculate interval vectors and assign names
+        v = []
+        for i in range(s.shape[0]):
+            p = PCSet(s[i,:])
+            v.append(p.intervalVector())
+            name.append(str(n)+'-'+str(i+1))
+            prime.append(np.array2string(s[i,:],separator='').replace(" ",""))
+            commonName.append(m21.chord.Chord(np.ndarray.tolist(s[i])).commonName)
+
+        v = np.asarray(v)
+        s = np.asarray(s)
+
+        if n == Nc_i:
+            vector=v
+        else:
+            vector = np.vstack((vector,v))
+
+    # find pc sets in Z relation
+    u, indeces = np.unique(vector, return_inverse=True,axis=0)
+    ZrelT = []
+    for n in range(u.shape[0]):
+        if np.array(np.where(indeces == n)).shape[1] != 1:
+            indx = np.array(np.where(indeces == n))[0]
+            Zrel = []
+            for m in range(indx.shape[0]):
+                name[indx[m]] = name[indx[m]]+'Z'
+                Zrel.append(name[indx[m]])
+            ZrelT.append(Zrel)
+
+    name = np.asarray(name)
+
+    # write csv for nodes
+    df = pd.DataFrame(name,columns=['Label'])
+    df.to_csv('nodes.csv',index=False)
+    # find edges according to a metric
+    N = vector.shape[0]
+    dist = np.zeros((int((N**2-N)/2+N),3))
+    n = 0
+    for i in range(N):
+        for j in range(i,N):
+            pair = sklm.pairwise.paired_euclidean_distances(vector[i].reshape(1, -1),vector[j].reshape(1, -1))
+            if pair <= 1.5 and pair != 0:
+                dist[n,0] = i
+                dist[n,1] = j
+                dist[n,2] = sklm.pairwise.paired_euclidean_distances(vector[i].reshape(1, -1),vector[j].reshape(1, -1))
+                n += 1
+    dist = dist[:n]
+
+    # write csv for edges
+    df2 = pd.DataFrame(dist,columns=['Source','Target','Weight'])
+    df2.to_csv('edges.csv',index=False)
+
+    # Create dictionary of pitch class sets
+    reference = []
+    for n in range(len(name)):
+        entry = [name[n],prime[n],np.array2string(vector[n,:],separator='').replace(" ",""),
+              commonName[n]]
+        reference.append(entry)
+
+    dictionary = pd.DataFrame(reference,columns=['class','pcs','interval','name'])
+
+    dict_class = dictionary.set_index("class", drop = True)
+    dict_pcs = dictionary.set_index("pcs", drop = True)
+    dict_interval = dictionary.set_index("interval", drop = True)
+    dict_name = dictionary.set_index("name", drop = True)
+
+    return(dict_class,dict_pcs,dict_interval,dict_name)
