@@ -1,5 +1,5 @@
 #
-# PCSetPy
+# pcsPy
 #
 # A python library for pitch class set classification and manipulation
 #
@@ -12,37 +12,51 @@
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
 
+import sys,re
 import numpy as np
 import itertools as iter
 import pandas as pd
 import sklearn.metrics as sklm
 import music21 as m21
+from mpi4py import MPI
+
+# initialize parallel execution
+comm=MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
+def load_balancing(size,rank,n):
+    # Load balancing
+    splitsize = 1.0/size*n
+    start = int(round(rank*splitsize))
+    stop = int(round((rank+1)*splitsize))
+    return(start,stop)
 
 class PCSet:
 
     def __init__(self,pcs,T=0,TET=12):
-        self.pcs = pcs
+        # eliminate duplicates - ascending order
+        self.pcs = np.unique(pcs)
         self.TET = TET
         self.T = T
 
     def normalOrder(self):
 
-        # 1. eliminate duplicates - ascending order
         self.pcs = np.unique(self.pcs)
-
+        
         # trivial sets
         if len(self.pcs) == 1:
             return(self.pcs-self.pcs[0])
         if len(self.pcs) == 2:
             return(self.pcs)
 
-        # 2. cycle to find the most compact ascending order
+        # 1. cycle to find the most compact ascending order
         nroll = np.linspace(0,len(self.pcs)-1,len(self.pcs),dtype=int)
         dist = np.zeros((len(self.pcs)),dtype=int)
         for i in range(len(self.pcs)):
             dist[i] = (np.roll(self.pcs,i)[len(self.pcs)-1] - np.roll(self.pcs,i)[0])%self.TET
 
-        # 3. check for multiple compact orders
+        # 2. check for multiple compact orders
         for l in range(1,len(self.pcs)):
             if np.array(np.where(dist == dist.min())).shape[1] != 1:
                 indx = np.array(np.where(dist == dist.min()))[0]
@@ -65,6 +79,10 @@ class PCSet:
 
     def transpose(self):
         return((self.pcs+self.T)%self.TET)
+    
+    def zeroOrder(self):
+        return((self.pcs-self.pcs[0])%self.TET)
+
 
     def inverse(self):
         return(-self.pcs%self.TET)
@@ -78,8 +96,10 @@ class PCSet:
             self.pcs = s_orig
             return((self.normalOrder()-self.normalOrder()[0])%self.TET)
         else:
-            return((self.normalOrder()-self.normalOrder()[0])%self.TET)
-        self.pcs = s_orig
+            tmp = (self.normalOrder()-self.normalOrder()[0])%self.TET
+            self.pcs = s_orig
+            return(tmp)
+        
 
     def intervalVector(self):
         npc = int((len(self.pcs)**2-len(self.pcs))/2)
@@ -155,71 +175,137 @@ class PCSet:
             print('set not found')
             Fname=None
         return(Fname)
+        
+    def jazzChord(self):
+        if self.TET != 12:
+            print('Forte class defined only for 12-TET')
+            return()
+        jazzDict = {'[047]':'Maj','[037]':'min','[036]':'dim','[048]':'+','[046]':'b5','[027]':'add2','[057]':'add4',
+                    '[0237]':'m(add2)','[0357]':'m(add4)','[0247]':'(add2)','[0457]':'(add4)','[0369]':'dim','[03610]':'m7b5',
+                    '[0379]':'m6','[03710]':'m7','[0479]':'6','[04710]':'7','[04711]':'Maj7','[03711]':'-Maj7','[04810]':'7+',
+                    '[04811]':'Maj7+','[02379]':'m6/9','[023710]':'m9','[014710]':'m7b9','[024710]':'9','[023710]':'9b5',
+                    '[034710]':'7#9','[024711]':'Maj9','[047910]':'6(add7)','[02479]':'6/9','[014810]':'7b9+','[027810]':'9+',
+                    '[034810]':'7#9+','[025710]':'9sus4','[0235710]':'m11','[0134710]':'7b9#9','[0146710]':'7b9#11',
+                    '[0246710]':'9#11','[0246711]':'Maj9#11','[0134810]':'7b9#9+','[0146810]':'7b9#11+'}
+        try:
+            Fname = jazzDict[np.array2string(self.normal0Order(),separator='').replace(" ","")]
+        except:
+            print('set not found')
+            Fname=None
+        return(Fname)
 
-def pcsNetwork(Nc_i,Nc_f,order=0):
-    # Create network of pcs from a cardinality interval
-    name = []
-    prime = []
-    commonName = []
-    for n in range(Nc_i,Nc_f+1):
-        # generate all possible combinations of n integers
-        a = np.asarray(list(iter.combinations(range(12),n)))
-        # put all pcs in prime form
+
+def pcsDictionary(Nc,order=0,TET=12):
+    
+    # Create dictionary of pcs from a given cardinality Nc
+    name = prime = commonName = None
+    if rank == 0:
+        name = []
+        prime = []
+        commonName = []
+        
+    # generate all possible combinations of n integers
+    a = np.asarray(list(iter.combinations(range(TET),Nc)))
+
+    # put all pcs in prime form
+    if size == 1:
         s = []
         for i in range(a.shape[0]):
-            p = PCSet(a[i,:])
+            p = PCSet(a[i,:],0,TET)
             if order == 0:
                 s.append(p.primeForm()[:])
             elif order == 1:
                 s.append(p.normal0Order()[:])
             else:
                 print('no ordering specified')
-
         s = np.asarray(s)
-        # eliminate duplicates
-        s = np.unique(s,axis=0)
-        # calculate interval vectors and assign names
-        v = []
-        for i in range(s.shape[0]):
-            p = PCSet(s[i,:])
-            v.append(p.intervalVector())
-            name.append(str(n)+'-'+str(i+1))
-            prime.append(np.array2string(s[i,:],separator='').replace(" ",""))
-            commonName.append(m21.chord.Chord(np.ndarray.tolist(s[i])).commonName)
-
-        v = np.asarray(v)
+    else:
+        if rank == 0 : print('parallel run')
+        s = None
+        if rank == 0: s = [[0]*Nc for i in range(a.shape[0])]
+        ini,end = load_balancing(size, rank, a.shape[0])
+        nsize = end-ini
+        saux = [[0] for i in range(nsize)]
+        comm.Barrier()
+        for i in range(nsize):
+            p = PCSet(a[i,:],0,TET)
+            if order == 0:
+                saux[i] = p.primeForm()[:]
+            elif order == 1:
+                saux[i] = p.normal0Order()[:]
+            else:
+                if rank == 0: print('no ordering specified')
+        comm.Barrier()
         s = np.asarray(s)
+        saux = np.asarray(saux)
+        comm.Gather(saux,s,root=0)
 
-        if n == Nc_i:
-            vector=v
-        else:
-            vector = np.vstack((vector,v))
+        if rank == 0:
+            # eliminate duplicates
+            s = np.unique(s,axis=0)
 
-    # find pc sets in Z relation
-    u, indeces = np.unique(vector, return_inverse=True,axis=0)
-    ZrelT = []
-    for n in range(u.shape[0]):
-        if np.array(np.where(indeces == n)).shape[1] != 1:
-            indx = np.array(np.where(indeces == n))[0]
-            Zrel = []
-            for m in range(indx.shape[0]):
-                name[indx[m]] = name[indx[m]]+'Z'
-                Zrel.append(name[indx[m]])
-            ZrelT.append(Zrel)
+            # calculate interval vectors and assign names
+            v = []
+            for i in range(s.shape[0]):
+                p = PCSet(s[i,:],0,TET)
+                v.append(p.intervalVector())
+                name.append(str(Nc)+'-'+str(i+1))
+                prime.append(np.array2string(s[i,:],separator=',').replace(" ",""))
+                commonName.append(m21.chord.Chord(np.ndarray.tolist(s[i])).commonName)
 
-    name = np.asarray(name)
+            vector = np.asarray(v)
+    
+    dictionary = dict_class = dict_pcs = dict_interval = dict_name = ZrelT = None
+    if rank == 0:
+        # find pc sets in Z relation
+        u, indeces = np.unique(vector, return_inverse=True,axis=0)
+        ZrelT = []
+        for n in range(u.shape[0]):
+            if np.array(np.where(indeces == n)).shape[1] != 1:
+                indx = np.array(np.where(indeces == n))[0]
+                Zrel = []
+                for m in range(indx.shape[0]):
+                    name[indx[m]] = name[indx[m]]+'Z'
+                    Zrel.append(name[indx[m]])
+                ZrelT.append(Zrel)
+
+        name = np.asarray(name)
+
+        # Create dictionary of pitch class sets
+        reference = []
+        for n in range(len(name)):
+            entry = [name[n],prime[n],np.array2string(vector[n,:],separator=',').replace(" ",""),
+                    commonName[n]]
+            #entry = [name[n],prime[n],vector[n,:],commonName[n]]
+            reference.append(entry)
+
+        dictionary = pd.DataFrame(reference,columns=['class','pcs','interval','name'])
+
+    return(dictionary,ZrelT)
+
+
+def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12):
+    
+    # Create network of pcs from the pcsDictionary
+    
+    df = pd.read_csv(input_csv)
+    df = np.asarray(df.drop(['name'],axis=1))
 
     # write csv for nodes
-    df = pd.DataFrame(name,columns=['Label'])
-    df.to_csv('nodes.csv',index=False)
+    dnodes = pd.DataFrame(df[:,0],columns=['Label'])
+    dnodes.to_csv('nodes.csv',index=False)
     # find edges according to a metric
+    
+    vector = np.zeros((df[:,2].shape[0],int(TET/2)))
+    for i in range(df[:,2].shape[0]):
+        vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,2]))))
     N = vector.shape[0]
     dist = np.zeros((int((N**2-N)/2+N),3))
     n = 0
     for i in range(N):
         for j in range(i,N):
             pair = sklm.pairwise.paired_euclidean_distances(vector[i].reshape(1, -1),vector[j].reshape(1, -1))
-            if pair <= 1.5 and pair != 0:
+            if pair <= thup and pair >= thdw:
                 dist[n,0] = i
                 dist[n,1] = j
                 dist[n,2] = sklm.pairwise.paired_euclidean_distances(vector[i].reshape(1, -1),vector[j].reshape(1, -1))
@@ -227,21 +313,7 @@ def pcsNetwork(Nc_i,Nc_f,order=0):
     dist = dist[:n]
 
     # write csv for edges
-    df2 = pd.DataFrame(dist,columns=['Source','Target','Weight'])
-    df2.to_csv('edges.csv',index=False)
+    dedges = pd.DataFrame(dist,columns=['Source','Target','Weight'])
+    dedges.to_csv('edges.csv',index=False)
 
-    # Create dictionary of pitch class sets
-    reference = []
-    for n in range(len(name)):
-        entry = [name[n],prime[n],np.array2string(vector[n,:],separator='').replace(" ",""),
-              commonName[n]]
-        reference.append(entry)
-
-    dictionary = pd.DataFrame(reference,columns=['class','pcs','interval','name'])
-
-    dict_class = dictionary.set_index("class", drop = True)
-    dict_pcs = dictionary.set_index("pcs", drop = True)
-    dict_interval = dictionary.set_index("interval", drop = True)
-    dict_name = dictionary.set_index("name", drop = True)
-
-    return(dict_class,dict_pcs,dict_interval,dict_name)
+    return()
