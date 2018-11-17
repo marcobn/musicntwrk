@@ -240,21 +240,20 @@ def pcsDictionary(Nc,order=0,TET=12):
         saux = np.asarray(saux)
         comm.Gather(saux,s,root=0)
 
-        if rank == 0:
-            # eliminate duplicates
-            s = np.unique(s,axis=0)
+    if rank == 0:
+        # eliminate duplicates
+        s = np.unique(s,axis=0)
+        # calculate interval vectors and assign names
+        v = []
+        for i in range(s.shape[0]):
+            p = PCSet(s[i,:],0,TET)
+            v.append(p.intervalVector())
+            name.append(str(Nc)+'-'+str(i+1))
+            prime.append(np.array2string(s[i,:],separator=',').replace(" ",""))
+            commonName.append(m21.chord.Chord(np.ndarray.tolist(s[i])).commonName)
 
-            # calculate interval vectors and assign names
-            v = []
-            for i in range(s.shape[0]):
-                p = PCSet(s[i,:],0,TET)
-                v.append(p.intervalVector())
-                name.append(str(Nc)+'-'+str(i+1))
-                prime.append(np.array2string(s[i,:],separator=',').replace(" ",""))
-                commonName.append(m21.chord.Chord(np.ndarray.tolist(s[i])).commonName)
+        vector = np.asarray(v)
 
-            vector = np.asarray(v)
-    
     dictionary = dict_class = dict_pcs = dict_interval = dict_name = ZrelT = None
     if rank == 0:
         # find pc sets in Z relation
