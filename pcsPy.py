@@ -368,7 +368,7 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.0,TET=12
     dedges.to_csv('edges_ego.csv',index=False)        
     
     # alters edges
-    N = len(name)
+    N = len(name)-1
     dist = np.zeros((int((N**2-N)/2+N),3),dtype='<U32')
     n = 0
     for i in range(N):
