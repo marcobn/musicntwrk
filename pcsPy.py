@@ -83,7 +83,6 @@ class PCSet:
     def zeroOrder(self):
         return((self.pcs-self.pcs[0])%self.TET)
 
-
     def inverse(self):
         return(-self.pcs%self.TET)
 
@@ -275,7 +274,6 @@ def pcsDictionary(Nc,order=0,TET=12):
         for n in range(len(name)):
             entry = [name[n],prime[n],np.array2string(vector[n,:],separator=',').replace(" ",""),
                     commonName[n]]
-            #entry = [name[n],prime[n],vector[n,:],commonName[n]]
             reference.append(entry)
 
         dictionary = pd.DataFrame(reference,columns=['class','pcs','interval','name'])
@@ -299,20 +297,94 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12):
     for i in range(df[:,2].shape[0]):
         vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,2]))))
     N = vector.shape[0]
-    dist = np.zeros((int((N**2-N)/2+N),3))
+    dist = np.zeros((int((N**2-N)/2+N),3),dtype='<U32')
     n = 0
     for i in range(N):
         for j in range(i,N):
             pair = sklm.pairwise.paired_euclidean_distances(vector[i].reshape(1, -1),vector[j].reshape(1, -1))
             if pair <= thup and pair >= thdw:
-                dist[n,0] = i
-                dist[n,1] = j
-                dist[n,2] = sklm.pairwise.paired_euclidean_distances(vector[i].reshape(1, -1),vector[j].reshape(1, -1))
+                dist[n,0] = str(i)
+                dist[n,1] = str(j)
+                dist[n,2] = str(sklm.pairwise.paired_euclidean_distances(vector_i.reshape(1, -1),
+                                                                        vector_j.reshape(1, -1))[0])
                 n += 1
     dist = dist[:n]
 
     # write csv for edges
     dedges = pd.DataFrame(dist,columns=['Source','Target','Weight'])
     dedges.to_csv('edges.csv',index=False)
+
+    return()
+
+def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.0,TET=12):
+    
+    if thdw_e < 1e-9:
+        print('ego should not link to itself')
+        sys.exit()
+    
+    # Create the ego network of pcs from a given node using the pcsDictionary
+    
+    df = pd.read_csv(input_csv)
+    df = df.drop(['name'],axis=1)
+
+    # define nodes as distance 1 from ego
+    # ego
+    dict_class = df.set_index("class", drop = True)
+    ego = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[label][1]))))
+    # alters
+    dfv = np.asarray(df)
+    vector = np.zeros((dfv[:,2].shape[0],int(TET/2)),dtype=int)
+    for i in range(dfv[:,2].shape[0]):
+        vector[i]  = np.asarray(list(map(int,re.findall('\d+',dfv[i,2]))))
+    name = []
+    for i in range(dfv[:,2].shape[0]):
+        pair = sklm.pairwise.paired_euclidean_distances(vector[i].reshape(1, -1),ego.reshape(1, -1))
+        if pair <= thup_e and pair >= thdw_e:
+            name.append(dfv[i,0])
+    # add ego node
+    name.append(label)
+                      
+    # write csv for nodes
+    dnodes = pd.DataFrame(np.asarray(name),columns=['Label'])
+    dnodes.to_csv('nodes.csv',index=False)
+    
+    # find edges according to a metric
+    # ego edges with proportinal weights
+    N = len(name)
+    dist = np.zeros((N,3),dtype='<U32')
+    n = 0
+    for j in range(N):
+        vector_j = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[name[j]][1]))))
+        pair = sklm.pairwise.paired_euclidean_distances(ego.reshape(1, -1),vector_j.reshape(1, -1))
+        if pair <= thup_e and pair >= thdw_e:
+            dist[n,0] = str(N-1)
+            dist[n,1] = str(j)
+            dist[n,2] = str(1/sklm.pairwise.paired_euclidean_distances(ego.reshape(1, -1),
+                                                                    vector_j.reshape(1, -1))[0])
+            n += 1
+    dist = dist[:n]
+    # write csv for ego's edges
+    dedges = pd.DataFrame(dist,columns=['Source','Target','Weight'])
+    dedges.to_csv('edges_ego.csv',index=False)        
+    
+    # alters edges
+    N = len(name)
+    dist = np.zeros((int((N**2-N)/2+N),3),dtype='<U32')
+    n = 0
+    for i in range(N):
+        vector_i = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[name[i]][1]))))
+        for j in range(i,N):
+            vector_j = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[name[j]][1]))))
+            pair = sklm.pairwise.paired_euclidean_distances(vector_i.reshape(1, -1),vector_j.reshape(1, -1))
+            if pair <= thup and pair >= thdw:
+                dist[n,0] = str(i)
+                dist[n,1] = str(j)
+                dist[n,2] = str(1/sklm.pairwise.paired_euclidean_distances(vector_i.reshape(1, -1),
+                                                                        vector_j.reshape(1, -1))[0])
+                n += 1
+    dist = dist[:n]
+    # write csv for alters' edges
+    dedges = pd.DataFrame(dist,columns=['Source','Target','Weight'])
+    dedges.to_csv('edges_alters.csv',index=False)
 
     return()
