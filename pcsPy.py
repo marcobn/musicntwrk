@@ -12,7 +12,7 @@
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
 
-import sys,re
+import sys,re,time
 import numpy as np
 import itertools as iter
 import pandas as pd
@@ -192,6 +192,8 @@ class PCSet:
 
 def pcsDictionary(Nc,order=0,TET=12):
     
+    if rank == 0: start = time.time()
+    
     # Create dictionary of pcs from a given cardinality Nc
     name = prime = commonName = None
     if rank == 0:
@@ -203,45 +205,48 @@ def pcsDictionary(Nc,order=0,TET=12):
     a = np.asarray(list(iter.combinations(range(TET),Nc)))
 
     # put all pcs in prime form
-    if size == 1:
-        s = []
-        for i in range(a.shape[0]):
-            p = PCSet(a[i,:],0,TET)
-            if order == 0:
-                s.append(p.primeForm()[:])
-            elif order == 1:
-                s.append(p.normal0Order()[:])
-            else:
-                print('no ordering specified')
-        s = np.asarray(s)
-    else:
-        s = np.zeros((a.shape[0],Nc),dtype=int)
-        ini,end = load_balancing(size, rank, a.shape[0])
-        nsize = end-ini
+    s = np.zeros((a.shape[0],Nc),dtype=int)
+    ini,end = load_balancing(size, rank, a.shape[0])
+    nsize = end-ini
 
-        aux = scatter_array(a)
-        saux = np.zeros((nsize,Nc),dtype=int)
-        comm.Barrier()
-        for i in range(nsize):
-            p = PCSet(aux[i,:],0,TET)
-            if order == 0:
-                saux[i,:] = p.primeForm()[:]
-            elif order == 1:
-                saux[i,:] = p.normal0Order()[:]
-            else:
-                if rank == 0: print('no ordering specified')
-        comm.Barrier()
-        gather_array(s,saux,sroot=0)
+    aux = scatter_array(a)
+    saux = np.zeros((nsize,Nc),dtype=int)
+    comm.Barrier()
+    for i in range(nsize):
+        p = PCSet(aux[i,:],0,TET)
+        if order == 0:
+            saux[i,:] = p.primeForm()[:]
+        elif order == 1:
+            saux[i,:] = p.normal0Order()[:]
+        else:
+            if rank == 0: print('no ordering specified')
+    comm.Barrier()
+    gather_array(s,saux,sroot=0)
+
+    if rank == 0: 
+        print('first checkpoint at %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
+        reset=time.time()
     
+    # eliminate duplicates
+    # first reduce to prime form
+    ini,end = load_balancing(size, rank, s.shape[0])
+    nsize = end-ini
+
+    t = np.zeros((s.shape[0],Nc),dtype=int)
+    aux = scatter_array(s)
+    saux = np.zeros((nsize,Nc),dtype=int)
+    for n in range(nsize):
+        p = PCSet(aux[n,:],0,TET)
+        saux[n,:] = p.primeForm()[:]
+    comm.Barrier()
+    gather_array(t,saux,sroot=0)   
+
     if rank == 0:
-        # eliminate duplicates
-        # first reduce to prime form
-        t = np.zeros((s.shape[0],Nc),dtype=int)
-        for n in range(s.shape[0]):
-            p = PCSet(s[n,:],0,TET)
-            t[n,:] = p.primeForm()[:]
+        print('intermediate checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+        reset=time.time()
         # eliminate duplicates in t
         s = np.unique(t,axis=0)
+        
         # calculate interval vectors and assign names
         v = []
         for i in range(s.shape[0]):
@@ -252,6 +257,9 @@ def pcsDictionary(Nc,order=0,TET=12):
             commonName.append(m21.chord.Chord(np.ndarray.tolist(s[i,:])).commonName)
 
         vector = np.asarray(v)
+        
+        print('second checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+        reset=time.time()
 
     dictionary = dict_class = dict_pcs = dict_interval = dict_name = ZrelT = None
     if rank == 0:
@@ -268,7 +276,10 @@ def pcsDictionary(Nc,order=0,TET=12):
                 ZrelT.append(Zrel)
 
         name = np.asarray(name)
-
+        
+        print('third checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+        reset=time.time()
+        
         # Create dictionary of pitch class sets
         reference = []
         for n in range(len(name)):
@@ -279,6 +290,9 @@ def pcsDictionary(Nc,order=0,TET=12):
 
         dictionary = pd.DataFrame(reference,columns=['class','pcs','interval','name'])
 
+        print('fourth checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+        reset=time.time()
+        
     return(dictionary,ZrelT)
 
 
