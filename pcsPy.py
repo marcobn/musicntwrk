@@ -20,17 +20,13 @@ import sklearn.metrics as sklm
 import music21 as m21
 from mpi4py import MPI
 
+from communications import *
+from load_balancing import *
+
 # initialize parallel execution
 comm=MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
-
-def load_balancing(size,rank,n):
-    # Load balancing
-    splitsize = 1.0/size*n
-    start = int(round(rank*splitsize))
-    stop = int(round((rank+1)*splitsize))
-    return(start,stop)
 
 class PCSet:
 
@@ -219,29 +215,33 @@ def pcsDictionary(Nc,order=0,TET=12):
                 print('no ordering specified')
         s = np.asarray(s)
     else:
-        if rank == 0 : print('parallel run')
-        s = None
-        if rank == 0: s = [[0]*Nc for i in range(a.shape[0])]
+        s = np.zeros((a.shape[0],Nc),dtype=int)
         ini,end = load_balancing(size, rank, a.shape[0])
         nsize = end-ini
-        saux = [[0] for i in range(nsize)]
+
+        aux = scatter_array(a)
+        saux = np.zeros((nsize,Nc),dtype=int)
         comm.Barrier()
         for i in range(nsize):
-            p = PCSet(a[i,:],0,TET)
+            p = PCSet(aux[i,:],0,TET)
             if order == 0:
-                saux[i] = p.primeForm()[:]
+                saux[i,:] = p.primeForm()[:]
             elif order == 1:
-                saux[i] = p.normal0Order()[:]
+                saux[i,:] = p.normal0Order()[:]
             else:
                 if rank == 0: print('no ordering specified')
         comm.Barrier()
-        s = np.asarray(s)
-        saux = np.asarray(saux)
-        comm.Gather(saux,s,root=0)
-
+        gather_array(s,saux,sroot=0)
+    
     if rank == 0:
         # eliminate duplicates
-        s = np.unique(s,axis=0)
+        # first reduce to prime form
+        t = np.zeros((s.shape[0],Nc),dtype=int)
+        for n in range(s.shape[0]):
+            p = PCSet(s[n,:],0,TET)
+            t[n,:] = p.primeForm()[:]
+        # eliminate duplicates in t
+        s = np.unique(t,axis=0)
         # calculate interval vectors and assign names
         v = []
         for i in range(s.shape[0]):
@@ -249,7 +249,7 @@ def pcsDictionary(Nc,order=0,TET=12):
             v.append(p.intervalVector())
             name.append(str(Nc)+'-'+str(i+1))
             prime.append(np.array2string(s[i,:],separator=',').replace(" ",""))
-            commonName.append(m21.chord.Chord(np.ndarray.tolist(s[i])).commonName)
+            commonName.append(m21.chord.Chord(np.ndarray.tolist(s[i,:])).commonName)
 
         vector = np.asarray(v)
 
@@ -272,7 +272,8 @@ def pcsDictionary(Nc,order=0,TET=12):
         # Create dictionary of pitch class sets
         reference = []
         for n in range(len(name)):
-            entry = [name[n],prime[n],np.array2string(vector[n,:],separator=',').replace(" ",""),
+            entry = [name[n],prime[n],
+                    np.array2string(vector[n,:],separator=',').replace(" ",""),
                     commonName[n]]
             reference.append(entry)
 
