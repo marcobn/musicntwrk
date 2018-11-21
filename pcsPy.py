@@ -173,7 +173,7 @@ class PCSet:
         
     def jazzChord(self):
         if self.TET != 12:
-            print('Forte class defined only for 12-TET')
+            print('Jazz chords defined only for 12-TET')
             return()
         jazzDict = {'[047]':'Maj','[037]':'min','[036]':'dim','[048]':'+','[046]':'b5','[027]':'add2','[057]':'add4',
                     '[0237]':'m(add2)','[0357]':'m(add4)','[0247]':'(add2)','[0457]':'(add4)','[0369]':'dim','[03610]':'m7b5',
@@ -188,6 +188,9 @@ class PCSet:
             print('set not found')
             Fname=None
         return(Fname)
+    
+    def commonName(self):
+        return(m21.chord.Chord(np.ndarray.tolist(self.primeForm()[:])).commonName)
 
 
 def pcsDictionary(Nc,order=0,TET=12):
@@ -254,7 +257,6 @@ def pcsDictionary(Nc,order=0,TET=12):
             v.append(p.intervalVector())
             name.append(str(Nc)+'-'+str(i+1))
             prime.append(np.array2string(s[i,:],separator=',').replace(" ",""))
-            commonName.append(m21.chord.Chord(np.ndarray.tolist(s[i,:])).commonName)
 
         vector = np.asarray(v)
         
@@ -284,11 +286,10 @@ def pcsDictionary(Nc,order=0,TET=12):
         reference = []
         for n in range(len(name)):
             entry = [name[n],prime[n],
-                    np.array2string(vector[n,:],separator=',').replace(" ",""),
-                    commonName[n]]
+                    np.array2string(vector[n,:],separator=',').replace(" ","")]
             reference.append(entry)
 
-        dictionary = pd.DataFrame(reference,columns=['class','pcs','interval','name'])
+        dictionary = pd.DataFrame(reference,columns=['class','pcs','interval'])
 
         print('fourth checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
         reset=time.time()
