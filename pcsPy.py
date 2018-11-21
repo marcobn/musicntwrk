@@ -227,7 +227,7 @@ def pcsDictionary(Nc,order=0,TET=12):
     gather_array(s,saux,sroot=0)
 
     if rank == 0: 
-        print('first checkpoint at %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
+        print('first checkpoint in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
         reset=time.time()
     
     # eliminate duplicates
@@ -245,7 +245,7 @@ def pcsDictionary(Nc,order=0,TET=12):
     gather_array(t,saux,sroot=0)   
 
     if rank == 0:
-        print('intermediate checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+        print('intermediate checkpoint in %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
         reset=time.time()
         # eliminate duplicates in t
         s = np.unique(t,axis=0)
@@ -298,11 +298,12 @@ def pcsDictionary(Nc,order=0,TET=12):
 
 
 def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12):
-    
+
+    start=time.time()    
     # Create network of pcs from the pcsDictionary
     
     df = pd.read_csv(input_csv)
-    df = np.asarray(df.drop(['name'],axis=1))
+    df = np.asarray(df)
 
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
@@ -321,10 +322,11 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12):
             if pair <= thup and pair >= thdw:
                 dist[n,0] = str(i)
                 dist[n,1] = str(j)
-                dist[n,2] = str(sklm.pairwise.paired_euclidean_distances(vector_i.reshape(1, -1),
-                                                                        vector_j.reshape(1, -1))[0])
+                dist[n,2] = str(1/pair[0])
                 n += 1
     dist = dist[:n]
+
+    print('network in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
 
     # write csv for edges
     dedges = pd.DataFrame(dist,columns=['Source','Target','Weight'])
@@ -341,7 +343,6 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.0,TET=12
     # Create the ego network of pcs from a given node using the pcsDictionary
     
     df = pd.read_csv(input_csv)
-    df = df.drop(['name'],axis=1)
 
     # define nodes as distance 1 from ego
     # ego
@@ -362,7 +363,7 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.0,TET=12
                       
     # write csv for nodes
     dnodes = pd.DataFrame(np.asarray(name),columns=['Label'])
-    dnodes.to_csv('nodes.csv',index=False)
+    dnodes.to_csv('nodes_ego.csv',index=False)
     
     # find edges according to a metric
     # ego edges with proportinal weights
@@ -375,8 +376,7 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.0,TET=12
         if pair <= thup_e and pair >= thdw_e:
             dist[n,0] = str(N-1)
             dist[n,1] = str(j)
-            dist[n,2] = str(1/sklm.pairwise.paired_euclidean_distances(ego.reshape(1, -1),
-                                                                    vector_j.reshape(1, -1))[0])
+            dist[n,2] = str(1/pair[0])
             n += 1
     dist = dist[:n]
     # write csv for ego's edges
@@ -395,8 +395,7 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.0,TET=12
             if pair <= thup and pair >= thdw:
                 dist[n,0] = str(i)
                 dist[n,1] = str(j)
-                dist[n,2] = str(1/sklm.pairwise.paired_euclidean_distances(vector_i.reshape(1, -1),
-                                                                        vector_j.reshape(1, -1))[0])
+                dist[n,2] = str(1/pair[0])
                 n += 1
     dist = dist[:n]
     # write csv for alters' edges
@@ -404,3 +403,8 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.0,TET=12
     dedges.to_csv('edges_alters.csv',index=False)
 
     return()
+
+def extractByString(input_csv,label,string):
+    # extract rows of dictionary according to a particular string in column 'label'
+    df = pd.read_csv(input_csv)
+    return(df[df[label].str.contains(string)])
