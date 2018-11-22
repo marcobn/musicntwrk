@@ -1,0 +1,5 @@
+/TESTS/
+/OLD/
+/__pycache__/
+/.ipynb_checkpoints/
+*.pyc
