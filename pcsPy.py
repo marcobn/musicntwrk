@@ -192,6 +192,7 @@ class PCSet:
     def commonName(self):
         return(m21.chord.Chord(np.ndarray.tolist(self.primeForm()[:])).commonName)
 
+########### Network functions ###########
 
 def pcsDictionary(Nc,order=0,TET=12):
     
@@ -296,42 +297,7 @@ def pcsDictionary(Nc,order=0,TET=12):
         
     return(dictionary,ZrelT)
 
-
 def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12):
-
-    start=time.time()    
-    # Create network of pcs from the pcsDictionary
-    
-    df = pd.read_csv(input_csv)
-    df = np.asarray(df)
-
-    # write csv for nodes
-    dnodes = pd.DataFrame(df[:,0],columns=['Label'])
-    dnodes.to_csv('nodes.csv',index=False)
-    # find edges according to a metric
-    
-    vector = np.zeros((df[:,2].shape[0],int(TET/2)))
-    for i in range(df[:,2].shape[0]):
-        vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,2]))))
-    print('vector in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
-    reset=time.time()
-    N = vector.shape[0]
-    dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
-    for i in range(N):
-        for j in range(i,N):
-            pair = sklm.pairwise.paired_euclidean_distances(vector[i].reshape(1, -1),vector[j].reshape(1, -1))
-            if pair <= thup and pair >= thdw:
-                tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0])]],columns=['Source','Target','Weight'])
-                dedges = dedges.append(tmp)
-
-    print('network in %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
-
-    # write csv for edges
-    dedges.to_csv('edges.csv',index=False)
-
-    return()
-    
-def pcsNetworkPara(input_csv,thup=1.5,thdw=0.0,TET=12):
 
     start=time.time()    
     # Create network of pcs from the pcsDictionary - parallel version
