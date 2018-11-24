@@ -341,7 +341,7 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean'):
 
     return()
 
-def pcsEgoNetworkPara(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12,distance='euclidean'):
+def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12,distance='euclidean'):
     
     if thdw_e < 1e-9:
         print('ego should not link to itself')
