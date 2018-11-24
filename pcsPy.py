@@ -334,7 +334,7 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12):
 def pcsNetworkPara(input_csv,thup=1.5,thdw=0.0,TET=12):
 
     start=time.time()    
-    # Create network of pcs from the pcsDictionary
+    # Create network of pcs from the pcsDictionary - parallel version
     
     df = pd.read_csv(input_csv)
     df = np.asarray(df)
@@ -348,22 +348,26 @@ def pcsNetworkPara(input_csv,thup=1.5,thdw=0.0,TET=12):
     for i in range(df[:,2].shape[0]):
         vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,2]))))
     N = vector.shape[0]
-    # parallelize over external loop
+    index = np.linspace(0,vector.shape[0],vector.shape[0],dtype=int)
+    # parallelize over interval vector to optimize the vectorization in sklm.pairwise_distances
     ini,end = load_balancing(size, rank, N)
     nsize = end-ini
     vaux = scatter_array(vector)
+    pair = sklm.pairwise_distances(vaux, vector, metric='euclidean')
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
-    for i in range(ini,end):
-        for j in range(i,N):
-            pair = sklm.pairwise.paired_euclidean_distances(vaux[i-ini].reshape(1, -1),vector[j].reshape(1, -1))
-            if pair <= thup and pair >= thdw:
-                tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0])]],columns=['Source','Target','Weight'])
-                dedges = dedges.append(tmp)
+    for i in range(nsize):
+        tmp = pd.DataFrame(None,columns=['Source','Target','Weight'])
+        tmp['Source'] = (i+ini)*np.ones(vector.shape[0],dtype=int)[:]
+        tmp['Target'] = index[:]
+        tmp['Weight'] = pair[i,:]
+        dedges = dedges.append(tmp)
+    dedges = dedges.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
+    dedges['Weight'] = dedges['Weight'].apply(lambda x: 1/x)
 
     # write csv for partial edges
     dedges.to_csv('edges'+str(rank)+'.csv',index=False)
     
-    if rank == 0:
+    if size != 1 and rank == 0:
         dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
         for i in range(size):
             tmp = pd.read_csv('edges'+str(i)+'.csv')
@@ -371,11 +375,12 @@ def pcsNetworkPara(input_csv,thup=1.5,thdw=0.0,TET=12):
             os.remove('edges'+str(i)+'.csv')
         # write csv for edges
         dedges.to_csv('edges.csv',index=False)
+    elif size == 1:
+        os.rename('edges'+str(rank)+'.csv','edges.csv')
 
     if rank == 0: print('network in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
 
     return()
-
 
 def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.0,TET=12):
     
