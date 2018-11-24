@@ -205,8 +205,6 @@ class PCSet:
 
 def pcsDictionary(Nc,order=0,TET=12):
     
-    if rank == 0: start = time.time()
-    
     # Create dictionary of pcs from a given cardinality Nc
     name = prime = commonName = None
     if rank == 0:
@@ -235,10 +233,6 @@ def pcsDictionary(Nc,order=0,TET=12):
             if rank == 0: print('no ordering specified')
     comm.Barrier()
     gather_array(s,saux,sroot=0)
-
-    if rank == 0: 
-        print('first checkpoint in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
-        reset=time.time()
     
     # eliminate duplicates
     # first reduce to prime form
@@ -255,8 +249,6 @@ def pcsDictionary(Nc,order=0,TET=12):
     gather_array(t,saux,sroot=0)   
 
     if rank == 0:
-        print('intermediate checkpoint in %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
-        reset=time.time()
         # eliminate duplicates in t
         s = np.unique(t,axis=0)
         
@@ -269,9 +261,6 @@ def pcsDictionary(Nc,order=0,TET=12):
             prime.append(np.array2string(s[i,:],separator=',').replace(" ",""))
 
         vector = np.asarray(v)
-        
-        print('second checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
-        reset=time.time()
 
     dictionary = ZrelT = None
     if rank == 0:
@@ -289,9 +278,6 @@ def pcsDictionary(Nc,order=0,TET=12):
 
         name = np.asarray(name)
         
-        print('third checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
-        reset=time.time()
-        
         # Create dictionary of pitch class sets
         reference = []
         for n in range(len(name)):
@@ -300,15 +286,11 @@ def pcsDictionary(Nc,order=0,TET=12):
             reference.append(entry)
 
         dictionary = pd.DataFrame(reference,columns=['class','pcs','interval'])
-
-        print('fourth checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
-        reset=time.time()
         
     return(dictionary,ZrelT)
 
 def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean'):
 
-    start=time.time()    
     # Create network of pcs from the pcsDictionary - parallel version
     
     df = pd.read_csv(input_csv)
@@ -357,8 +339,6 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean'):
     elif size == 1:
         os.rename('edges'+str(rank)+'.csv','edges.csv')
 
-    if rank == 0: print('network in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
-
     return()
 
 def pcsEgoNetworkPara(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12,distance='euclidean'):
@@ -381,9 +361,9 @@ def pcsEgoNetworkPara(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TE
     for i in range(dfv[:,2].shape[0]):
         vector[i]  = np.asarray(list(map(int,re.findall('\d+',dfv[i,2]))))
     name = []
+    pair = sklm.pairwise_distances(ego.reshape(1, -1), vector, metric=distance)
     for i in range(dfv[:,2].shape[0]):
-        pair = sklm.pairwise.paired_euclidean_distances(vector[i].reshape(1, -1),ego.reshape(1, -1))
-        if pair <= thup_e and pair >= thdw_e:
+        if pair[0,i] <= thup_e and pair[0,i] >= thdw_e:
             name.append(dfv[i,0])
     # add ego node
     name.append(label)
@@ -393,33 +373,70 @@ def pcsEgoNetworkPara(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TE
     dnodes.to_csv('nodes_ego.csv',index=False)
     
     # find edges according to a metric
-    # ego edges with proportinal weights
+    # ego edges with proportional weights
     N = len(name)
+    vector = np.zeros((N,int(TET/2)),dtype=int)
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
     for j in range(N):
-        vector_j = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[name[j]][1]))))
-        pair = sklm.pairwise.paired_euclidean_distances(ego.reshape(1, -1),vector_j.reshape(1, -1))
-        if pair <= thup_e and pair >= thdw_e:
-            tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0])]],columns=['Source','Target','Weight'])
+        vector[j] = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[name[j]][1]))))
+    pair = sklm.pairwise_distances(ego.reshape(1, -1), vector, metric=distance)
+    for j in range(N):
+        if pair[0,j] <= thup_e and pair[0,j] >= thdw_e:
+            tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0,j])]],columns=['Source','Target','Weight'])
             dedges = dedges.append(tmp)
     # write csv for ego's edges
     dedges.to_csv('edges_ego.csv',index=False)        
     
     # alters edges
-    N = len(name)-1
-    dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
-    for i in range(N):
-        vector_i = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[name[i]][1]))))
-        for j in range(i,N):
-            vector_j = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[name[j]][1]))))
-            pair = sklm.pairwise.paired_euclidean_distances(vector_i.reshape(1, -1),vector_j.reshape(1, -1))
-            if pair <= thup and pair >= thdw:
-                tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0])]],columns=['Source','Target','Weight'])
+    # parallelize over interval vector to optimize the vectorization in sklm.pairwise_distances
+    if size != 1:
+        ini,end = load_balancing(size, rank, N)
+        nsize = end-ini
+        vaux = scatter_array(vector)
+        pair = sklm.pairwise_distances(vaux, vector, metric=distance)
+        index = np.linspace(0,N,N,dtype=int)
+        dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
+        for i in range(nsize):
+            tmp = pd.DataFrame(None,columns=['Source','Target','Weight'])
+            tmp['Source'] = (i+ini)*np.ones(N,dtype=int)[:]
+            tmp['Target'] = index[:]
+            tmp['Weight'] = pair[i,:]
+            dedges = dedges.append(tmp)
+        dedges = dedges.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
+        dedges['Weight'] = dedges['Weight'].apply(lambda x: 1/x)
+        # do some cleaning
+        cond = dedges.Source > dedges.Target
+        dedges.loc[cond, ['Source', 'Target']] = dedges.loc[cond, ['Target', 'Source']].values
+        dedges = dedges.drop_duplicates(subset=['Source', 'Target'])
+
+        # write csv for partial edges
+        dedges.to_csv('edges'+str(rank)+'.csv',index=False)
+        
+        if size != 1 and rank == 0:
+            dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
+            for i in range(size):
+                tmp = pd.read_csv('edges'+str(i)+'.csv')
                 dedges = dedges.append(tmp)
+                os.remove('edges'+str(i)+'.csv')
+            # write csv for edges
+            dedges.to_csv('edges_alters.csv',index=False)
+        elif size == 1:
+            os.rename('edges'+str(rank)+'.csv','edges_alters.csv')
+    else:
+        N = len(name)-1
+        dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
+        for i in range(N):
+            vector_i = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[name[i]][1]))))
+            for j in range(i,N):
+                vector_j = np.asarray(list(map(int,re.findall('\d+',dict_class.loc[name[j]][1]))))
+                pair = sklm.pairwise.paired_euclidean_distances(vector_i.reshape(1, -1),vector_j.reshape(1, -1))
+                if pair <= thup and pair >= thdw:
+                    tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0])]],columns=['Source','Target','Weight'])
+                    dedges = dedges.append(tmp)
 
-    # write csv for alters' edges
-    dedges.to_csv('edges_alters.csv',index=False)
-
+        # write csv for alters' edges
+        dedges.to_csv('edges_alters.csv',index=False)
+    
     return()
 
 def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12):
