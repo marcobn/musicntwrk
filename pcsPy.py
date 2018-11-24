@@ -263,7 +263,7 @@ def pcsDictionary(Nc,order=0,TET=12):
         print('second checkpoint at %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
         reset=time.time()
 
-    dictionary = dict_class = dict_pcs = dict_interval = dict_name = ZrelT = None
+    dictionary = ZrelT = None
     if rank == 0:
         # find pc sets in Z relation
         u, indeces = np.unique(vector, return_inverse=True,axis=0)
