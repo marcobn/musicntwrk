@@ -30,11 +30,10 @@ size = comm.Get_size()
 
 class PCSet:
 
-    def __init__(self,pcs,T=0,TET=12):
+    def __init__(self,pcs,TET=12):
         # eliminate duplicates - ascending order
         self.pcs = np.unique(pcs)
         self.TET = TET
-        self.T = T
 
     def normalOrder(self):
 
@@ -73,8 +72,8 @@ class PCSet:
     def normal0Order(self):
         return((self.normalOrder()-self.normalOrder()[0])%self.TET)
 
-    def transpose(self):
-        return((self.pcs+self.T)%self.TET)
+    def transpose(self,t=0):
+        return((self.pcs+t)%self.TET)
     
     def zeroOrder(self):
         return((self.pcs-self.pcs[0])%self.TET)
@@ -190,20 +189,29 @@ class PCSet:
         return(Fname)
     
     def commonName(self):
+        return(m21.chord.Chord(np.ndarray.tolist(self.normalOrder()[:])).commonName)
+    
+    def commonNamePrime(self):
         return(m21.chord.Chord(np.ndarray.tolist(self.primeForm()[:])).commonName)
     
-    def displayNotes(self,xml=False):
+    def nameWithPitch(self):
+        return(m21.note.Note(self.normalOrder()[0]).nameWithOctave+' '+self.commonName())
+    
+    def displayNotes(self,xml=False,prime=False):
         s = m21.stream.Stream()
         fac = self.TET/12
         for i in range(self.pcs.shape[0]):
-            s.append(m21.note.Note(self.pcs[i]/fac+60))
+            if prime: 
+                s.append(m21.note.Note(self.primeForm()[i]/fac+60))
+            else:
+                s.append(m21.note.Note(self.pcs[i]/fac+60))
         s.show()
         if xml: s.show('musicxml')
         return
 
 ########### Network functions ###########
 
-def pcsDictionary(Nc,order=0,TET=12):
+def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
     
     # Create dictionary of pcs from a given cardinality Nc
     name = prime = commonName = None
@@ -213,7 +221,10 @@ def pcsDictionary(Nc,order=0,TET=12):
         commonName = []
         
     # generate all possible combinations of n integers
-    a = np.asarray(list(iter.combinations(range(TET),Nc)))
+    if row:
+        a = np.asarray(list(iter.combinations(a,Nc)))
+    else:
+        a = np.asarray(list(iter.combinations(range(TET),Nc)))
 
     # put all pcs in prime form
     s = np.zeros((a.shape[0],Nc),dtype=int)
@@ -224,7 +235,7 @@ def pcsDictionary(Nc,order=0,TET=12):
     saux = np.zeros((nsize,Nc),dtype=int)
     comm.Barrier()
     for i in range(nsize):
-        p = PCSet(aux[i,:],0,TET)
+        p = PCSet(aux[i,:],TET)
         if order == 0:
             saux[i,:] = p.primeForm()[:]
         elif order == 1:
@@ -243,7 +254,7 @@ def pcsDictionary(Nc,order=0,TET=12):
     aux = scatter_array(s)
     saux = np.zeros((nsize,Nc),dtype=int)
     for n in range(nsize):
-        p = PCSet(aux[n,:],0,TET)
+        p = PCSet(aux[n,:],TET)
         saux[n,:] = p.primeForm()[:]
     comm.Barrier()
     gather_array(t,saux,sroot=0)   
@@ -255,7 +266,7 @@ def pcsDictionary(Nc,order=0,TET=12):
         # calculate interval vectors and assign names
         v = []
         for i in range(s.shape[0]):
-            p = PCSet(s[i,:],0,TET)
+            p = PCSet(s[i,:],TET)
             v.append(p.intervalVector())
             name.append(str(Nc)+'-'+str(i+1))
             prime.append(np.array2string(s[i,:],separator=',').replace(" ",""))
@@ -412,7 +423,7 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12
         # write csv for partial edges
         dedges.to_csv('edges'+str(rank)+'.csv',index=False)
         
-        if size != 1 and rank == 0:
+        if rank == 0:
             dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
             for i in range(size):
                 tmp = pd.read_csv('edges'+str(i)+'.csv')
@@ -420,8 +431,6 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12
                 os.remove('edges'+str(i)+'.csv')
             # write csv for edges
             dedges.to_csv('edges_alters.csv',index=False)
-        elif size == 1:
-            os.rename('edges'+str(rank)+'.csv','edges_alters.csv')
     else:
         N = len(name)-1
         dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
