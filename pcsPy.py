@@ -226,7 +226,7 @@ def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
     else:
         a = np.asarray(list(iter.combinations(range(TET),Nc)))
 
-    # put all pcs in prime form
+    # put all pcs in prime/normal order form
     s = np.zeros((a.shape[0],Nc),dtype=int)
     ini,end = load_balancing(size, rank, a.shape[0])
     nsize = end-ini
@@ -239,29 +239,15 @@ def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
         if order == 0:
             saux[i,:] = p.primeForm()[:]
         elif order == 1:
-            saux[i,:] = p.normal0Order()[:]
+            saux[i,:] = p.normalOrder()[:]
         else:
             if rank == 0: print('no ordering specified')
     comm.Barrier()
     gather_array(s,saux,sroot=0)
-    
-    # eliminate duplicates
-    # first reduce to prime form
-    ini,end = load_balancing(size, rank, s.shape[0])
-    nsize = end-ini
-
-    t = np.zeros((s.shape[0],Nc),dtype=int)
-    aux = scatter_array(s)
-    saux = np.zeros((nsize,Nc),dtype=int)
-    for n in range(nsize):
-        p = PCSet(aux[n,:],TET)
-        saux[n,:] = p.primeForm()[:]
-    comm.Barrier()
-    gather_array(t,saux,sroot=0)   
 
     if rank == 0:
-        # eliminate duplicates in t
-        s = np.unique(t,axis=0)
+        # eliminate duplicates in s
+        s = np.unique(s,axis=0)
         
         # calculate interval vectors and assign names
         v = []
@@ -300,23 +286,28 @@ def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
         
     return(dictionary,ZrelT)
 
-def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean'):
+def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2):
 
     # Create network of pcs from the pcsDictionary - parallel version
+    # col = 2 - interval vector
+    # col = 1 - voice leading - works only for a fixed cardinality
     
     df = pd.read_csv(input_csv)
     df = np.asarray(df)
+    
+    if col == 1: dim = np.asarray(list(map(int,re.findall('\d+',df[0,1])))).shape[0]
+    if col == 2: dim = int(TET/2)
 
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     dnodes.to_csv('nodes.csv',index=False)
     # find edges according to a metric
     
-    vector = np.zeros((df[:,2].shape[0],int(TET/2)))
-    for i in range(df[:,2].shape[0]):
-        vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,2]))))
+    vector = np.zeros((df[:,col].shape[0],dim))
+    for i in range(df[:,col].shape[0]):
+        vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,col]))))
     N = vector.shape[0]
-    index = np.linspace(0,vector.shape[0],vector.shape[0],dtype=int)
+    index = np.linspace(0,vector.shape[0]-1,vector.shape[0],dtype=int)
     # parallelize over interval vector to optimize the vectorization in sklm.pairwise_distances
     ini,end = load_balancing(size, rank, N)
     nsize = end-ini
