@@ -290,13 +290,15 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2):
 
     # Create network of pcs from the pcsDictionary - parallel version
     # col = 2 - interval vector
-    # col = 1 - voice leading - works only for a fixed cardinality
+    # col = 1 - voice leading - works only for a fixed cardinality - NOT ACCURATE for minimal voice leading
     
     df = pd.read_csv(input_csv)
     df = np.asarray(df)
     
     if col == 1: dim = np.asarray(list(map(int,re.findall('\d+',df[0,1])))).shape[0]
-    if col == 2: dim = int(TET/2)
+    if col == 2: 
+        if rank == 0: print('NOT ACCURATE for minimal voice leading - use vLeadNetwork instead!')
+        dim = int(TET/2)
 
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
@@ -437,6 +439,52 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12
         # write csv for alters' edges
         dedges.to_csv('edges_alters.csv',index=False)
     
+    return()
+    
+def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12):
+
+    start=time.time()    
+    # Create network of minimal voice leadings from the pcsDictionary
+    
+    df = pd.read_csv(input_csv)
+    df = np.asarray(df)
+
+    Nc = np.asarray(list(map(int,re.findall('\d+',df[0,1])))).shape[0]
+    last = np.asarray(list(map(int,re.findall('\d+',df[df[:,1].shape[0]-1,1])))).shape[0]
+    if Nc != last:
+        if rank == 0: print('voice leading network only for single cardinality!')
+        sys.exit()
+
+    # write csv for nodes
+    dnodes = pd.DataFrame(df[:,0],columns=['Label'])
+    dnodes.to_csv('nodes.csv',index=False)
+    # find edges according to a metric
+    
+    vector = np.zeros((df[:,1].shape[0],Nc))
+    for i in range(df[:,1].shape[0]):
+        vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,1]))))
+    print('vector in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
+    reset=time.time()
+    N = vector.shape[0]
+    iTET = np.vstack([np.identity(Nc,dtype=int)*TET,-np.identity(Nc,dtype=int)*TET])
+    iTET = np.vstack([iTET,np.zeros(Nc,dtype=int)])
+    dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
+    for i in range(N):
+        for j in range(i,N):
+            diff = np.zeros(2*Nc+1,dtype=float)
+            for l in range(2*Nc+1):
+                r = np.unique(vector[j] - iTET[l])
+                diff[l] = sklm.pairwise.paired_euclidean_distances(r.reshape(1, -1),np.unique(vector[i]).reshape(1, -1))[0]
+            pair = diff.min()
+            if pair <= thup and pair >= thdw:
+                tmp = pd.DataFrame([[str(i),str(j),str(1/pair)]],columns=['Source','Target','Weight'])
+                dedges = dedges.append(tmp)
+
+    print('network in %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+
+    # write csv for edges
+    dedges.to_csv('edges.csv',index=False)
+
     return()
 
 def extractByString(input_csv,label,string):
