@@ -499,6 +499,7 @@ def extractByString(input_csv,label,string):
 def minimalDistance(a,b,TET=12,distance='euclidean'):
     # calculate minimal distance between two chords of same cardinality
     n = a.shape[0]
+    a = np.sort(a)
     iTET = np.vstack([np.identity(n,dtype=int)*TET,-np.identity(n,dtype=int)*TET])
     iTET = np.vstack([iTET,np.zeros(n,dtype=int)])
     diff = np.zeros(2*n+1,dtype=float)
