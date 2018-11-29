@@ -30,14 +30,17 @@ size = comm.Get_size()
 
 class PCSet:
 
-    def __init__(self,pcs,TET=12):
+    def __init__(self,pcs,TET=12,UNI=True):
         # eliminate duplicates - ascending order
-        self.pcs = np.unique(pcs)
+        if UNI == True:
+            self.pcs = np.unique(pcs)
+        else:
+            self.pcs = np.sort(pcs)
         self.TET = TET
 
     def normalOrder(self):
 
-        self.pcs = np.unique(self.pcs)
+        #self.pcs = np.unique(self.pcs)
         
         # trivial sets
         if len(self.pcs) == 1:
@@ -195,7 +198,7 @@ class PCSet:
         return(m21.chord.Chord(np.ndarray.tolist(self.primeForm()[:])).commonName)
     
     def nameWithPitch(self):
-        return(m21.note.Note(self.normalOrder()[0]).nameWithOctave+' '+self.commonName())
+        return(m21.note.Note(self.pcs[0]).nameWithOctave+' '+self.commonName())
     
     def displayNotes(self,xml=False,prime=False):
         s = m21.stream.Stream()
@@ -458,6 +461,7 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12):
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     dnodes.to_csv('nodes.csv',index=False)
+    dnodes.to_json('nodes.json')
     # find edges according to a metric
     
     vector = np.zeros((df[:,1].shape[0],Nc))
@@ -491,3 +495,16 @@ def extractByString(input_csv,label,string):
     # extract rows of dictionary according to a particular string in column 'label'
     df = pd.read_csv(input_csv)
     return(df[df[label].str.contains(string)])
+    
+def minimalDistance(a,b,TET=12,distance='euclidean'):
+    # calculate minimal distance between two chords of same cardinality
+    n = a.shape[0]
+    iTET = np.vstack([np.identity(n,dtype=int)*TET,-np.identity(n,dtype=int)*TET])
+    iTET = np.vstack([iTET,np.zeros(n,dtype=int)])
+    diff = np.zeros(2*n+1,dtype=float)
+    for i in range(2*n+1):
+        r = np.sort(b - iTET[i])
+        diff[i] = sklm.pairwise_distances(a.reshape(1, -1),r.reshape(1, -1),metric=distance)[0]
+    
+    return(diff.min())
+    
