@@ -1,7 +1,7 @@
 #
 # pcsPy
 #
-# A python library for pitch class set classification and manipulation
+# A python library for pitch class set classification and manipulation, and network construction and analysis
 #
 # Copyright (C) 2018 Marco Buongiorno Nardelli
 # http://www.sonifipy.com, http://www.materialssoundmusic.com, mbn@unt.edu
@@ -31,7 +31,7 @@ size = comm.Get_size()
 class PCSet:
 
     def __init__(self,pcs,TET=12,UNI=True):
-        # eliminate duplicates - ascending order
+        # chose if to eliminate duplicates - ascending order
         if UNI == True:
             self.pcs = np.unique(pcs)
         else:
@@ -223,7 +223,7 @@ def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
         prime = []
         commonName = []
         
-    # generate all possible combinations of n integers
+    # generate all possible combinations of n integers or of the row in argument
     if row:
         a = np.asarray(list(iter.combinations(a,Nc)))
     else:
@@ -298,8 +298,8 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2):
     df = pd.read_csv(input_csv)
     df = np.asarray(df)
     
-    if col == 1: dim = np.asarray(list(map(int,re.findall('\d+',df[0,1])))).shape[0]
-    if col == 2: 
+    if col == 2: dim = np.asarray(list(map(int,re.findall('\d+',df[0,col])))).shape[0]
+    if col == 1: 
         if rank == 0: print('NOT ACCURATE for minimal voice leading - use vLeadNetwork instead!')
         dim = int(TET/2)
 
