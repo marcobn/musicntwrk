@@ -491,9 +491,12 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12):
 
     return()
 
-def extractByString(input_csv,label,string):
+def extractByString(name,label,string):
     # extract rows of dictionary according to a particular string in column 'label'
-    df = pd.read_csv(input_csv)
+    if type(name) is str: 
+        df = pd.read_csv(name)
+    else:
+        df = name
     return(df[df[label].str.contains(string)])
     
 def minimalDistance(a,b,TET=12,distance='euclidean'):
