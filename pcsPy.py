@@ -198,7 +198,7 @@ class PCSet:
         return(m21.chord.Chord(np.ndarray.tolist(self.primeForm()[:])).commonName)
     
     def nameWithPitch(self):
-        return(m21.note.Note(self.pcs[0]).nameWithOctave+' '+self.commonName())
+        return(m21.note.Note(self.normalOrder()[0]).nameWithOctave+' '+self.commonName())
     
     def displayNotes(self,xml=False,prime=False):
         s = m21.stream.Stream()
@@ -444,7 +444,7 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12
     
     return()
     
-def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12):
+def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True):
 
     start=time.time()    
     # Create network of minimal voice leadings from the pcsDictionary
@@ -460,14 +460,14 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12):
 
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
-    dnodes.to_csv('nodes.csv',index=False)
-    dnodes.to_json('nodes.json')
+    if w: dnodes.to_csv('nodes.csv',index=False)
+    #dnodes.to_json('nodes.json')
     # find edges according to a metric
     
     vector = np.zeros((df[:,1].shape[0],Nc))
     for i in range(df[:,1].shape[0]):
         vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,1]))))
-    print('vector in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
+    #print('vector in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
     reset=time.time()
     N = vector.shape[0]
     iTET = np.vstack([np.identity(Nc,dtype=int)*TET,-np.identity(Nc,dtype=int)*TET])
@@ -484,12 +484,12 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12):
                 tmp = pd.DataFrame([[str(i),str(j),str(1/pair)]],columns=['Source','Target','Weight'])
                 dedges = dedges.append(tmp)
 
-    print('network in %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+    #print('network in %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
 
     # write csv for edges
-    dedges.to_csv('edges.csv',index=False)
+    if w: dedges.to_csv('edges.csv',index=False)
 
-    return()
+    return(dnodes,dedges)
 
 def extractByString(name,label,string):
     # extract rows of dictionary according to a particular string in column 'label'
