@@ -40,7 +40,7 @@ class PCSet:
 
     def normalOrder(self):
 
-        #self.pcs = np.unique(self.pcs)
+        self.pcs = np.sort(self.pcs)
         
         # trivial sets
         if len(self.pcs) == 1:
@@ -177,7 +177,7 @@ class PCSet:
         if self.TET != 12:
             print('Jazz chords defined only for 12-TET')
             return()
-        jazzDict = {'[047]':'Maj','[037]':'min','[036]':'dim','[048]':'+','[046]':'b5','[027]':'add2','[057]':'add4',
+        jazzDict = {'[047]':'Maj','[037]':'min','[036]':'dim','[048]':'+','[046]':'b5','[027]':'sus','[057]':'add4',
                     '[0237]':'m(add2)','[0357]':'m(add4)','[0247]':'(add2)','[0457]':'(add4)','[0369]':'dim','[03610]':'m7b5',
                     '[0379]':'m6','[03710]':'m7','[0479]':'6','[04710]':'7','[04711]':'Maj7','[03711]':'-Maj7','[04810]':'7+',
                     '[04811]':'Maj7+','[02379]':'m6/9','[023710]':'m9','[014710]':'m7b9','[024710]':'9','[023710]':'9b5',
@@ -215,7 +215,7 @@ class PCSet:
 ########### Network functions ###########
 
 def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
-    
+
     # Create dictionary of pcs from a given cardinality Nc
     name = prime = commonName = None
     if rank == 0:
@@ -251,7 +251,7 @@ def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
     if rank == 0:
         # eliminate duplicates in s
         s = np.unique(s,axis=0)
-        
+
         # calculate interval vectors and assign names
         v = []
         for i in range(s.shape[0]):
