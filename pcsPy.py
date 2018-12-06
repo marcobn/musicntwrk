@@ -243,6 +243,8 @@ def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
             saux[i,:] = p.primeForm()[:]
         elif order == 1:
             saux[i,:] = p.normalOrder()[:]
+        elif order == 2:
+            saux[i,:] = p.normal0Order()[:]
         else:
             if rank == 0: print('no ordering specified')
     comm.Barrier()
@@ -444,7 +446,7 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12
     
     return()
     
-def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True):
+def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean'):
 
     start=time.time()    
     # Create network of minimal voice leadings from the pcsDictionary
@@ -462,29 +464,21 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True):
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     if w: dnodes.to_csv('nodes.csv',index=False)
     #dnodes.to_json('nodes.json')
+    
     # find edges according to a metric
     
     vector = np.zeros((df[:,1].shape[0],Nc))
     for i in range(df[:,1].shape[0]):
         vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,1]))))
-    #print('vector in %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
     reset=time.time()
     N = vector.shape[0]
-    iTET = np.vstack([np.identity(Nc,dtype=int)*TET,-np.identity(Nc,dtype=int)*TET])
-    iTET = np.vstack([iTET,np.zeros(Nc,dtype=int)])
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
     for i in range(N):
         for j in range(i,N):
-            diff = np.zeros(2*Nc+1,dtype=float)
-            for l in range(2*Nc+1):
-                r = np.unique(vector[j] - iTET[l])
-                diff[l] = sklm.pairwise.paired_euclidean_distances(r.reshape(1, -1),np.unique(vector[i]).reshape(1, -1))[0]
-            pair = diff.min()
+            pair = minimalDistance(vector[i],vector[j],TET,distance)
             if pair <= thup and pair >= thdw:
                 tmp = pd.DataFrame([[str(i),str(j),str(1/pair)]],columns=['Source','Target','Weight'])
                 dedges = dedges.append(tmp)
-
-    #print('network in %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
 
     # write csv for edges
     if w: dedges.to_csv('edges.csv',index=False)
