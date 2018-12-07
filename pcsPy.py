@@ -291,7 +291,7 @@ def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
         
     return(dictionary,ZrelT)
 
-def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2):
+def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,prob=1):
 
     # Create network of pcs from the pcsDictionary - parallel version
     # col = 2 - interval vector
@@ -326,7 +326,15 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2):
         tmp['Source'] = (i+ini)*np.ones(vector.shape[0],dtype=int)[:]
         tmp['Target'] = index[:]
         tmp['Weight'] = pair[i,:]
-        dedges = dedges.append(tmp)
+        if prob == 1:
+            dedges = dedges.append(tmp)
+        else:
+            np.random.seed(int(time.time()))
+            if np.random.rand() >= prob:
+                dedges = dedges.append(tmp)
+            else:
+                pass
+            
     dedges = dedges.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
     dedges['Weight'] = dedges['Weight'].apply(lambda x: 1/x)
     # do some cleaning
@@ -446,7 +454,7 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12
     
     return()
     
-def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean'):
+def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',prob=1):
 
     start=time.time()    
     # Create network of minimal voice leadings from the pcsDictionary
@@ -473,12 +481,22 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean')
     reset=time.time()
     N = vector.shape[0]
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
+    np.random.seed(int(time.process_time()*10000))
     for i in range(N):
         for j in range(i,N):
             pair = minimalDistance(vector[i],vector[j],TET,distance)
             if pair <= thup and pair >= thdw:
-                tmp = pd.DataFrame([[str(i),str(j),str(1/pair)]],columns=['Source','Target','Weight'])
-                dedges = dedges.append(tmp)
+                if prob == 1:
+                    tmp = pd.DataFrame([[str(i),str(j),str(1/pair)]],columns=['Source','Target','Weight'])
+                    dedges = dedges.append(tmp)
+                else:
+                    r = np.random.rand()
+                    print(r,prob)
+                    if r >= prob:
+                        tmp = pd.DataFrame([[str(i),str(j),str(1/pair)]],columns=['Source','Target','Weight'])
+                        dedges = dedges.append(tmp)
+                    else:
+                        pass
 
     # write csv for edges
     if w: dedges.to_csv('edges.csv',index=False)
