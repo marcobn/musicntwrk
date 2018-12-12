@@ -462,36 +462,55 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',
     df = pd.read_csv(input_csv)
     df = np.asarray(df)
 
-    Nc = np.asarray(list(map(int,re.findall('\d+',df[0,1])))).shape[0]
-    last = np.asarray(list(map(int,re.findall('\d+',df[df[:,1].shape[0]-1,1])))).shape[0]
-    if Nc != last:
-        if rank == 0: print('voice leading network only for single cardinality!')
-        sys.exit()
+#    Nc = np.asarray(list(map(int,re.findall('\d+',df[0,1])))).shape[0]
+#    last = np.asarray(list(map(int,re.findall('\d+',df[df[:,1].shape[0]-1,1])))).shape[0]
+#    if Nc != last:
+#        if rank == 0: print('voice leading network only for single cardinality!')
+#        sys.exit()
 
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     if w: dnodes.to_csv('nodes.csv',index=False)
     #dnodes.to_json('nodes.json')
     
-    # find edges according to a metric
+    # find edges according to a metric - allows for non-bijective voice leading
     
-    vector = np.zeros((df[:,1].shape[0],Nc))
-    for i in range(df[:,1].shape[0]):
-        vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,1]))))
-    reset=time.time()
-    N = vector.shape[0]
+#    vector = np.zeros((df[:,1].shape[0],Nc))
+#    for i in range(df[:,1].shape[0]):
+#        vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,1]))))
+#    reset=time.time()
+    N = df[:,1].shape[0]
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
     np.random.seed(int(time.process_time()*10000))
     for i in range(N):
+        vector_i  = np.asarray(list(map(int,re.findall('\d+',df[i,1]))))
         for j in range(i,N):
-            pair = minimalDistance(vector[i],vector[j],TET,distance)
+            vector_j  = np.asarray(list(map(int,re.findall('\d+',df[j,1]))))
+            if vector_i.shape[0] == vector_j.shape[0]:
+                pair = minimalDistance(vector_i,vector_j,TET,distance)
+            else:
+                if vector_i.shape[0] > vector_j.shape[0]:
+                    a = vector_i 
+                    b = vector_j
+                else:
+                    b = vector_i 
+                    a = vector_j
+                ndif = np.sort(np.array([a.shape[0],b.shape[0]]))[1] - np.sort(np.array([a.shape[0],b.shape[0]]))[0]
+                c = np.asarray(list(iter.combinations_with_replacement(b,ndif)))
+                r = np.zeros((c.shape[0],a.shape[0]))
+                for l in range(c.shape[0]):
+                    r[l,:b.shape[0]] = b
+                    r[l,b.shape[0]:] = c[l]
+                dist = np.zeros(r.shape[0])
+                for l in range(r.shape[0]):
+                    dist[l]=minimalDistance(a,r[l])
+                pair = min(dist)
             if pair <= thup and pair >= thdw:
                 if prob == 1:
                     tmp = pd.DataFrame([[str(i),str(j),str(1/pair)]],columns=['Source','Target','Weight'])
                     dedges = dedges.append(tmp)
                 else:
                     r = np.random.rand()
-                    print(r,prob)
                     if r >= prob:
                         tmp = pd.DataFrame([[str(i),str(j),str(1/pair)]],columns=['Source','Target','Weight'])
                         dedges = dedges.append(tmp)
@@ -512,7 +531,7 @@ def extractByString(name,label,string):
     return(df[df[label].str.contains(string)])
     
 def minimalDistance(a,b,TET=12,distance='euclidean'):
-    # calculate minimal distance between two chords of same cardinality
+    # calculate minimal distance between two pcs of same cardinality
     n = a.shape[0]
     if a.shape[0] != b.shape[0]:
         print('dimension of arrays must be equal')
@@ -527,3 +546,30 @@ def minimalDistance(a,b,TET=12,distance='euclidean'):
     
     return(diff.min())
     
+def minimalNoBijDistance(a,b):
+    # calculate minimal distance between two pcs of different cardinality
+    ndif = np.sort(np.array([a.shape[0],b.shape[0]]))[1] - np.sort(np.array([a.shape[0],b.shape[0]]))[0]
+    c = np.asarray(list(iter.combinations_with_replacement(b,ndif)))
+    r = np.zeros((c.shape[0],a.shape[0]))
+    for l in range(c.shape[0]):
+        r[l,:b.shape[0]] = b
+        r[l,b.shape[0]:] = c[l]
+    dist = np.zeros(r.shape[0])
+    for l in range(r.shape[0]):
+        dist[l]=minimalDistance(a,r[l])
+        
+    return(min(dist))
+
+def opsDictionary(distance):
+    # define the dictionary of O({n_i}) distance operators
+    opsDict={1.0:'O(1)',1.4142:'O(1,1)',1.7321:'O(1,1,1)',2.0:'O(2)/O(1,1,1,1)',2.2361:'O(1,2)',2.4495:'O(1,1,2)',
+        2.8284:'O(2,2)',3.0:'O(1,2,2)/O(3)',3.1623:'O(1,3)/O(1,1,2,2)',3.3166:'O(1,1,3)',3.4641:'O(2,2,2)',
+        3.6056:'O(2,3)/O(1,2,2,2)',3.7417:'O(1,2,3)',2.6458:'O(1,1,1,2)',4.0:'O(2,2,2,2)',4.2426:'O(1,2,2,3)',
+        3.873:'O(1,1,2,3)',4.5826:'O(2,2,2,3)',5.099:'O(2,2,3,3)',4.7958:'O(1,2,3,3)',4.4721:'O(1,1,3,3)',
+        5.2915:'O(1,3,3,3)',5.5678:'O(2,3,3,3)',6.0:'O(3,3,3,3)'}
+    try:
+        Oname = opsDict[np.round(distance,4)]
+    except:
+        print('Ops not found')
+        Oname=None
+    return(Oname)
