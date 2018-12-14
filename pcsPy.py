@@ -197,8 +197,12 @@ class PCSet:
     def commonNamePrime(self):
         return(m21.chord.Chord(np.ndarray.tolist(self.primeForm()[:])).commonName)
     
-    def nameWithPitch(self):
+    def nameWithPitchOrd(self):
         return(m21.note.Note(self.normalOrder()[0]).nameWithOctave+' '+self.commonName())
+
+    def nameWithPitch(self):
+        return(m21.note.Note(self.pcs[0]).nameWithOctave+' '+self.commonName())
+
     
     def displayNotes(self,xml=False,prime=False):
         s = m21.stream.Stream()
@@ -570,6 +574,5 @@ def opsDictionary(distance):
     try:
         Oname = opsDict[np.round(distance,4)]
     except:
-        print('Ops not found')
         Oname=None
     return(Oname)
