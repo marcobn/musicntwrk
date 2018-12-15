@@ -17,6 +17,8 @@ import numpy as np
 import itertools as iter
 import pandas as pd
 import sklearn.metrics as sklm
+import networkx as nx
+import community as cm
 import music21 as m21
 from mpi4py import MPI
 
@@ -526,6 +528,92 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',
 
     return(dnodes,dedges)
 
+def scoreNetwork(seq,TET=12):
+    # build the directional network of chord progressions from any score chord sequence in musxml format
+    ''' 
+    example from the corpus of bach chorales:
+        # read score
+        bachChorale = m21.corpus.parse('bwv66.6')
+        # extract chords:
+        chords = bachChorale.chordify()
+        seq = []
+        for c in chords.recurse().getElementsByClass('Chord'):
+            seq.append(c.normalOrder)
+        # seq is the chord sequence
+    '''
+    # build the directional network of the full progression in the chorale
+
+    dedges = pd.DataFrame(None,columns=['Source','Target','Weight','Label'])
+    dnodes = pd.DataFrame(None,columns=['Label'])
+    for n in range(len(seq)):
+        p = PCSet(np.asarray(seq[n]),TET)
+        nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
+        nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
+        dnodes = dnodes.append(nameseq)
+    df = np.asarray(dnodes)
+    dnodes = pd.DataFrame(None,columns=['Label'])
+    dff,idx = np.unique(df,return_inverse=True)
+    for n in range(dff.shape[0]):
+        nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
+        dnodes = dnodes.append(nameseq)
+
+    for n in range(1,len(seq)):
+        if len(seq[n-1]) == len(seq[n]):
+            a = np.asarray(seq[n-1])
+            b = np.asarray(seq[n])
+            pair = minimalDistance(a,b)
+        else:
+            if len(seq[n-1]) > len(seq[n]):
+                a = np.asarray(seq[n-1])
+                b = np.asarray(seq[n])
+                pair = minimalNoBijDistance(a,b)
+            else: 
+                b = np.asarray(seq[n-1])
+                a = np.asarray(seq[n])
+                pair = minimalNoBijDistance(a,b)
+        if pair != 0:
+            tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),opsDictionary(pair)]],
+                               columns=['Source','Target','Weight','Label'])
+            dedges = dedges.append(tmp)
+    
+    # evaluate average degree and modularity
+    gbch = nx.from_pandas_dataframe(dedges,'Source','Target',['Weight','Label'],create_using=nx.DiGraph())
+    gbch_u = nx.from_pandas_dataframe(dedges,'Source','Target',['Weight','Label'])
+    # modularity 
+    part = cm.best_partition(gbch_u)
+    modul = cm.modularity(part,gbch_u)
+    # average degree
+    nnodes=gbch.number_of_nodes()
+    avgdeg = sum(gbch.in_degree().values())/float(nnodes)
+        
+    return(dnodes,dedges,avgdeg,modul)
+
+def scoreDictionary(seq,TET=12):
+    # build the dictionary of pcs in the score
+    s = Remove(seq)
+    v = []
+    name = []
+    prime = []
+    for i in range(len(s)):
+        p = PCSet(PCSet(np.asarray(s[i][:]),TET).transpose(0))
+        v.append(p.intervalVector())
+        name.append(''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames))
+        prime.append(np.array2string(p.normalOrder(),separator=',').replace(" ",""))
+
+    vector = np.asarray(v)
+    name = np.asarray(name)
+
+    # Create dictionary of pitch class sets
+    reference = []
+    for n in range(len(name)):
+        entry = [name[n],prime[n],
+                np.array2string(vector[n,:],separator=',').replace(" ","")]
+        reference.append(entry)
+
+    dictionary = pd.DataFrame(reference,columns=['class','pcs','interval'])
+    
+    return(dictionary)
+
 def extractByString(name,label,string):
     # extract rows of dictionary according to a particular string in column 'label'
     if type(name) is str: 
@@ -576,3 +664,11 @@ def opsDictionary(distance):
     except:
         Oname=None
     return(Oname)
+    
+def Remove(duplicate): 
+    # remove duplicates from list
+    final_list = [] 
+    for num in duplicate: 
+        if num not in final_list: 
+            final_list.append(num) 
+    return final_list 
