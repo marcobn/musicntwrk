@@ -4,7 +4,7 @@
 # A python library for pitch class set classification and manipulation, and network construction and analysis
 #
 # Copyright (C) 2018 Marco Buongiorno Nardelli
-# http://www.sonifipy.com, http://www.materialssoundmusic.com, mbn@unt.edu
+# http://www.materialssoundmusic.com, mbn@unt.edu
 #
 # This file is distributed under the terms of the
 # GNU General Public License. See the file `License'
@@ -220,7 +220,7 @@ class PCSet:
 
 ########### Network functions ###########
 
-def pcsDictionary(Nc,order=0,TET=12,row=False,a=np.array(None)):
+def pcsDictionary(Nc,order=0,TET=12,row=False,a=None):
 
     # Create dictionary of pcs from a given cardinality Nc
     name = prime = commonName = None
@@ -624,6 +624,8 @@ def extractByString(name,label,string):
     
 def minimalDistance(a,b,TET=12,distance='euclidean'):
     # calculate minimal distance between two pcs of same cardinality
+    a = np.asarray(a)
+    b = np.asarray(b)
     n = a.shape[0]
     if a.shape[0] != b.shape[0]:
         print('dimension of arrays must be equal')
@@ -638,8 +640,10 @@ def minimalDistance(a,b,TET=12,distance='euclidean'):
     
     return(diff.min())
     
-def minimalNoBijDistance(a,b):
+def minimalNoBijDistance(a,b,TET=12,distance='euclidean'):
     # calculate minimal distance between two pcs of different cardinality
+    a = np.asarray(a)
+    b = np.asarray(b)
     ndif = np.sort(np.array([a.shape[0],b.shape[0]]))[1] - np.sort(np.array([a.shape[0],b.shape[0]]))[0]
     c = np.asarray(list(iter.combinations_with_replacement(b,ndif)))
     r = np.zeros((c.shape[0],a.shape[0]))
@@ -648,7 +652,7 @@ def minimalNoBijDistance(a,b):
         r[l,b.shape[0]:] = c[l]
     dist = np.zeros(r.shape[0])
     for l in range(r.shape[0]):
-        dist[l]=minimalDistance(a,r[l])
+        dist[l]=minimalDistance(a,r[l],TET,distance)
         
     return(min(dist))
 
