@@ -1,5 +1,8 @@
 /TESTS/
 /OLD/
+/PAPER/
 /__pycache__/
 /.ipynb_checkpoints/
 *.pyc
+.gitignore
+.DS_Store
