@@ -1,11 +1,11 @@
 
 ## pcsPy
 
- A python library for pitch class set classification and the generation of networks in 
- generalized musical spaces
+ A python library for pitch class set classification and manipulation, and
+ the generation of networks in generalized musical spaces
 
  Copyright (C) 2018 Marco Buongiorno Nardelli
- http://www.sonifipy.com, http://www.materialssoundmusic.com, mbn@unt.edu
+ http://www.materialssoundmusic.com, mbn@unt.edu
 
  This file is distributed under the terms of the
  GNU General Public License. See the file `License'
