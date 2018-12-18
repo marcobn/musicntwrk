@@ -1,5 +1,5 @@
 ##
-## PCSetPy
+## pcsPy
 ##
  A python library for pitch class set classification and manipulation
 

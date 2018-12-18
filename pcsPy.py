@@ -33,7 +33,11 @@ size = comm.Get_size()
 class PCSet:
 
     def __init__(self,pcs,TET=12,UNI=True):
-        # chose if to eliminate duplicates - ascending order
+        '''
+        •	pcs (int)– pitch class set as list or numpy array
+        •	TET (int)- number of allowed pitches in the totality of the musical space (temperament). Default = 12 tones equal temperament
+        •	UNI (logical)– if True, eliminate duplicate pitches (default)
+        '''
         if UNI == True:
             self.pcs = np.unique(pcs)
         else:
@@ -41,7 +45,9 @@ class PCSet:
         self.TET = TET
 
     def normalOrder(self):
-
+        '''
+        •	Order the pcs according to the most compact ascending scale in pitch-class space that spans less than an octave by cycling permutations.
+        '''
         self.pcs = np.sort(self.pcs)
         
         # trivial sets
@@ -75,18 +81,33 @@ class PCSet:
         return(pcs_norm)
 
     def normal0Order(self):
+        '''
+        •	As normal order, transposed so that the first pitch is 0
+        '''
         return((self.normalOrder()-self.normalOrder()[0])%self.TET)
 
     def transpose(self,t=0):
+        '''
+        •	Transposition by t (int) units (modulo TET)
+        '''
         return((self.pcs+t)%self.TET)
     
     def zeroOrder(self):
+        '''
+        •	transposed so that the first pitch is 0
+        '''
         return((self.pcs-self.pcs[0])%self.TET)
 
     def inverse(self):
+        '''
+        •	inverse operation: (-pcs modulo TET)
+        '''
         return(-self.pcs%self.TET)
 
     def primeForm(self):
+        '''
+        •	most compact normal 0 order between pcs and its inverse
+        '''
         s_orig = self.pcs
         sn = np.sum((self.normalOrder()-self.normalOrder()[0])%self.TET)
         self.pcs = self.inverse()
@@ -101,6 +122,9 @@ class PCSet:
         
 
     def intervalVector(self):
+        '''
+        •	 total interval content of the pcs
+        '''
         npc = int((len(self.pcs)**2-len(self.pcs))/2)
         itv = np.zeros(npc,dtype=int)
         n= 0
@@ -115,9 +139,15 @@ class PCSet:
         return(np.histogram(itv,bins)[0])
 
     def LISVector(self):
+        '''
+        •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
+        '''
         return((np.roll(self.pcs,-1)-self.pcs)%self.TET)
 
     def forteClass(self):
+        '''
+        •	Name of pcs according to the Forte classification scheme (only for TET=12)
+        '''
         if self.TET != 12:
             print('Forte class defined only for 12-TET')
             return()
@@ -176,6 +206,9 @@ class PCSet:
         return(Fname)
         
     def jazzChord(self):
+        '''
+        •	Name of pcs as chord in a jazz chart (only for TET=12 and cardinalities ≤ 7)
+        '''
         if self.TET != 12:
             print('Jazz chords defined only for 12-TET')
             return()
@@ -194,19 +227,34 @@ class PCSet:
         return(Fname)
     
     def commonName(self):
+        '''
+        •	Display common name of pcs (music21 function - only for TET=12)
+        '''
         return(m21.chord.Chord(np.ndarray.tolist(self.normalOrder()[:])).commonName)
     
     def commonNamePrime(self):
+        '''
+        •	As above, for prime forms
+        '''
         return(m21.chord.Chord(np.ndarray.tolist(self.primeForm()[:])).commonName)
     
     def nameWithPitchOrd(self):
+        '''
+        •	Name of chord with first pitch of pcs in normal order
+        '''
         return(m21.note.Note(self.normalOrder()[0]).nameWithOctave+' '+self.commonName())
 
     def nameWithPitch(self):
+        '''
+        •	Name of chord with first pitch of pcs
+        '''
         return(m21.note.Note(self.pcs[0]).nameWithOctave+' '+self.commonName())
 
     
     def displayNotes(self,xml=False,prime=False):
+        '''
+        •	Display pcs in score in musicxml format. If prime is True, display the prime form.
+        '''
         s = m21.stream.Stream()
         fac = self.TET/12
         for i in range(self.pcs.shape[0]):
@@ -222,7 +270,14 @@ class PCSet:
 
 def pcsDictionary(Nc,order=0,TET=12,row=False,a=None):
 
-    # Create dictionary of pcs from a given cardinality Nc
+    '''
+    •	Generate the dictionary of all possible pcs of a given cardinality in a generalized musical space of TET pitches
+    •	Nc (int)– cardinality
+    •	order (logical)– if 0 returns pcs in prime form, if 1 retrns pcs in normal order, if 2, returns pcs in normal 0 order
+    •	row (logical)– if True build dictionary from tone row, if False, build dictionary from all combinatorial pcs of Nc cardinality given the totality of TET.
+    •	if row = True, a is the list of pitches in the tone row (int)
+    •	returns the dictionary as pandas DataFrame and the list of all Z-related pcs
+    '''
     name = prime = commonName = None
     if rank == 0:
         name = []
@@ -298,6 +353,16 @@ def pcsDictionary(Nc,order=0,TET=12,row=False,a=None):
     return(dictionary,ZrelT)
 
 def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,prob=1):
+    
+    '''
+    •	generate the network of pcs based on distances between interval vectors
+    •	input_csv (str)– file containing the dictionary generated by pcsNetwork
+    •	thup, thdw (float)– upper and lower thresholds for edge creation
+    •	distance (str)– choice of norm in the musical space, default is 'euclidean'
+    •	col = 2 – metric based on interval vector, col = 1 can be used for voice leading networks in spaces of fixed cardinality – NOT RECOMMENDED
+    •	prob (float)– if ≠ 1, defines the probability of acceptance of any given edge
+    •	in output it writes the nodes.csv and edges.csv as separate files in csv format
+    '''
 
     # Create network of pcs from the pcsDictionary - parallel version
     # col = 2 - interval vector
@@ -365,6 +430,14 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
     return()
 
 def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12,distance='euclidean'):
+    
+    '''
+    •	network generated from a focal node (ego) and the nodes to whom ego is directly connected to (alters)
+    •	label (str)– label of the ego node
+    •	thup_e, thdw_e (float) - upper and lower thresholds for edge creation from ego node
+    •	thup, thdw (float)– upper and lower thresholds for edge creation among alters
+    •	in output it writes the nodes_ego.csv, edges_ego.csv and edges_alters.csv as separate files in csv format
+    '''
     
     if thdw_e < 1e-9:
         print('ego should not link to itself')
@@ -461,6 +534,14 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12
     return()
     
 def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',prob=1):
+    
+    '''
+    •	generation of the network of all minimal voice leadings in a generalized musical space of TET pitches – based on the minimal distance operators
+    •	input_csv (str)– file containing the dictionary generated by pcsNetwork
+    •	thup, thdw (float)– upper and lower thresholds for edge creation
+    •	w (logical) – if True it writes the nodes.csv and edges.csv files in csv format
+    •	returns nodes and edges tables as pandas DataFrames
+    '''
 
     start=time.time()    
     # Create network of minimal voice leadings from the pcsDictionary
@@ -529,8 +610,11 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',
     return(dnodes,dedges)
 
 def scoreNetwork(seq,TET=12):
-    # build the directional network of chord progressions from any score chord sequence in musxml format
+    
     ''' 
+    •	generates the directional network of chord progressions from any score in musicxml format
+    •	seq (int) – list of pcs for each chords extracted from the score
+
     example from the corpus of bach chorales:
         # read score
         bachChorale = m21.corpus.parse('bwv66.6')
@@ -589,7 +673,9 @@ def scoreNetwork(seq,TET=12):
     return(dnodes,dedges,avgdeg,modul)
 
 def scoreDictionary(seq,TET=12):
-    # build the dictionary of pcs in the score
+    '''
+    •	build the dictionary of pcs in any score in musicxml format
+    '''
     s = Remove(seq)
     v = []
     name = []
@@ -615,7 +701,12 @@ def scoreDictionary(seq,TET=12):
     return(dictionary)
 
 def extractByString(name,label,string):
-    # extract rows of dictionary according to a particular string in column 'label'
+    '''
+    •	extract rows of any dictionary (from csv file or pandas DataFrame) according to a particular string in column 'label'
+    •	name (str or pandas DataFrame) – name of the dictionary
+    •	string (str) – string to find in column
+    •	label (str) – name of column of string
+    '''
     if type(name) is str: 
         df = pd.read_csv(name)
     else:
@@ -623,7 +714,10 @@ def extractByString(name,label,string):
     return(df[df[label].str.contains(string)])
     
 def minimalDistance(a,b,TET=12,distance='euclidean'):
-    # calculate minimal distance between two pcs of same cardinality
+    '''
+    •	calculates the minimal distance between two pcs of same cardinality (bijective)
+    •	a,b (int) – pcs as numpy arrays or lists
+    '''
     a = np.asarray(a)
     b = np.asarray(b)
     n = a.shape[0]
@@ -641,7 +735,10 @@ def minimalDistance(a,b,TET=12,distance='euclidean'):
     return(diff.min())
     
 def minimalNoBijDistance(a,b,TET=12,distance='euclidean'):
-    # calculate minimal distance between two pcs of different cardinality
+    '''
+    •	calculates the minimal distance between two pcs of different cardinality (non bijective) – uses minimalDistance()
+    •	a,b (int) – pcs as lists or numpy arrays
+    '''
     a = np.asarray(a)
     b = np.asarray(b)
     ndif = np.sort(np.array([a.shape[0],b.shape[0]]))[1] - np.sort(np.array([a.shape[0],b.shape[0]]))[0]
@@ -657,7 +754,7 @@ def minimalNoBijDistance(a,b,TET=12,distance='euclidean'):
     return(min(dist))
 
 def opsDictionary(distance):
-    # define the dictionary of O({n_i}) distance operators
+    # dictionary of names of distance operators
     opsDict={1.0:'O(1)',1.4142:'O(1,1)',1.7321:'O(1,1,1)',2.0:'O(2)/O(1,1,1,1)',2.2361:'O(1,2)',2.4495:'O(1,1,2)',
         2.8284:'O(2,2)',3.0:'O(1,2,2)/O(3)',3.1623:'O(1,3)/O(1,1,2,2)',3.3166:'O(1,1,3)',3.4641:'O(2,2,2)',
         3.6056:'O(2,3)/O(1,2,2,2)',3.7417:'O(1,2,3)',2.6458:'O(1,1,1,2)',4.0:'O(2,2,2,2)',4.2426:'O(1,2,2,3)',
@@ -670,7 +767,7 @@ def opsDictionary(distance):
     return(Oname)
     
 def Remove(duplicate): 
-    # remove duplicates from list
+    # function to remove duplicates from list
     final_list = [] 
     for num in duplicate: 
         if num not in final_list: 
