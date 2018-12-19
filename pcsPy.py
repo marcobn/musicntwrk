@@ -427,7 +427,7 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
     elif size == 1:
         os.rename('edges'+str(rank)+'.csv','edges.csv')
 
-    return()
+    return(dnodes,dedges)
 
 def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12,distance='euclidean'):
     
@@ -531,7 +531,7 @@ def pcsEgoNetwork(label,input_csv,thup_e=5.0,thdw_e=0.1,thup=1.5,thdw=0.1,TET=12
         # write csv for alters' edges
         dedges.to_csv('edges_alters.csv',index=False)
     
-    return()
+    return
     
 def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',prob=1):
     
