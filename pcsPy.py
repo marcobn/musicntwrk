@@ -392,13 +392,14 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
     ini,end = load_balancing(size, rank, N)
     nsize = end-ini
     vaux = scatter_array(vector)
-    pair = sklm.pairwise_distances(vaux,vector,metric=distance)
+    #pair = sklm.pairwise_distances(vaux,vector,metric=distance)
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
     for i in range(nsize):
         tmp = pd.DataFrame(None,columns=['Source','Target','Weight'])
         tmp['Source'] = (i+ini)*np.ones(vector.shape[0],dtype=int)[:]
         tmp['Target'] = index[:]
-        tmp['Weight'] = pair[i,:]
+        tmp['Weight'] = np.sqrt(np.sum((vaux[i,:]-vector[:,:])**2,axis=1))
+        tmp = tmp.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
         if prob == 1:
             dedges = dedges.append(tmp)
         else:
