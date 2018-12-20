@@ -408,6 +408,10 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
             
     dedges = dedges.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
     dedges['Weight'] = dedges['Weight'].apply(lambda x: 1/x)
+    # do some cleaning
+    cond = dedges.Source > dedges.Target
+    dedges.loc[cond, ['Source', 'Target']] = dedges.loc[cond, ['Target', 'Source']].values
+    dedges = dedges.drop_duplicates(subset=['Source', 'Target'])
 
     # write csv for partial edges
     dedges.to_csv('edges'+str(rank)+'.csv',index=False)
