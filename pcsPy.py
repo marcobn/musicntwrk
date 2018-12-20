@@ -415,6 +415,7 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
 
     # write csv for partial edges
     dedges.to_csv('edges'+str(rank)+'.csv',index=False)
+    comm.Barrier()
     
     if size != 1 and rank == 0:
         dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
