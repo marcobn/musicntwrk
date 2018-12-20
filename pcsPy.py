@@ -379,6 +379,8 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     dnodes.to_csv('nodes.csv',index=False)
+    comm.Barrier()
+    
     # find edges according to a metric
     
     vector = np.zeros((df[:,col].shape[0],dim))
