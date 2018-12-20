@@ -390,7 +390,13 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
     ini,end = load_balancing(size, rank, N)
     nsize = end-ini
     vaux = scatter_array(vector)
-    pair = sklm.pairwise_distances(vaux, vector, metric=distance)
+    if rank == 0: t0 = time.time()
+    #pair = next(sklm.pairwise_distances_chunked(vaux,vector,n_jobs=None,metric=distance))
+    pair = sklm.pairwise_distances(vaux,vector,metric=distance)
+
+    if rank == 0:
+        t1 = time.time()
+        print(t1-t0)
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
     for i in range(nsize):
         tmp = pd.DataFrame(None,columns=['Source','Target','Weight'])
@@ -408,10 +414,6 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
             
     dedges = dedges.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
     dedges['Weight'] = dedges['Weight'].apply(lambda x: 1/x)
-    # do some cleaning
-    cond = dedges.Source > dedges.Target
-    dedges.loc[cond, ['Source', 'Target']] = dedges.loc[cond, ['Target', 'Source']].values
-    dedges = dedges.drop_duplicates(subset=['Source', 'Target'])
 
     # write csv for partial edges
     dedges.to_csv('edges'+str(rank)+'.csv',index=False)
@@ -422,6 +424,10 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
             tmp = pd.read_csv('edges'+str(i)+'.csv')
             dedges = dedges.append(tmp)
             os.remove('edges'+str(i)+'.csv')
+        # do some cleaning
+        cond = dedges.Source > dedges.Target
+        dedges.loc[cond, ['Source', 'Target']] = dedges.loc[cond, ['Target', 'Source']].values
+        dedges = dedges.drop_duplicates(subset=['Source', 'Target'])
         # write csv for edges
         dedges.to_csv('edges.csv',index=False)
     elif size == 1:
