@@ -390,13 +390,7 @@ def pcsNetwork(input_csv,thup=1.5,thdw=0.0,TET=12,distance='euclidean',col=2,pro
     ini,end = load_balancing(size, rank, N)
     nsize = end-ini
     vaux = scatter_array(vector)
-    if rank == 0: t0 = time.time()
-    #pair = next(sklm.pairwise_distances_chunked(vaux,vector,n_jobs=None,metric=distance))
     pair = sklm.pairwise_distances(vaux,vector,metric=distance)
-
-    if rank == 0:
-        t1 = time.time()
-        print(t1-t0)
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
     for i in range(nsize):
         tmp = pd.DataFrame(None,columns=['Source','Target','Weight'])
