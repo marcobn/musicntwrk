@@ -549,23 +549,12 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',
     df = pd.read_csv(input_csv)
     df = np.asarray(df)
 
-#    Nc = np.asarray(list(map(int,re.findall('\d+',df[0,1])))).shape[0]
-#    last = np.asarray(list(map(int,re.findall('\d+',df[df[:,1].shape[0]-1,1])))).shape[0]
-#    if Nc != last:
-#        if rank == 0: print('voice leading network only for single cardinality!')
-#        sys.exit()
-
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     if w: dnodes.to_csv('nodes.csv',index=False)
     #dnodes.to_json('nodes.json')
     
     # find edges according to a metric - allows for non-bijective voice leading
-    
-#    vector = np.zeros((df[:,1].shape[0],Nc))
-#    for i in range(df[:,1].shape[0]):
-#        vector[i]  = np.asarray(list(map(int,re.findall('\d+',df[i,1]))))
-#    reset=time.time()
     N = df[:,1].shape[0]
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
     np.random.seed(int(time.process_time()*10000))
