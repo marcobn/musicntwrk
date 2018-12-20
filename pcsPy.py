@@ -251,19 +251,32 @@ class PCSet:
         return(m21.note.Note(self.pcs[0]).nameWithOctave+' '+self.commonName())
 
     
-    def displayNotes(self,xml=False,prime=False):
+    def displayNotes(self,xml=False,prime=False,chord=False):
         '''
-        •	Display pcs in score in musicxml format. If prime is True, display the prime form.
+        •	Display pcs in score in musicxml format. If prime is True, display the prime form. If chord is True 
+            display the note cluster
         '''
-        s = m21.stream.Stream()
         fac = self.TET/12
-        for i in range(self.pcs.shape[0]):
+        if  not chord:
+            s = m21.stream.Stream()
+            for i in range(self.pcs.shape[0]):
+                if prime: 
+                    s.append(m21.note.Note(self.primeForm()[i]/fac+60))
+                else:
+                    s.append(m21.note.Note(self.pcs[i]/fac+60))
+            s.show()
+            if xml: s.show('musicxml')
+        else:
+            ch = []
             if prime: 
-                s.append(m21.note.Note(self.primeForm()[i]/fac+60))
+                for i in range(self.pcs.shape[0]):
+                    ch.append(m21.note.Note(self.primeForm()[i]/fac+60))
             else:
-                s.append(m21.note.Note(self.pcs[i]/fac+60))
-        s.show()
-        if xml: s.show('musicxml')
+                for i in range(self.pcs.shape[0]):
+                    ch.append(m21.note.Note(self.pcs[i]/fac+60))
+            c = m21.chord.Chord(ch)
+            c.show()
+            if xml: c.show('musicxml')
         return
 
 ########### Network functions ###########
