@@ -608,7 +608,7 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',
                     dedges = dedges.append(tmp)
                 else:
                     r = np.random.rand()
-                    if r >= prob:
+                    if r <= prob:
                         tmp = pd.DataFrame([[str(i),str(j),str(1/pair)]],columns=['Source','Target','Weight'])
                         dedges = dedges.append(tmp)
                     else:
@@ -624,16 +624,7 @@ def scoreNetwork(seq,TET=12):
     ''' 
     •	generates the directional network of chord progressions from any score in musicxml format
     •	seq (int) – list of pcs for each chords extracted from the score
-
-    example from the corpus of bach chorales:
-        # read score
-        bachChorale = m21.corpus.parse('bwv66.6')
-        # extract chords:
-        chords = bachChorale.chordify()
-        seq = []
-        for c in chords.recurse().getElementsByClass('Chord'):
-            seq.append(c.normalOrder)
-        # seq is the chord sequence
+    •	use readScore() to import the score data as sequence
     '''
     # build the directional network of the full progression in the chorale
 
@@ -641,8 +632,17 @@ def scoreNetwork(seq,TET=12):
     dnodes = pd.DataFrame(None,columns=['Label'])
     for n in range(len(seq)):
         p = PCSet(np.asarray(seq[n]),TET)
-        nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
-        nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
+        if TET == 12:
+            nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
+            nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
+        elif TET == 24:
+            dict24 = {'C':0,'C~':1,'C#':2,'D-':2,'D`':3,'D':4,'D~':5,'D#':6,'E-':6,'E`':7,'E':8,
+                                'E~':9,'F`':9,'F':10,'F~':11,'F#':12,'G-':12,'G`':13,'G':14,'G~':15,'G#':16,
+                                'A-':16,'A`':17,'A':18,'A~':19,'A#':20,'B-':20,'B`':21,'B':22,'B~':23,'C`':23}
+            tmp = []
+            for i in p.pcs:
+                tmp.append(list(dict24.keys())[list(dict24.values()).index(i)]) 
+            nameseq = pd.DataFrame([[''.join(tmp)]],columns=['Label'])
         dnodes = dnodes.append(nameseq)
     df = np.asarray(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
@@ -685,19 +685,37 @@ def scoreNetwork(seq,TET=12):
 def scoreDictionary(seq,TET=12):
     '''
     •	build the dictionary of pcs in any score in musicxml format
+    •	use readScore() to import the score data as sequence
     '''
     s = Remove(seq)
     v = []
     name = []
     prime = []
-    for i in range(len(s)):
-        p = PCSet(PCSet(np.asarray(s[i][:]),TET).transpose(0))
-        v.append(p.intervalVector())
-        name.append(''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames))
-        prime.append(np.array2string(p.normalOrder(),separator=',').replace(" ",""))
-
-    vector = np.asarray(v)
-    name = np.asarray(name)
+    if TET == 12:
+        for i in range(len(s)):
+            p = PCSet(np.asarray(s[i][:]),TET=TET)
+            v.append(p.intervalVector())
+            name.append(''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames))
+            prime.append(np.array2string(p.normalOrder(),separator=',').replace(" ",""))
+        vector = np.asarray(v)
+        name = np.asarray(name)
+    elif TET == 24:
+        dict24 = {'C':0,'C~':1,'C#':2,'D-':2,'D`':3,'D':4,'D~':5,'D#':6,'E-':6,'E`':7,'E':8,
+                            'E~':9,'F`':9,'F':10,'F~':11,'F#':12,'G-':12,'G`':13,'G':14,'G~':15,'G#':16,
+                            'A-':16,'A`':17,'A':18,'A~':19,'A#':20,'B-':20,'B`':21,'B':22,'B~':23,'C`':23}
+        for i in range(len(s)):
+            p = PCSet(np.asarray(s[i][:]),TET=TET)
+            v.append(p.intervalVector())
+            tmp = []
+            for i in p.pcs:
+                tmp.append(list(dict24.keys())[list(dict24.values()).index(i)]) 
+            name.append(''.join(tmp))
+            prime.append(np.array2string(p.normalOrder(),separator=',').replace(" ",""))
+        vector = np.asarray(v)
+        name = np.asarray(name)
+    else:
+        print('temperament needs to be added')
+        sys.exit()
 
     # Create dictionary of pitch class sets
     reference = []
@@ -709,6 +727,45 @@ def scoreDictionary(seq,TET=12):
     dictionary = pd.DataFrame(reference,columns=['class','pcs','interval'])
     
     return(dictionary)
+
+def readScore(input_xml,TET=12,music21=False):
+    '''
+    •	read a score in musicxml format
+    •	returns the sequence of chords
+    '''
+    if TET == 12:
+        if music21: 
+            score = m21.corpus.parse(input_xml)
+        else:
+            score = m21.converter.parse(input_xml)
+        chords = score.chordify()
+        seq = []
+        for c in chords.recurse().getElementsByClass('Chord'):
+            seq.append(c.normalOrder)
+        return(seq)
+    elif TET == 24:
+        dict24 = {'C':0,'C~':1,'C#':2,'D-':2,'D`':3,'D':4,'D~':5,'D#':6,'E-':6,'E`':7,'E':8,
+                            'E~':9,'F`':9,'F':10,'F~':11,'F#':12,'G-':12,'G`':13,'G':14,'G~':15,'G#':16,
+                            'A-':16,'A`':17,'A':18,'A~':19,'A#':20,'B-':20,'B`':21,'B':22,'B~':23,'C`':23} 
+                            
+        score = m21.converter.parse(input_xml)
+        chords = score.chordify()
+        seq = []
+        for c in chords.recurse().getElementsByClass('Chord'):
+            seq.append(str(c))
+
+        clean = []
+        for n in range(len(seq)):
+            line = ''.join(i for i in seq[n] if not i.isdigit()).split()[1:]
+            c = []
+            for l in line:
+                c.append(dict24[re.sub('>', '', l)])
+            clean.append(PCSet(c,TET=24).normalOrder().tolist())
+        return(clean)
+    else:
+        print('temperament needs to be added')
+        sys.exit()
+    return
 
 def extractByString(name,label,string):
     '''
