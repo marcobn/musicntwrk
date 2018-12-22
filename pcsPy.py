@@ -832,7 +832,14 @@ def opsDictionary(distance):
     except:
         Oname=None
     return(Oname)
-    
+
+def opsDistance(name):
+    # returns distance for given operator
+    opname = np.asarray(' '.join(i for i in name if i.isdigit()).split())
+    opdist = np.sqrt(np.sum(np.asarray([list(map(int, x)) for x in opname]).reshape(1,-1)[0]*
+        np.asarray([list(map(int, x)) for x in opname]).reshape(1,-1)[0]))
+    return(name,opdist)
+        
 def Remove(duplicate): 
     # function to remove duplicates from list
     final_list = [] 
