@@ -933,29 +933,7 @@ def opsName(a,b,TET=12):
     
 def opsCheckByName(a,b,name,TET=12):
     # given two vectors returns check if the connecting operator is the one sought for
-    a = np.sort(a)
-    b = np.sort(b)   
-    d = np.zeros((b.shape[0]),dtype=int) 
-    for n in range(b.shape[0]):
-        c = np.roll(b,n)
-        diff = a-c
-        for i in range(diff.shape[0]):
-            if diff[i] >= int(TET/2):
-                diff[i] -= TET
-            if diff[i] < -int(TET/2):
-                diff[i] += TET
-        diff = np.abs(diff)
-        d[n] = diff.dot(diff)
-    nmin = np.argmin(d)
-    b = np.roll(b,nmin)
-    diff = a-b
-    for i in range(diff.shape[0]):
-        if diff[i] >= int(TET/2):
-            diff[i] -= TET
-        if diff[i] < -int(TET/2):
-            diff[i] += TET
-    diff = np.sort(np.abs(diff))
-    opname = 'O('+np.array2string(np.trim_zeros(diff),separator=',').replace(" ","").replace("[","").replace("]","")+')'
+    opname = opsName(a,b,TET)
     if opname != name:
         return(False)
     else:
