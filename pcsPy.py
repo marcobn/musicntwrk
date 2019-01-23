@@ -584,7 +584,7 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',
         for j in range(i,N):
             vector_j  = np.asarray(list(map(int,re.findall('\d+',df[j,1]))))
             if vector_i.shape[0] == vector_j.shape[0]:
-                pair = minimalDistance(vector_i,vector_j,TET,distance)
+                pair,_ = minimalDistance(vector_i,vector_j,TET,distance)
             else:
                 if vector_i.shape[0] > vector_j.shape[0]:
                     a = vector_i 
@@ -600,7 +600,7 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',
                     r[l,b.shape[0]:] = c[l]
                 dist = np.zeros(r.shape[0])
                 for l in range(r.shape[0]):
-                    dist[l]=minimalDistance(a,r[l])
+                    dist[l],_ = minimalDistance(a,r[l])
                 pair = min(dist)
             if pair <= thup and pair >= thdw:
                 if prob == 1:
