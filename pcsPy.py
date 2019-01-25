@@ -251,7 +251,7 @@ class PCSet:
         return(m21.note.Note(self.pcs[0]).nameWithOctave+' '+self.commonName())
 
     
-    def displayNotes(self,xml=False,prime=False,chord=False):
+    def displayNotes(self,show=True,xml=False,prime=False,chord=False):
         '''
         •	Display pcs in score in musicxml format. If prime is True, display the prime form. If chord is True 
             display the note cluster
@@ -264,8 +264,9 @@ class PCSet:
                     s.append(m21.note.Note(self.primeForm()[i]/fac+60))
                 else:
                     s.append(m21.note.Note(self.pcs[i]/fac+60))
-            s.show()
+            if show: s.show()
             if xml: s.show('musicxml')
+            return(s)
         else:
             ch = []
             if prime: 
@@ -275,9 +276,9 @@ class PCSet:
                 for i in range(self.pcs.shape[0]):
                     ch.append(m21.note.Note(self.pcs[i]/fac+60))
             c = m21.chord.Chord(ch)
-            c.show()
+            if show: c.show()
             if xml: c.show('musicxml')
-        return
+            return(c)
 
 ########### Network functions ###########
 
