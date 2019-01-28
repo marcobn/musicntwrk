@@ -246,7 +246,7 @@ def rhythmDictionary(Nc,a=None,REF='e'):
 
     return(dictionary,ZrelT)
     
-def rhythmNetwork(input_csv,thup=1.5,thdw=0.0,distance='euclidean',prob=1):
+def rhythmNetwork(input_csv,thup=1.5,thdw=0.0,distance='euclidean',prob=1,w=False):
     
     '''
     •	generate the network of rhythmic cells based on distances between duration vectors
@@ -266,7 +266,7 @@ def rhythmNetwork(input_csv,thup=1.5,thdw=0.0,distance='euclidean',prob=1):
 
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
-    dnodes.to_csv('nodes.csv',index=False)
+    if w: dnodes.to_csv('nodes.csv',index=False)
     comm.Barrier()
     
     # find edges according to a metric
@@ -319,7 +319,7 @@ def rhythmNetwork(input_csv,thup=1.5,thdw=0.0,distance='euclidean',prob=1):
         dedges.loc[cond, ['Source', 'Target']] = dedges.loc[cond, ['Target', 'Source']].values
         dedges = dedges.drop_duplicates(subset=['Source', 'Target'])
         # write csv for edges
-        dedges.to_csv('edges.csv',index=False)
+        if w: dedges.to_csv('edges.csv',index=False)
     elif size == 1:
         os.rename('edges'+str(rank)+'.csv','edges.csv')
 
@@ -397,6 +397,7 @@ def rLeadNetwork(input_csv,thup=1.5,thdw=0.1,w=True,distance='euclidean',prob=1)
     # write csv for edges
     if w: dedges.to_csv('edges.csv',index=False)
 
-    return(dnodes,dedges)    
+    return(dnodes,dedges)
+        
 def floatize(frac):
     return(frac.numerator/frac.denominator)    
