@@ -32,7 +32,7 @@ size = comm.Get_size()
 
 class PCSet:
 
-    def __init__(self,pcs,TET=12,UNI=True):
+    def __init__(self,pcs,TET=12,UNI=True,ORD=True):
         '''
         •	pcs (int)– pitch class set as list or numpy array
         •	TET (int)- number of allowed pitches in the totality of the musical space (temperament). Default = 12 tones equal temperament
@@ -41,7 +41,10 @@ class PCSet:
         if UNI == True:
             self.pcs = np.unique(pcs)
         else:
-            self.pcs = np.sort(pcs)
+            if ORD == True:
+                self.pcs = np.sort(pcs)
+            else:
+                self.pcs = np.asarray(pcs)
         self.TET = TET
 
     def normalOrder(self):

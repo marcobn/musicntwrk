@@ -170,7 +170,7 @@ class RHYTHMSeq:
                 n.duration = m21.duration.Duration(4*self.rseq[l])
                 n.beams.fill('32nd', type='start')
                 m.append(n)  
-        m21.meter.SenzaMisuraTimeSignature('0')
+        m.append(m21.meter.SenzaMisuraTimeSignature('0'))
         m.show()
         if xml: m.show('musicxml')
         return
@@ -189,6 +189,8 @@ def rhythmDictionary(Nc,a=None,REF='e'):
     name = []
     prime = []
         
+    a = RHYTHMSeq(a).normalOrder()
+    a = RHYTHMSeq(a).floatize()
     a = np.unique(np.asarray(list(iter.combinations(a,Nc))),axis=0)
         
     # put all cells in prime/normal order form
@@ -243,7 +245,8 @@ def rhythmDictionary(Nc,a=None,REF='e'):
         reference.append(entry)
 
     dictionary = pd.DataFrame(reference,columns=['cell','r-seq','d-vec'])
-
+    dictionary.drop_duplicates(subset=['r-seq', 'd-vec'])
+    
     return(dictionary,ZrelT)
     
 def rhythmNetwork(input_csv,thup=1.5,thdw=0.0,distance='euclidean',prob=1,w=False):
@@ -382,7 +385,7 @@ def rLeadNetwork(input_csv,thup=1.5,thdw=0.1,w=True,distance='euclidean',prob=1)
                 vector_j.append(fr.Fraction(df[:,1][j].split()[l]))
             vector_j  = RHYTHMSeq(vector_j)
             pair = floatize(rhythmDistance(vector_i,vector_j,distance))
-            if pair <= thup and pair >= thdw:
+            if pair < thup and pair > thdw:
                 if prob == 1:
                     tmp = pd.DataFrame([[str(i),str(j),str(pair)]],columns=['Source','Target','Weight'])
                     dedges = dedges.append(tmp)
