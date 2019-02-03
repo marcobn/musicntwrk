@@ -623,6 +623,46 @@ def vLeadNetwork(input_csv,thup=1.5,thdw=0.1,TET=12,w=True,distance='euclidean',
 
     return(dnodes,dedges)
     
+def vLeadNetworkVec(input_csv,thup=1.1,thdw=0.1,TET=12,w=True,distance='euclidean'):
+    
+    # Create network of minimal voice leadings from the pcsDictionary
+    # vector version
+
+    df = pd.read_csv(input_csv)
+    df = np.asarray(df)
+
+    # write csv for nodes
+    dnodes = pd.DataFrame(df[:,0],columns=['Label'])
+    if w: dnodes.to_csv('nodes.csv',index=False)
+
+    # find edges according to a metric
+    N = df[:,1].shape[0]
+    dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
+    vector_i = np.zeros((N,len(list(map(int,re.findall('\d+',df[0,1]))))),dtype=int)
+    pair = np.zeros((N,N),dtype=float)
+    dis = np.zeros((N,N),dtype=float)
+    # vector of pcs
+    for i in range(N):
+        vector_i[i] = np.asarray(list(map(int,re.findall('\d+',df[i,1]))))
+
+    # vectors of distances
+    for i in range(N):
+        pair[i,:] = minimalDistanceVec(vector_i,np.roll(vector_i,-i,axis=0),TET,distance)
+
+    for i in range(N):
+        dis += np.diag(pair[i,:(N-i)],k=i)
+
+    ix,iy = np.nonzero(dis)
+    for n in range(ix.shape[0]):
+        if dis[ix[n],iy[n]] < thup and dis[ix[n],iy[n]] > thdw:
+            tmp = pd.DataFrame([[str(ix[n]),str(iy[n]),str(1/dis[ix[n],iy[n]])]],columns=['Source','Target','Weight'])
+            dedges = dedges.append(tmp)
+
+    # write csv for edges
+    if w: dedges.to_csv('edges.csv',index=False)
+    
+    return(dnodes,dedges)
+    
 def vLeadNetworkByName(input_csv,name,TET=12,w=True,distance='euclidean',prob=1):
     
     '''
@@ -689,6 +729,49 @@ def vLeadNetworkByName(input_csv,name,TET=12,w=True,distance='euclidean',prob=1)
     # write csv for edges
     if w: dedges.to_csv('edges.csv',index=False)
 
+    return(dnodes,dedges)
+
+def vLeadNetworkByNameVec(input_csv,name,TET=12,w=True,distance='euclidean'):
+    
+    # Create network of minimal voice leadings from the pcsDictionary
+    # vector version - only bijective
+
+    df = pd.read_csv(input_csv)
+    df = np.asarray(df)
+
+    # write csv for nodes
+    dnodes = pd.DataFrame(df[:,0],columns=['Label'])
+    if w: dnodes.to_csv('nodes.csv',index=False)
+
+    # find edges according to a metric
+    N = df[:,1].shape[0]
+    dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
+    vector_i = np.zeros((N,len(list(map(int,re.findall('\d+',df[0,1]))))),dtype=int)
+    disx = np.zeros((N,N),dtype=float)
+    pairx = np.zeros((N,N),dtype=bool)
+    dis = np.zeros((N,N),dtype=float)
+    pair = np.zeros((N,N),dtype=bool)
+    # vector of pcs
+    for i in range(N):
+        vector_i[i] = np.asarray(list(map(int,re.findall('\d+',df[i,1]))))
+    # matrix of distances
+    for i in range(N):
+        disx[i,:] = minimalDistanceVec(vector_i,np.roll(vector_i,-i,axis=0),TET,distance)
+        pairx[i,:] = opsCheckByNameVec(vector_i,np.roll(vector_i,-i,axis=0),name,TET)
+
+    for i in range(N):
+        dis += np.diag(disx[i,:(N-i)],k=i)
+        pair += np.diag(pairx[i,:(N-i)],k=i)
+        
+    ix,iy = np.nonzero(dis)
+    for n in range(ix.shape[0]):
+        if pair[ix[n],iy[n]]:
+            tmp = pd.DataFrame([[str(ix[n]),str(iy[n]),str(1/dis[ix[n],iy[n]])]],columns=['Source','Target','Weight'])
+            dedges = dedges.append(tmp)
+
+    # write csv for edges
+    if w: dedges.to_csv('edges.csv',index=False)
+    
     return(dnodes,dedges)
 
 def scoreNetwork(seq,TET=12):
@@ -895,6 +978,30 @@ def minimalNoBijDistance(a,b,TET=12,distance='euclidean'):
         
     return(min(dist),r[imin].astype(int))
 
+def minimalDistanceVec(a,b,TET=12,distance='euclidean'):
+    '''
+    •	calculates the minimal distance between two pcs of same cardinality (bijective)
+    •	a,b (int) – pcs as numpy arrays or lists
+    •   vector version
+    '''
+    a = np.asarray(a)
+    b = np.asarray(b)
+    N = a.shape[0]
+    n = a.shape[1]
+    if a.shape[0] != b.shape[0]:
+        print('dimension of arrays must be equal')
+        sys.exit()
+    a = np.sort(a)
+    iTET = np.vstack([np.identity(n,dtype=int)*TET,-np.identity(n,dtype=int)*TET])
+    iTET = np.vstack([iTET,np.zeros(n,dtype=int)])
+    diff = np.zeros((N,2*n+1),dtype=float)
+    for i in range(2*n+1):
+        r = np.sort(b - iTET[i])
+        diff[:,i] = np.sqrt(np.sum((a-r)**2,axis=1))
+
+    return(np.amin(diff,axis=1))
+
+
 def opsDictionary(distance):
     # dictionary of names of distance operators - OBSOLETE
     opsDict={1.0:'O(1)',1.4142:'O(1,1)',1.7321:'O(1,1,1)',2.0:'O(2)/O(1,1,1,1)',2.2361:'O(1,2)',2.4495:'O(1,1,2)',
@@ -949,6 +1056,42 @@ def opsDistance(name):
     opdist = np.sqrt(np.sum(np.asarray([list(map(int, x)) for x in opname]).reshape(1,-1)[0]*
         np.asarray([list(map(int, x)) for x in opname]).reshape(1,-1)[0]))
     return(name,opdist)
+
+def opsNameVec(a,b,TET=12):
+    # given two arrays of vectors returns the array of the names of the operators that connects them
+    # vector version
+    a = np.sort(a,axis=1)
+    b = np.sort(b,axis=1)
+    d = np.zeros((b.shape[0],b.shape[1]),dtype=int) 
+    diff = np.zeros((b.shape[0],b.shape[1]),dtype=int)
+    nmin = np.zeros((b.shape[0],b.shape[1]),dtype=int)
+
+    for n in range(b.shape[1]):
+        c = np.roll(b,n,axis=1)
+        diff = a-c
+        aux = np.where(diff >= int(TET/2),diff-TET,diff)
+        diff = np.abs(np.where(aux < -int(TET/2),aux+TET,aux)) 
+
+        d[:,n] = np.sum(diff*diff,axis=1)
+    nmin = np.argmin(d,axis=1)
+    for i in range(b.shape[0]):
+        b[i] = np.roll(b[i],nmin[i])
+        diff[i] = a[i]-b[i]
+    aux = np.where(diff >= int(TET/2),diff-TET,diff)
+    diff = np.sort(np.abs(np.where(aux < -int(TET/2),aux+TET,aux)))
+    name = []
+    for i in range(b.shape[0]):
+        name.append('O('+np.array2string(np.trim_zeros(diff[i]),separator=',')\
+                    .replace(" ","").replace("[","").replace("]","")+')')
+
+    return(np.asarray(name))
+    
+def opsCheckByNameVec(a,b,name,TET=12):
+    # given two vectors returns check if the connecting operator is the one sought for
+    # vector version
+    opname = opsNameVec(a,b,TET)
+    opname = np.where(opname == name,True,False)
+    return(opname)
         
 def Remove(duplicate): 
     # function to remove duplicates from list
