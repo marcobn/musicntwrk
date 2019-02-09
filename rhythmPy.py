@@ -36,7 +36,7 @@ size = comm.Get_size()
 
 class RHYTHMSeq:
 
-    def __init__(self,rseq,REF='e',UNI=False):
+    def __init__(self,rseq,REF='e',ORD=False):
         '''
         •	rseq (int)– rhythm sequence as list of strings/fractions/floats
         •	REF = reference duration for prime form (str)
@@ -55,7 +55,7 @@ class RHYTHMSeq:
         else:
             for n in range(len(rseq)):
                 rseq[n] = fr.Fraction(rseq[n])
-        if UNI:
+        if ORD:
             self.rseq = np.sort(np.asarray(rseq))
         else:
             self.rseq = np.asarray(rseq)
@@ -135,7 +135,7 @@ class RHYTHMSeq:
         scale = self.REF*self.normalOrder()[0].denominator/self.normalOrder()[0].numerator
         return(self.normalOrder()*scale)
     
-    def durationVector(self):
+    def durationVector(self,lseq=None):
         '''
         •	 total relative duration ratios content of the sequence
         '''
@@ -144,13 +144,34 @@ class RHYTHMSeq:
         n = 0
         for i in range(len(self.rseq)):
             for j in range(i+1,len(self.rseq)):
-                durv[n] = np.abs(self.normalOrder()[i]-self.normalOrder()[j])
+                durv[n] = np.abs(self.rseq[i]-self.rseq[j])
                 n += 1
         bins = []
-        for key in self.dict:
-            bins.append(self.dict[key])
-        bins = np.sort(np.asarray(bins))
-        return(np.histogram(durv,bins)[0],str(bins).replace('Fraction','').replace(', ','/')\
+        if lseq == None:
+            lseq = [fr.Fraction(1/8),fr.Fraction(2/8),fr.Fraction(3/8),fr.Fraction(4/8),\
+                    fr.Fraction(5/8),fr.Fraction(6/8),fr.Fraction(7/8),fr.Fraction(8/8),fr.Fraction(9/8)]
+        bins = np.sort(np.asarray(lseq))
+
+        return(np.histogram(durv,bins)[0],str(bins[:(bins.shape[0]-1)]).replace('Fraction','').replace(', ','/')\
+                            .replace('(','').replace(')','').replace('\n','').replace('[','').replace(']',''))
+                            
+    def rIntervalVector(self,lseq=None):
+        '''
+        •	 inter-onset duration interval content of the sequence
+        '''
+        durv = []
+        durv.append(np.abs(self.rseq)) 
+        durv.append(np.abs(self.rseq+np.roll(self.rseq,-1)))
+        durv = np.asarray(durv)
+        durv = np.reshape(durv,durv.shape[0]*durv.shape[1])
+
+        bins = []
+        if lseq == None:
+            lseq = [fr.Fraction(1/8),fr.Fraction(2/8),fr.Fraction(3/8),fr.Fraction(4/8),\
+                    fr.Fraction(5/8),fr.Fraction(6/8),fr.Fraction(7/8),fr.Fraction(8/8),fr.Fraction(9/8)]
+        bins = np.sort(np.asarray(lseq))
+
+        return(np.histogram(durv,bins)[0],str(bins[:(bins.shape[0]-1)]).replace('Fraction','').replace(', ','/')\
                             .replace('(','').replace(')','').replace('\n','').replace('[','').replace(']',''))
     
     def displayRhythm(self,xml=False,prime=False):
