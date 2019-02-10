@@ -14,7 +14,6 @@
 
 import sys,re,time,os
 import numpy as np
-import itertools as iter
 from functools import reduce
 import fractions as fr
 from math import gcd
@@ -23,7 +22,7 @@ import sklearn.metrics as sklm
 import networkx as nx
 import community as cm
 import music21 as m21
-import itertools as iter
+import itertools as itr
 from mpi4py import MPI
 
 from communications import *
@@ -212,7 +211,7 @@ def rhythmDictionary(Nc,a=None,REF='e'):
         
     a = RHYTHMSeq(a).normalOrder()
     a = RHYTHMSeq(a).floatize()
-    a = np.unique(np.asarray(list(iter.combinations(a,Nc))),axis=0)
+    a = np.unique(np.asarray(list(itr.combinations(a,Nc))),axis=0)
         
     # put all cells in prime/normal order form
 
@@ -236,7 +235,7 @@ def rhythmDictionary(Nc,a=None,REF='e'):
     # find those that can be made non retrogradable
     
     for n in range(a.shape[0]):
-        perm = np.asarray(list(iter.permutations(a[n,:],a.shape[1])))
+        perm = np.asarray(list(itr.permutations(a[n,:],a.shape[1])))
         perm = np.unique(perm,axis=0)
         for i in range(perm.shape[0]):
             if RHYTHMSeq(perm[i].tolist(),REF).isNonRetro():
@@ -269,6 +268,97 @@ def rhythmDictionary(Nc,a=None,REF='e'):
     dictionary.drop_duplicates(subset=['r-seq', 'd-vec'])
     
     return(dictionary,ZrelT)
+
+def rhythmPDictionary(N,Nc,REF='e'):
+
+    '''
+    •	Generate the dictionary of all possible rhythmic sequences from all possible groupings of N 
+        REF durations
+    •	N (int)– number of REF units
+    •	Nc cardinality of the grouping
+    •	returns the dictionary as pandas DataFrame and indicates all non retrogradable cells
+    '''
+    name = []
+    prime = []
+    
+    r = [REF] * N
+    r = RHYTHMSeq(r)
+    idx = np.linspace(0,N-1,N,dtype=int)
+    
+    subidx = list(Sublists(idx))
+    seq=[]
+    for l in range(len(subidx)):
+        subseq = []
+        for i in range(len(subidx[l])):
+            aux = 0
+            for k in range(len(subidx[l][i])):
+                aux += r.rseq[subidx[l][i][k]]
+            subseq.append(aux)
+        seq.append(subseq)
+    seq = Remove(seq)
+    
+    # select groupings with requested cardinality
+    seqx = []
+    for n in range(len(seq)):
+        if len(seq[n]) == Nc:
+            seqx.append(seq[n])
+    seq = seqx
+        
+    # put all cells in prime/normal order form
+    s = []
+    v = []
+    for i in range(len(seq)):
+        p = RHYTHMSeq(seq[i][:],REF)
+        s.append(p.normalOrder())
+        v.append(p.rIntervalVector()[0])
+    s = np.asarray(s)
+    vector = np.asarray(v)
+
+    for i in range(len(seq)):
+        name.append(str(Nc)+'-'+str(i+1))
+        prime.append(str(s[i,:]).replace('Fraction','').replace(', ','/')\
+                            .replace('(','').replace(')','').replace('\n','').replace('[','').replace(']',''))
+        
+    dictionary = None
+    
+    # find those that can be made non retrogradable
+    
+    seq = np.asarray(seq)
+    for n in range(seq.shape[0]):
+        perm = np.asarray(list(itr.permutations(seq[n,:],Nc)))
+        perm = np.unique(perm)
+        for i in range(perm.shape[0]):
+            if RHYTHMSeq(perm[i],REF).isNonRetro():
+                name[n] = name[n]+'N'
+    
+    # find those that are Z-related (have same duration vector)
+    
+    ZrelT = None
+    if rank == 0:
+        # find pc sets in Z relation
+        u, indeces = np.unique(vector, return_inverse=True,axis=0)
+        ZrelT = []
+        for n in range(u.shape[0]):
+            if np.array(np.where(indeces == n)).shape[1] != 1:
+                indx = np.array(np.where(indeces == n))[0]
+                Zrel = []
+                for m in range(indx.shape[0]):
+                    name[indx[m]] = name[indx[m]]+'Z'
+                    Zrel.append(name[indx[m]])
+                ZrelT.append(Zrel)
+                    
+    # Create dictionary of rhythmic cells
+    reference = []
+    for n in range(len(name)):
+        entry = [name[n],prime[n],
+                np.array2string(vector[n,:],separator=',').replace(" ","")]
+        reference.append(entry)
+
+    dictionary = pd.DataFrame(reference,columns=['cell','r-seq','r-vec'])
+    dictionary.drop_duplicates(subset=['r-seq', 'r-vec'])
+    
+    return(dictionary,ZrelT)
+
     
 def rhythmNetwork(input_csv,thup=1.5,thdw=0.0,distance='euclidean',prob=1,w=False):
     
@@ -424,4 +514,15 @@ def rLeadNetwork(input_csv,thup=1.5,thdw=0.1,w=True,distance='euclidean',prob=1)
     return(dnodes,dedges)
         
 def floatize(frac):
-    return(frac.numerator/frac.denominator)    
+    return(frac.numerator/frac.denominator)  
+    
+def Sublists(lst):
+    for doslice in itr.product([True, False], repeat=len(lst) - 1):
+        slices = []
+        start = 0
+        for i, slicehere in enumerate(doslice, 1):
+            if slicehere:
+                slices.append(lst[start:i])
+                start = i
+        slices.append(lst[start:])
+        yield slices
