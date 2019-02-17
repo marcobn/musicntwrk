@@ -665,20 +665,20 @@ def MIDImap(pdt,scale,nnote):
 	
 	return(yvf)
 
-def MIDIscore(yvf,dur=2,w=None):
+def MIDIscore(yvf,dur=2,w=None,outxml='./music',outmidi='./music'):
 	s1 = m21.stream.Stream()
 	for i in range(yvf.shape[0]):
 		n = m21.note.Note(yvf[i])
 		n.duration = m21.duration.Duration((abs(yvf[i]-yvf[i-1])+1)/dur)
 		s1.append(n)
 	if w == 'musicxml':
-		s1.show('musicxml')
+		s1.write('musicxml',outxml+'.xml')
 	elif w == 'MIDI':
-		s1.write('midi','./data.mid')
+		s1.write('midi',outmidi+'.mid')
 	else:
 		s1.show()
 
-def MIDImidi(yvf,vnorm=80,dur=4):
+def MIDImidi(yvf,vnorm=80,dur=4,outmidi='./music'):
 	mt = m21.midi.MidiTrack(1)
 	# map MIDI velocity to data
 	yminf = min(yvf)
@@ -696,10 +696,10 @@ def MIDImidi(yvf,vnorm=80,dur=4):
 	pb = []
 	for i in range(yvf.shape[0]):
 		p = [int(1024/dur*abs(yvf[i]-yvf[i-1])+1),
-			 int((MIDImap(pdt,scale,nnote)-12)[i]//1),
+			 int(yvf[i]-12//1),
 			 vel[i]]
 		data.append(p)
-		pb.append(int(np.around((MIDImap(pdt,scale,nnote)-12)[i]%1,3)*100))
+		pb.append(int(np.around((yvf[i]-12)%1,3)*100))
 
 	t = 0
 	tLast = 0
@@ -763,7 +763,7 @@ def MIDImidi(yvf,vnorm=80,dur=4):
 	mf.ticksPerQuarterNote = 1024 # cannot use: 10080
 	mf.tracks.append(mt)
 
-	mf.open('out.mid', 'wb')
+	mf.open(outmidi+'.mid', 'wb')
 
 	mf.write()
 	mf.close()
