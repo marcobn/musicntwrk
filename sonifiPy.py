@@ -690,12 +690,16 @@ def MIDImidi(yvf,vnorm=80,dur=4):
 	vmax = max(yvel)
 	vel = (yvel-vmin)/(vmax-vmin)*vnorm
 	vel = vel.astype(int)
-	
+
 	# duration, pitch, velocity
 	data = []
+	pb = []
 	for i in range(yvf.shape[0]):
-		p = [int(1024/dur*abs(yvf[i]-yvf[i-1])+1),int(yvf[i]),vel[i]]
+		p = [int(1024/dur*abs(yvf[i]-yvf[i-1])+1),
+			 int((MIDImap(pdt,scale,nnote)-12)[i]//1),
+			 vel[i]]
 		data.append(p)
+		pb.append(int(np.around((MIDImap(pdt,scale,nnote)-12)[i]%1,3)*100))
 
 	t = 0
 	tLast = 0
@@ -704,7 +708,18 @@ def MIDImidi(yvf,vnorm=80,dur=4):
 		dt.time = t - tLast
 		# add to track events
 		mt.events.append(dt)
+		
+		me = m21.midi.MidiEvent(mt, type="PITCH_BEND", channel=1)
+		#environLocal.printDebug(['creating event:', me, 'pbValues[i]', pbValues[i]])
+		me.time = None #d
+		me.setPitchBend(pb[i]) # set values in cents
+		mt.events.append(me)
 
+		dt = m21.midi.DeltaTime(mt)
+		dt.time = t - tLast
+		# add to track events
+		mt.events.append(dt)
+		
 		me = m21.midi.MidiEvent(mt)
 		me.type = "NOTE_ON"
 		me.channel = 1
@@ -751,4 +766,4 @@ def MIDImidi(yvf,vnorm=80,dur=4):
 	mf.open('out.mid', 'wb')
 
 	mf.write()
-	mf.close()		
+	mf.close()
