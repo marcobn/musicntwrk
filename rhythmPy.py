@@ -63,9 +63,30 @@ class RHYTHMSeq:
 
     def normalOrder(self):
         '''
-        •	Sort the rhythm sequence in ascending order of duration
+        •	Order the rhythmic sequence according to the most compact ascending form
         '''
-        return(np.sort(self.rseq))
+        # 1. cycle to find the most compact ascending order
+        nroll = np.linspace(0,len(self.rseq)-1,len(self.rseq),dtype=int)
+        dist = np.zeros((len(self.rseq)),dtype=float)
+        for i in range(len(self.rseq)):
+            dist[i] = np.abs(np.roll(self.rseq,i)[len(self.rseq)-1] - np.roll(self.rseq,i)[0])
+        # 2. check for multiple compact orders
+        for l in range(1,len(self.rseq)):
+            if np.array(np.where(dist == dist.min())).shape[1] != 1:
+                indx = np.array(np.where(dist == dist.min()))[0]
+                nroll = nroll[indx]
+                dist = np.zeros((len(nroll)),dtype=int)
+                i = 0
+                for n in nroll:
+                    dist[i] = np.abs(np.roll(self.rseq,n)[len(self.rseq)-(1+l)] - np.roll(self.rseq,n)[0])
+                    i += 1
+            else:
+                indx = np.array(np.where(dist == dist.min()))[0]
+                nroll = nroll[int(indx[0])]
+                rseq_norm = np.roll(self.rseq,nroll)
+                break
+        if np.array(np.where(dist == dist.min())).shape[1] != 1: rseq_norm = self.rseq
+        return(rseq_norm)
 
 
     def augment(self,t='e'):
@@ -208,7 +229,8 @@ def rhythmDictionary(Nc,a=None,REF='e'):
     '''
     name = []
     prime = []
-        
+    if a == None:
+        sys.exit()
     a = RHYTHMSeq(a).normalOrder()
     a = RHYTHMSeq(a).floatize()
     a = np.unique(np.asarray(list(itr.combinations(a,Nc))),axis=0)
@@ -309,7 +331,7 @@ def rhythmPDictionary(N,Nc,REF='e'):
     v = []
     for i in range(len(seq)):
         p = RHYTHMSeq(seq[i][:],REF)
-        s.append(p.normalOrder())
+        s.append(p.rseq)
         v.append(p.rIntervalVector()[0])
     s = np.asarray(s)
     vector = np.asarray(v)
@@ -321,32 +343,6 @@ def rhythmPDictionary(N,Nc,REF='e'):
         
     dictionary = None
     
-    # find those that can be made non retrogradable
-    
-    seq = np.asarray(seq)
-    for n in range(seq.shape[0]):
-        perm = np.asarray(list(itr.permutations(seq[n,:],Nc)))
-        perm = np.unique(perm)
-        for i in range(perm.shape[0]):
-            if RHYTHMSeq(perm[i],REF).isNonRetro():
-                name[n] = name[n]+'N'
-    
-    # find those that are Z-related (have same duration vector)
-    
-    ZrelT = None
-    if rank == 0:
-        # find pc sets in Z relation
-        u, indeces = np.unique(vector, return_inverse=True,axis=0)
-        ZrelT = []
-        for n in range(u.shape[0]):
-            if np.array(np.where(indeces == n)).shape[1] != 1:
-                indx = np.array(np.where(indeces == n))[0]
-                Zrel = []
-                for m in range(indx.shape[0]):
-                    name[indx[m]] = name[indx[m]]+'Z'
-                    Zrel.append(name[indx[m]])
-                ZrelT.append(Zrel)
-                    
     # Create dictionary of rhythmic cells
     reference = []
     for n in range(len(name)):
@@ -355,9 +351,22 @@ def rhythmPDictionary(N,Nc,REF='e'):
         reference.append(entry)
 
     dictionary = pd.DataFrame(reference,columns=['cell','r-seq','r-vec'])
-    dictionary.drop_duplicates(subset=['r-seq', 'r-vec'])
+    dictionary = dictionary.drop_duplicates(subset=['r-seq', 'r-vec'])
     
-    return(dictionary,ZrelT)
+    # clean dictionary
+    for n in range(len(dictionary)):
+        dictionary.loc[n][1] = str(RHYTHMSeq(str2frac(dictionary.loc[n][1])).normalOrder())\
+        .replace('Fraction','').replace(', ','/').replace('(','').replace(')','')\
+        .replace('\n','').replace('[','').replace(']','')
+    dictionary = dictionary.drop_duplicates(subset=['r-seq', 'r-vec']).reset_index(drop=True)
+    
+    # rename entries in ascending order and check for non-retrogradability
+    for n in range(len(dictionary)):
+        dictionary.loc[n][0] = str(5)+'-'+str(n+1)
+        if RHYTHMSeq(str2frac(dictionary.loc[n][1])).isNonRetro(): 
+            dictionary.loc[n][0] += 'N'
+    
+    return(dictionary) #,ZrelT)
 
     
 def rhythmNetwork(input_csv,thup=1.5,thdw=0.0,distance='euclidean',prob=1,w=False):
@@ -526,3 +535,17 @@ def Sublists(lst):
                 start = i
         slices.append(lst[start:])
         yield slices
+        
+def Remove(duplicate): 
+    # function to remove duplicates from list
+    final_list = [] 
+    for num in duplicate: 
+        if num not in final_list: 
+            final_list.append(num) 
+    return final_list 
+
+def str2frac(string):
+    vector = []
+    for l in range(len(string.split())):
+        vector.append(fr.Fraction(string.split()[l]))
+    return(vector)
