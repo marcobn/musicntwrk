@@ -366,7 +366,22 @@ def rhythmPDictionary(N,Nc,REF='e'):
         if RHYTHMSeq(str2frac(dictionary.loc[n][1])).isNonRetro(): 
             dictionary.loc[n][0] += 'N'
     
-    return(dictionary) #,ZrelT)
+    # find those that are Z-related (have same interval onset vector)
+    
+    vector = []
+    for n in range(len(dictionary)):
+        vector.append(str2float(dictionary['r-vec'][n]))
+    u, indeces = np.unique(vector, return_inverse=True,axis=0)
+    ZrelT = []
+    for n in range(u.shape[0]):
+        if np.array(np.where(indeces == n)).shape[1] != 1:
+            indx = np.array(np.where(indeces == n))[0]
+            Zrel = []
+            for m in range(indx.shape[0]):
+                dictionary.loc[indx[m]][0] = dictionary.loc[indx[m]][0]+'Z'
+                Zrel.append(dictionary.loc[indx[m]][0])
+            ZrelT.append(Zrel)    
+    return(dictionary,ZrelT)
 
     
 def rhythmNetwork(input_csv,thup=1.5,thdw=0.0,distance='euclidean',prob=1,w=False):
@@ -468,6 +483,20 @@ def rhythmDistance(a,b,distance='euclidean'):
         diff[i] = sklm.pairwise_distances(a.reshape(1, -1),r.reshape(1, -1),metric=distance)[0]
     imin = np.argmin(diff)
     return(fr.Fraction(diff.min()))
+    
+def vectorDistance(a,b,distance='euclidean'):
+    '''
+    •	calculates the distance between two vectors (duration or inteval)
+    •	a,b (str) – vectors
+    '''
+    a = np.asarray(a)
+    b = np.asarray(b)
+    n = a.shape[0]
+    if a.shape[0] != b.shape[0]:
+        print('dimension of arrays must be equal')
+        sys.exit()
+    diff = sklm.pairwise_distances(a.reshape(1, -1),b.reshape(1, -1),metric=distance)[0]
+    return(diff)
 
 def rLeadNetwork(input_csv,thup=1.5,thdw=0.1,w=True,distance='euclidean',prob=1):
     
@@ -548,4 +577,10 @@ def str2frac(string):
     vector = []
     for l in range(len(string.split())):
         vector.append(fr.Fraction(string.split()[l]))
+    return(vector)
+    
+def str2float(string):
+    vector = []
+    for l in range(len(string.split())):
+        vector.append(np.asarray(list(map(int,re.findall('\d+',string)))))
     return(vector)
