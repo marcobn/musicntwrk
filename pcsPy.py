@@ -122,7 +122,6 @@ class PCSet:
             tmp = (self.normalOrder()-self.normalOrder()[0])%self.TET
             self.pcs = s_orig
             return(tmp)
-        
 
     def intervalVector(self):
         '''
@@ -141,6 +140,37 @@ class PCSet:
         bins = np.linspace(1,self.TET/2+1,self.TET/2+1,dtype=int)
         return(np.histogram(itv,bins)[0])
 
+    def operator(self,name):
+        # operate on the pcs with a distance operator
+        
+        def plusAndMinusPermutations(items):
+            for p in iter.permutations(items):
+                for signs in iter.product([-1,1], repeat=len(items)):
+                    yield [a*sign for a,sign in zip(p,signs)]
+
+        op = ' '.join(i for i in name if i.isdigit()).split()
+        op = np.asarray([list(map(int, x)) for x in op])
+        op = np.reshape(op,op.shape[0]*op.shape[1])
+        if self.pcs.shape[0] == op.shape[0]:
+            pop = np.asarray(list(plusAndMinusPermutations(op)))
+            selfto = np.unique((self.pcs+pop)%self.TET,axis=0)
+            outset = []
+            for n in range(selfto.shape[0]):
+                if minimalNoBijDistance(self.normalOrder(),PCSet(selfto[n]).normalOrder())[0] == opsDistance(name)[1]:
+                    outset.append(PCSet(selfto[n]).normalOrder().tolist())
+        if self.pcs.shape[0] > op.shape[0]:
+            op = np.pad(op,(0,self.pcs.shape[0]-op.shape[0]),'constant')
+            pop = np.asarray(list(plusAndMinusPermutations(op)))
+            selfto = np.unique((self.pcs+pop)%self.TET,axis=0)
+            outset = []
+            for n in range(selfto.shape[0]):
+                if minimalNoBijDistance(self.normalOrder(),PCSet(selfto[n]).normalOrder())[0] == opsDistance(name)[1]:
+                    outset.append(PCSet(selfto[n]).normalOrder().tolist())
+        if self.pcs.shape[0] < op.shape[0]:
+            print("increase cardinality by duplicating pc's - program will stop")
+            outset = None
+        return(Remove(outset))
+        
     def LISVector(self):
         '''
         •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
