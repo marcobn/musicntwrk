@@ -94,6 +94,12 @@ class PCSet:
         •	Transposition by t (int) units (modulo TET)
         '''
         return((self.pcs+t)%self.TET)
+        
+    def multiply(self,t=1):
+        '''
+        •	Transposition by t (int) units (modulo TET)
+        '''
+        return(np.unique((self.pcs*t)%self.TET//1).astype(int))
     
     def zeroOrder(self):
         '''
