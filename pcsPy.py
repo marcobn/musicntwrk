@@ -181,7 +181,7 @@ class PCSet:
         '''
         •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
         '''
-        return((np.roll(self.pcs,-1)-self.pcs)%self.TET)
+        return((np.roll(self.normalOrder(),-1)-self.normalOrder())%self.TET)
 
     def forteClass(self):
         '''
@@ -1136,3 +1136,29 @@ def Remove(duplicate):
         if num not in final_list: 
             final_list.append(num) 
     return final_list 
+
+def flatten(l, ltypes=(list, tuple)):
+    # flatten a list of lists
+    ltype = type(l)
+    l = list(l)
+    i = 0
+    while i < len(l):
+        while isinstance(l[i], ltypes):
+            if not l[i]:
+                l.pop(i)
+                i -= 1
+                break
+            else:
+                l[i:i + 1] = l[i]
+        i += 1
+    return ltype(l)
+    
+def BoulezMultiply(a,b,TET=12):
+    # Boulez pitch class multiplication of a x b
+    ivec = PCSet(a).LISVector()
+    m = []
+    for i in range(ivec.shape[0]-1):
+        mm = (b+ivec[i])%TET
+        m.append(mm.tolist())
+    return(PCSet(Remove(flatten(m+b)),TET).normalOrder())
+    
