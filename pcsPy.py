@@ -100,6 +100,15 @@ class PCSet:
         •	Transposition by t (int) units (modulo TET)
         '''
         return(np.unique((self.pcs*t)%self.TET//1).astype(int))
+        
+    def multiplyBoulez(self,b,TET=12):
+        # Boulez pitch class multiplication of a x b
+        ivec = self.LISVector()
+        m = []
+        for i in range(ivec.shape[0]-1):
+            mm = (b+ivec[i])%TET
+            m.append(mm.tolist())
+        return(PCSet(Remove(flatten(m+b)),TET).normalOrder())
     
     def zeroOrder(self):
         '''
@@ -1153,12 +1162,4 @@ def flatten(l, ltypes=(list, tuple)):
         i += 1
     return ltype(l)
     
-def BoulezMultiply(a,b,TET=12):
-    # Boulez pitch class multiplication of a x b
-    ivec = PCSet(a).LISVector()
-    m = []
-    for i in range(ivec.shape[0]-1):
-        mm = (b+ivec[i])%TET
-        m.append(mm.tolist())
-    return(PCSet(Remove(flatten(m+b)),TET).normalOrder())
     
