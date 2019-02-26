@@ -942,7 +942,7 @@ def readScore(input_xml,TET=12,music21=False):
         seq = []
         for c in chords.recurse().getElementsByClass('Chord'):
             seq.append(c.normalOrder)
-        return(seq)
+        return(seq,chords)
     elif TET == 24:
         dict24 = {'C':0,'C~':1,'C#':2,'D-':2,'D`':3,'D':4,'D~':5,'D#':6,'E-':6,'E`':7,'E':8,
                             'E~':9,'F`':9,'F':10,'F~':11,'F#':12,'G-':12,'G`':13,'G':14,'G~':15,'G#':16,
@@ -961,7 +961,7 @@ def readScore(input_xml,TET=12,music21=False):
             for l in line:
                 c.append(dict24[re.sub('>', '', l)])
             clean.append(PCSet(c,TET=24).normalOrder().tolist())
-        return(clean)
+        return(clean,chords)
     else:
         print('temperament needs to be added')
         sys.exit()
