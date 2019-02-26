@@ -1137,7 +1137,34 @@ def opsCheckByNameVec(a,b,name,TET=12):
     opname = opsNameVec(a,b,TET)
     opname = np.where(opname == name,True,False)
     return(opname)
-        
+
+def orchestralVector(input_xml):
+    score = m21.converter.parse(input_xml)
+    score = score.sliceByBeat()
+    Nparts = len(score.getElementsByClass(m21.stream.Part))
+    orch = init_list_of_objects(Nparts)
+    for p in range(Nparts):
+        Nmeasures = len(score.getElementsByClass(m21.stream.Part)[p].\
+                        getElementsByClass(m21.stream.Measure))
+        for m in range(0,Nmeasures):
+            mea = score.getElementsByClass(m21.stream.Part)[p].\
+                    getElementsByClass(m21.stream.Measure)[m]
+            try:
+                for n in mea.notesAndRests:
+                    if n.beat%1 == 0.0: 
+                        if n.isRest:
+                            orch[p].append(0)
+                        else:
+                            orch[p].append(1)
+            except:
+                print('exception: most likely an error in the voicing of the musicxml score',\
+                      'part ',p,'measure ',m)
+    orch = np.asarray(orch).T
+    num = np.zeros(orch.shape[0],dtype=int)
+    for n in range(orch.shape[0]):
+        num[n] = int(''.join(str(x) for x in orch[n,:]), base=2)
+    return(score,orch,num)
+            
 def Remove(duplicate): 
     # function to remove duplicates from list
     final_list = [] 
@@ -1162,4 +1189,9 @@ def flatten(l, ltypes=(list, tuple)):
         i += 1
     return ltype(l)
     
-    
+def init_list_of_objects(size):
+    # initialize a list of list object
+    list_of_objects = list()
+    for i in range(0,size):
+        list_of_objects.append( list() ) #different object reference each time
+    return list_of_objects
