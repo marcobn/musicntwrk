@@ -1160,9 +1160,23 @@ def orchestralVector(input_xml):
                 print('exception: most likely an error in the voicing of the musicxml score',\
                       'part ',p,'measure ',m)
     orch = np.asarray(orch).T
-    num = np.zeros(orch.shape[0],dtype=int)
-    for n in range(orch.shape[0]):
-        num[n] = int(''.join(str(x) for x in orch[n,:]), base=2)
+    if len(orch.shape) == 1:
+        print('WARNING: the number of beats per part is not constant')
+        print('         check the musicxml file for internal consistency')
+        a = []
+        for i in range(orch.shape[0]):
+            a.append(len(orch[i]))
+        clean = np.zeros((min(a),orch.shape[0]),dtype=int)
+        for j in range(orch.shape[0]):
+            for i in range(min(a)):
+                clean[i,j] = orch[j][i]
+        orch = clean
+    try:
+        num = np.zeros(orch.shape[0],dtype=int)
+        for n in range(orch.shape[0]):
+            num[n] = int(''.join(str(x) for x in orch[n,:]), base=2)
+    except:
+        num = None
     return(score,orch,num)
             
 def Remove(duplicate): 
