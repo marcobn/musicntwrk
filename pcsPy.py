@@ -1140,8 +1140,11 @@ def opsCheckByNameVec(a,b,name,TET=12):
     opname = np.where(opname == name,True,False)
     return(opname)
 
-def orchestralVector(input_xml,barplot=True):
-    score = m21.converter.parse(input_xml)
+def orchestralVector(inputfile,barplot=True):
+    '''
+    build orchestral vector sequence from score
+    '''
+    score = m21.converter.parse(inputfile)
     score = score.sliceByBeat()
     Nparts = len(score.getElementsByClass(m21.stream.Part))
     orch = init_list_of_objects(Nparts)
@@ -1228,7 +1231,29 @@ def orchestralNetwork(seq):
     nnodes=gbch.number_of_nodes()
     avgdeg = sum(gbch.in_degree().values())/float(nnodes)
         
-    return(dnodes,dedges,avgdeg,modul)
+    return(dnodes,dedges,avgdeg,modul,part)
+
+def orchestralVectorColor(orch,dnodes,part,color=plt.cm.binary):
+    '''
+    Produces the sequence of the orchestration vectors color-coded according to the modularity class they belong
+    Requires the output of orchestralNetwork()
+    '''
+    pdict = pd.DataFrame(None,columns=['vec','part'])
+    for n in range(len(part)):
+        tmp = pd.DataFrame( [[dnodes.iloc[int(list(part.keys())[n])][0], list(part.values())[n]]], columns=['vec','part'] )
+        pdict = pdict.append(tmp)
+    dict_vec = pdict.set_index("vec", drop = True)
+    orch_color = np.zeros(orch.shape)
+    for i in range(orch.shape[0]):
+        orch_color[i,:] = orch[i,:] * \
+            (dict_vec.loc[np.array2string(orch[i][:]).replace(" ","").replace("[","").replace("]","")][0]+1)
+
+    axprops = dict(xticks=[], yticks=[])
+    barprops = dict(aspect='auto', cmap=color, interpolation='nearest')
+    fig = plt.figure()
+    ax1 = fig.add_axes([0.1, 0.1, 3.1, 0.7], **axprops)
+    ax1.matshow(orch_color[:].T, **barprops)
+    plt.show()
             
 def Remove(duplicate): 
     # function to remove duplicates from list
