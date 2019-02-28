@@ -20,6 +20,8 @@ import sklearn.metrics as sklm
 import networkx as nx
 import community as cm
 import music21 as m21
+import matplotlib.pyplot as plt
+from vpython import *
 from mpi4py import MPI
 
 from communications import *
@@ -1138,7 +1140,7 @@ def opsCheckByNameVec(a,b,name,TET=12):
     opname = np.where(opname == name,True,False)
     return(opname)
 
-def orchestralVector(input_xml):
+def orchestralVector(input_xml,barplot=True):
     score = m21.converter.parse(input_xml)
     score = score.sliceByBeat()
     Nparts = len(score.getElementsByClass(m21.stream.Part))
@@ -1177,7 +1179,56 @@ def orchestralVector(input_xml):
             num[n] = int(''.join(str(x) for x in orch[n,:]), base=2)
     except:
         num = None
+    if barplot:
+        axprops = dict(xticks=[], yticks=[])
+        barprops = dict(aspect='auto', cmap=plt.cm.binary, interpolation='nearest')
+        fig = plt.figure()
+        ax1 = fig.add_axes([0.1, 0.1, 3.1, 0.7], **axprops)
+        ax1.matshow(orch[:].T, **barprops)
+        plt.show()
+        
     return(score,orch,num)
+
+def orchestralNetwork(seq):
+    
+    ''' 
+    •	generates the directional network of orchestration vectors from any score in musicxml format
+    •	seq (int) – list of orchestration vectors extracted from the score
+    •	use orchestralScore() to import the score data as sequence
+    '''
+    # build the directional network of the full orchestration progression
+
+    dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
+    dnodes = pd.DataFrame(None,columns=['Label'])
+    for n in range(len(seq)):
+        nameseq = pd.DataFrame([np.array2string(seq[n]).replace(" ","").replace("[","").replace("]","")],\
+                               columns=['Label'])
+        dnodes = dnodes.append(nameseq)
+    df = np.asarray(dnodes)
+    dnodes = pd.DataFrame(None,columns=['Label'])
+    dff,idx = np.unique(df,return_inverse=True)
+    for n in range(dff.shape[0]):
+        nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
+        dnodes = dnodes.append(nameseq)
+    for n in range(1,len(seq)):
+        a = np.asarray(seq[n-1])
+        b = np.asarray(seq[n])
+        pair,r = minimalDistance(a,b)
+        tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(pair+0.1)]],
+                           columns=['Source','Target','Weight'])
+        dedges = dedges.append(tmp)
+    
+    # evaluate average degree and modularity
+    gbch = nx.from_pandas_dataframe(dedges,'Source','Target','Weight',create_using=nx.DiGraph())
+    gbch_u = nx.from_pandas_dataframe(dedges,'Source','Target','Weight')
+    # modularity 
+    part = cm.best_partition(gbch_u)
+    modul = cm.modularity(part,gbch_u)
+    # average degree
+    nnodes=gbch.number_of_nodes()
+    avgdeg = sum(gbch.in_degree().values())/float(nnodes)
+        
+    return(dnodes,dedges,avgdeg,modul)
             
 def Remove(duplicate): 
     # function to remove duplicates from list
@@ -1209,3 +1260,10 @@ def init_list_of_objects(size):
     for i in range(0,size):
         list_of_objects.append( list() ) #different object reference each time
     return list_of_objects
+
+def plotCurve(y):
+    stage=canvas()
+    f1=gcurve()
+    f1 = gcurve(color=color.blue)
+    for n in range(y.shape[0]):
+        f1.plot(pos=(n,y[n]))
