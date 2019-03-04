@@ -29,6 +29,10 @@ from vpython import *
 import librosa
 import librosa.display
 
+from bs4 import BeautifulSoup
+import urllib
+import wget
+
 from mpi4py import MPI
 
 from communications import *
@@ -299,3 +303,12 @@ def minimalDistance(a,b,TET=12,distance='euclidean'):
 		v.append(r)
 	imin = np.argmin(diff)
 	return(diff.min(),np.asarray(v[imin]).astype(int))
+
+def fetchWaves(url):
+	# fetch wave files from remote web repository
+	html_page = urllib.request.urlopen(url)
+	soup = BeautifulSoup(html_page)
+	for link in soup.findAll('a'):
+		if 'wav' in link.get('href'):
+			print(link.get('href'))
+			wget.download(link.get('href'))
