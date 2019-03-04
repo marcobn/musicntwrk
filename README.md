@@ -1,7 +1,9 @@
-## pcsPy/rhythmPy/sonifiPy
+## pcsPy/rhythmPy/sonifiPy/timbrePy
+##
+## MUSIC𝄞NTWRK soon to be at www.musicntwrk.com
 
  A python library for pitch class set and rhythmic sequences classification and manipulation,
- the generation of networks in generalized musical spaces, and the sonification of arbitrary data
+ the generation of networks in generalized music and sound spaces, and the sonification of arbitrary data
 
  Copyright (C) 2018 Marco Buongiorno Nardelli
  http://www.materialssoundmusic.com, mbn@unt.edu
