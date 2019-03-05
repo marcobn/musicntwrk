@@ -158,7 +158,7 @@ def orchestralVectorColor(orch,dnodes,part,color=plt.cm.binary):
 	ax1.matshow(orch_color[:].T, **barprops)
 	plt.show()
 
-def computeMFCC(input_path,input_file,barplot=True,norm=False):
+def computeMFCC(input_path,input_file,barplot=True,zero=False):
 	# read audio files in repository and compute the MFCC
 	waves = list(glob.glob(os.path.join(input_path,input_file)))
 	mfcc0 = []
@@ -167,25 +167,25 @@ def computeMFCC(input_path,input_file,barplot=True,norm=False):
 		S = librosa.feature.melspectrogram(y, sr=sr, n_mels=128)
 		log_S = librosa.power_to_db(S, ref=np.max)
 		mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=13)
-		if norm:
-			y_ave = np.histogram(abs(y),mfcc.shape[1],weights=abs(y))[0]
-			y_ave /= np.max(y_ave)
-			mfcc_norm = np.zeros(mfcc.shape)
-			for n in range(mfcc.shape[1]):
-				mfcc_norm[:,n] = mfcc[:,n]*y_ave[n]
-			mfcc0.append(np.sum(mfcc_norm,axis=1)/mfcc.shape[1])
-		else:
-			mfcc0.append(np.sum(mfcc,axis=1)/mfcc.shape[1])
-	mfcc0 = np.asarray(mfcc0)
-	
+		# Here we take the average over a single impulse (for lack of a better measure...)
+		mfcc0.append(np.sum(mfcc,axis=1)/mfcc.shape[1])
+	if zero:
+		mfcc0 = np.asarray(mfcc0)
+	else:
+		# take out the zero-th MFCC - DC value (average loudness)
+		temp = np.asarray(mfcc0)
+		mfcc0 = temp[:,1:]
+
 	if barplot:
 		# print the mfcc0 matrix for all sounds
 		axprops = dict(xticks=[], yticks=[])
 		barprops = dict(aspect='auto', cmap=plt.cm.coolwarm, interpolation='nearest')
 		fig = plt.figure()
 		ax1 = fig.add_axes([0.1, 0.1, 3.1, 0.7], **axprops)
-		ax1.matshow(np.flip(mfcc0.T), **barprops)
+		cax = ax1.matshow(np.flip(mfcc0.T), **barprops)
+		fig.colorbar(cax)
 		plt.show()
+	
 	return(np.sort(waves),mfcc0)
 	
 def computeCompMPS(input_path,input_file,n_mels=13,barplot=True):
@@ -195,6 +195,7 @@ def computeCompMPS(input_path,input_file,n_mels=13,barplot=True):
 	for wav in np.sort(waves):
 		y, sr = librosa.load(wav)
 		S = librosa.feature.melspectrogram(y, sr=sr, n_mels=n_mels)
+		# Here we decompose the MPS in a one-dim component and an activation matrix
 		comps, acts = librosa.decompose.decompose(S, n_components=1,sort=True)
 		comps = np.reshape(comps,comps.shape[0])
 		mps0.append(comps)
@@ -205,7 +206,8 @@ def computeCompMPS(input_path,input_file,n_mels=13,barplot=True):
 		barprops = dict(aspect='auto', cmap=plt.cm.coolwarm, interpolation='nearest')
 		fig = plt.figure()
 		ax1 = fig.add_axes([0.1, 0.1, 3.1, 0.7], **axprops)
-		ax1.matshow(np.flip(mps0.T,axis=0), **barprops)
+		cax = ax1.matshow(np.flip(mps0.T,axis=0), **barprops)
+		fig.colorbar(cax)
 		plt.show()
 	return(np.sort(waves),mps0)
 	
