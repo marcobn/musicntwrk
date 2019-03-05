@@ -1,10 +1,13 @@
 #
 # sonifiPy
 #
-# A python/Csound/music21 library for data sonification
+# MUSIC𝄞NTWRK
+#
+# A python library for pitch class set and rhythmic sequences classification and manipulation, 
+# the generation of networks in generalized music and sound spaces, and the sonification of arbitrary data
 #
 # Copyright (C) 2018 Marco Buongiorno Nardelli
-# http://www.sonifipy.com, http://www.materialssoundmusic.com, mbn@unt.edu
+# http://www.materialssoundmusic.com, mbn@unt.edu
 #
 # This file is distributed under the terms of the
 # GNU General Public License. See the file `License'
