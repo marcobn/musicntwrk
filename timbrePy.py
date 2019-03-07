@@ -17,6 +17,7 @@
 
 import sys,re,time,os,glob
 import numpy as np
+from scipy.signal import hilbert
 import itertools as iter
 import pandas as pd
 import sklearn.metrics as sklm
@@ -189,7 +190,7 @@ def computeMFCC(input_path,input_file,barplot=True,zero=False):
 		fig.colorbar(cax)
 		plt.show()
 	
-	return(np.sort(waves),mfcc0)
+	return(np.sort(waves),np.ascontiguousarray(mfcc0))
 	
 def computeCompMPS(input_path,input_file,n_mels=13,barplot=True):
 	# read audio files in repository and compute the MPS
@@ -226,7 +227,7 @@ def timbralNetwork(waves,vector,thup=10,thdw=0.1):
 	dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
 	dnodes = pd.DataFrame(None,columns=['Label'])
 	for n in range(len(waves)):
-		nameseq = pd.DataFrame([waves[n].split('/')[1].split('.')[0]],columns=['Label'])
+		nameseq = pd.DataFrame([waves[n].split('/')[-1].split('.')[0]],columns=['Label'])
 		dnodes = dnodes.append(nameseq)
 	df = np.asarray(dnodes)
 	dnodes = pd.DataFrame(None,columns=['Label'])
@@ -317,3 +318,54 @@ def fetchWaves(url):
 		if 'wav' in link.get('href'):
 			print(link.get('href'))
 			wget.download(link.get('href'))
+
+def normSoundDecay(signal,sr,zero=1.0e-10,plot=False):
+	# evaluate the normalized sound decay envelope
+	t = np.arange(len(signal))/sr
+	analytic_signal = hilbert(signal)
+	amplitude_envelope = np.abs(analytic_signal)
+	maxsp = int(np.argwhere(np.abs(signal) < zero)[0])
+	alpha = np.poly1d(np.polyfit(t[:maxsp],np.log(amplitude_envelope[:maxsp]),1))
+	if plot:
+		plt.plot(t[:maxsp],np.log(amplitude_envelope[:maxsp]))
+		tp = np.linspace(0,t[maxsp],200)
+		plt.plot(tp,alpha(tp),'.')
+		plt.show()
+	return(np.abs(alpha[1]),alpha,t)
+	
+def computeASCBW(input_path,input_file,zero=1.0e-10,barplot=True):
+	# sound descriptor as normalized sound decay (alpha), spectral centoid and spectral bandwidth
+	# as in Aramaki et al. 2009
+	waves = list(glob.glob(os.path.join(input_path,input_file)))
+	ascbw = []
+	for wav in np.sort(waves):
+		y, sr = librosa.load(wav)
+		maxsp = int(np.argwhere(np.abs(y) < zero)[0])
+		try:
+			alpha0,_,_ = normSoundDecay(y,sr,plot=False)
+		except:
+			onset_frames = librosa.onset.onset_detect(y=y, sr=sr)
+			y = y[(onset_frames[0]+1):]
+			maxsp = int(np.argwhere(np.abs(y) < zero)[0])
+			alpha0,_,_ = normSoundDecay(y,sr,plot=False)
+		cent = librosa.feature.spectral_centroid(y=y, sr=sr,hop_length=maxsp)
+		spec_bw = librosa.feature.spectral_bandwidth(y=y, sr=sr,hop_length=maxsp)
+		ascbw.append([alpha0,cent[0,0],spec_bw[0,0]])
+	ascbw = np.asarray(ascbw)
+	# normalization to np.max
+	for i in range(3):
+		ascbw[:,i] /= np.max(ascbw[:,i])
+	
+	if barplot:
+		# print the ascbw matrix for all sounds
+		axprops = dict(xticks=[], yticks=[])
+		barprops = dict(aspect='auto', cmap=plt.cm.coolwarm, interpolation='nearest')
+		fig = plt.figure()
+		ax1 = fig.add_axes([0.1, 0.1, 3.1, 0.7], **axprops)
+		cax = ax1.matshow(ascbw.T, **barprops)
+		fig.colorbar(cax)
+		plt.show()
+	return(np.sort(waves),ascbw)
+
+
+	
