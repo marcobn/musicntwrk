@@ -173,12 +173,15 @@ def computeMFCC(input_path,input_file,barplot=True,zero=False,nmel=16):
 		S = librosa.feature.melspectrogram(y, sr=sr, n_mels=nmel)
 		log_S = librosa.power_to_db(S, ref=np.max)
 		mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=13)
-		# Here we take the average over a single impulse (for lack of a better measure...)
-		mfcc0.append(np.sum(mfcc,axis=1)/mfcc.shape[1])
+#		# Here we take the average over a single impulse (for lack of a better measure...)
+#		mfcc0.append(np.sum(mfcc,axis=1)/mfcc.shape[1])
+		# use mfcc[0] as weighting function for the average of the mfcc's over the full impulse
+		mfnorm = (mfcc[0]-np.min(mfcc[0]))/np.max(mfcc[0]-np.min(mfcc[0]))
+		mfcc0.append(mfcc.dot(mfnorm)/mfcc.shape[1])
 	if zero:
 		mfcc0 = np.asarray(mfcc0)
 	else:
-		# take out the zero-th MFCC - DC value (average loudness)
+		# take out the zero-th MFCC - DC value (power distribution)
 		temp = np.asarray(mfcc0)
 		mfcc0 = temp[:,1:]
 
