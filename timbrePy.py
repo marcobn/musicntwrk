@@ -164,7 +164,7 @@ def orchestralVectorColor(orch,dnodes,part,color=plt.cm.binary):
 	ax1.matshow(orch_color[:].T, **barprops)
 	plt.show()
 
-def computeMFCC(input_path,input_file,barplot=True,zero=False,nmel=16):
+def computeMFCC(input_path,input_file,barplot=True,zero=True,nmel=16):
 	# read audio files in repository and compute the MFCC
 	waves = list(glob.glob(os.path.join(input_path,input_file)))
 	mfcc0 = []
@@ -180,6 +180,7 @@ def computeMFCC(input_path,input_file,barplot=True,zero=False,nmel=16):
 		mfcc0.append(mfcc.dot(mfnorm)/mfcc.shape[1])
 	if zero:
 		mfcc0 = np.asarray(mfcc0)
+		mfcc[0] = mfnorm
 	else:
 		# take out the zero-th MFCC - DC value (power distribution)
 		temp = np.asarray(mfcc0)
@@ -197,6 +198,36 @@ def computeMFCC(input_path,input_file,barplot=True,zero=False,nmel=16):
 	
 	return(np.sort(waves),np.ascontiguousarray(mfcc0),mfcc)
 	
+def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13):
+	# read audio files in repository and compute the standardized (equal number of samples per file) 
+	# and normalized MFCC
+	waves = list(glob.glob(os.path.join(input_path,input_file)))
+	wf = []
+	for wav in np.sort(waves):
+		y, sr = librosa.load(wav)
+		wf.append(y)
+	wf = np.asarray(wf)
+	# standardization of the number of sample in every sound wav
+	lwf = []
+	for n in range(wf.shape[0]):
+		lwf.append(wf[n].shape[0])
+	lwf = np.asarray(lwf)
+	lmax = np.max(lwf)
+	mfcc = []
+	for n in range(wf.shape[0]):
+		wf[n] = np.pad(wf[n], (0, lmax-wf[n].shape[0]), 'constant')
+		S = librosa.feature.melspectrogram(wf[n], sr=sr, n_mels=nmel)
+		log_S = librosa.power_to_db(S, ref=np.max)
+		temp = librosa.feature.mfcc(S=log_S, n_mfcc=nmfcc)
+		# normalize mfcc[0] first
+		temp[0] = (temp[0]-np.min(temp[0]))/np.max(temp[0]-np.min(temp[0]))
+		temp = np.abs(temp)
+		maxtemp = np.max(temp[1:])
+		temp[1:] = temp[1:]/maxtemp
+		mfcc.append(temp)
+	mfcc = np.asarray(mfcc)
+	return(np.sort(waves),mfcc)
+		
 def computeCompMPS(input_path,input_file,n_mels=13,barplot=True):
 	# read audio files in repository and compute the MPS
 	waves = list(glob.glob(os.path.join(input_path,input_file)))
