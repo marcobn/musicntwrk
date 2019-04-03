@@ -554,6 +554,8 @@ def computeModifiedASCBW(input_path,input_file,zero=1.0e-10,scnd=False,method='M
 	ascbw = np.asarray(ascbw)
 	# normalization to np.max
 	ascbwu = np.zeros(ascbw.shape,dtype=float)
+	where_are_NaNs = np.isnan(ascbw)
+	ascbw[where_are_NaNs] = 0
 	for i in range(na):
 		ascbwu[:,i] = ascbw[:,i]
 		ascbw[:,i] /= np.max(ascbw[:,i])
