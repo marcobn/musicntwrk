@@ -198,7 +198,7 @@ def computeMFCC(input_path,input_file,barplot=True,zero=True,nmel=16):
 	
 	return(np.sort(waves),np.ascontiguousarray(mfcc0),mfcc)
 	
-def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13):
+def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,maxi=None):
 	# read audio files in repository and compute the standardized (equal number of samples per file) 
 	# and normalized MFCC
 	waves = list(glob.glob(os.path.join(input_path,input_file)))
@@ -208,25 +208,32 @@ def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13):
 		wf.append(y)
 	wf = np.asarray(wf)
 	# standardization of the number of sample in every sound wav
-	lwf = []
-	for n in range(wf.shape[0]):
-		lwf.append(wf[n].shape[0])
-	lwf = np.asarray(lwf)
-	lmax = np.max(lwf)
+	if lmax == None:
+		lwf = []
+		for n in range(wf.shape[0]):
+			lwf.append(wf[n].shape[0])
+		lwf = np.asarray(lwf)
+		lmax = np.max(lwf)
 	mfcc = []
 	for n in range(wf.shape[0]):
-		wf[n] = np.pad(wf[n], (0, lmax-wf[n].shape[0]), 'constant')
-		S = librosa.feature.melspectrogram(wf[n], sr=sr, n_mels=nmel)
+		if wf[n].shape[0] <= lmax:
+			wtmp = np.pad(wf[n], (0, lmax-wf[n].shape[0]), 'constant')
+		else:
+			wtmp = wf[n][:lmax]
+		S = librosa.feature.melspectrogram(wtmp, sr=sr, n_mels=nmel)
 		log_S = librosa.power_to_db(S, ref=np.max)
 		temp = librosa.feature.mfcc(S=log_S, n_mfcc=nmfcc)
 		# normalize mfcc[0] first
 		temp[0] = (temp[0]-np.min(temp[0]))/np.max(temp[0]-np.min(temp[0]))
 		temp = np.abs(temp)
-		maxtemp = np.max(temp[1:])
+		if maxi == None:
+			maxtemp = np.max(temp[1:])
+		else:
+			maxtemp = maxi
 		temp[1:] = temp[1:]/maxtemp
 		mfcc.append(temp)
 	mfcc = np.asarray(mfcc)
-	return(np.sort(waves),mfcc)
+	return(np.sort(waves),mfcc,lmax,maxtemp)
 		
 def computeCompMPS(input_path,input_file,n_mels=13,barplot=True):
 	# read audio files in repository and compute the MPS
