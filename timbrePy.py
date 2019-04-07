@@ -23,6 +23,9 @@ from numpy.linalg import lstsq
 import itertools as iter
 import pandas as pd
 import sklearn.metrics as sklm
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler,MinMaxScaler,Normalizer
+from sklearn.externals import joblib
 import networkx as nx
 import community as cm
 import music21 as m21
@@ -34,6 +37,8 @@ from vpython import *
 
 import librosa
 import librosa.display
+
+import tensorflow as tf
 
 from bs4 import BeautifulSoup
 import urllib
@@ -223,17 +228,17 @@ def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,max
 		S = librosa.feature.melspectrogram(wtmp, sr=sr, n_mels=nmel)
 		log_S = librosa.power_to_db(S, ref=np.max)
 		temp = librosa.feature.mfcc(S=log_S, n_mfcc=nmfcc)
-		# normalize mfcc[0] first
-		temp[0] = (temp[0]-np.min(temp[0]))/np.max(temp[0]-np.min(temp[0]))
-		temp = np.abs(temp)
-		if maxi == None:
-			maxtemp = np.max(temp[1:])
-		else:
-			maxtemp = maxi
-		temp[1:] = temp[1:]/maxtemp
+#		# normalize mfcc[0] first
+#		temp[0] = (temp[0]-np.min(temp[0]))/np.max(temp[0]-np.min(temp[0]))
+#		temp = np.abs(temp)
+#		if maxi == None:
+#			maxtemp = np.max(temp[1:])
+#		else:
+#			maxtemp = maxi
+#		temp[1:] = temp[1:]/maxtemp
 		mfcc.append(temp)
 	mfcc = np.asarray(mfcc)
-	return(np.sort(waves),mfcc,lmax,maxtemp)
+	return(np.sort(waves),mfcc,lmax) #,maxtemp)
 		
 def computeCompMPS(input_path,input_file,n_mels=13,barplot=True):
 	# read audio files in repository and compute the MPS
@@ -696,3 +701,101 @@ def SegmentedLinearReg( X, Y, breakpoints ):
 	Ysolution = a*ones + b*Xsolution + np.sum( Rk, axis=0 )
 
 	return (Xsolution, Ysolution)
+
+def prepareDataSet(mfcc,label,size=0.2):
+	
+	# N sounds for training - ~size*N sounds for testing
+	xtrain,xtest,y_train,y_test = train_test_split(mfcc, label, test_size=size)
+	# Data standardization
+	x_train = np.reshape(xtrain,(xtrain.shape[0],xtrain.shape[1]*xtrain.shape[2]),order='C')
+	x_test = np.reshape(xtest,(xtest.shape[0],xtest.shape[1]*xtest.shape[2]),order='C')
+	scaler = StandardScaler(with_std=True)
+	scaler.fit(x_train)
+	x_train_s = scaler.transform(x_train)
+	x_test_s = scaler.transform(x_test)
+	# Data normalization
+	normal = Normalizer(norm='max').fit(x_train_s)
+	x_train = normal.transform(x_train_s)
+	x_test = normal.transform(x_test_s)
+	
+	return(x_train,y_train,x_test,y_test,scaler,normal)
+
+def modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res):
+	filename = str(hex(int(time.time())))
+	model.save(filename+str(res.round(3))+'.h5')
+	np.save(filename+str(res.round(3))+'.test',x_test)
+	np.save(filename+str(res.round(3))+'.name_test',y_test)
+	np.save(filename+str(res.round(3))+'.train',x_train)
+	np.save(filename+str(res.round(3))+'.name_train',y_train)
+	joblib.dump(scaler, filename+str(res.round(3))+'.scaler') 
+	joblib.dump(normal, filename+str(res.round(3))+'.normal')
+	os.system('tar cvf '+filename+'.tar '+filename+'*')
+	os.system('rm '+filename+str(res.round(3))+'*')
+	
+def modelLoad(filename,npy=False):
+	model = tf.keras.models.load_model(filename+'.h5')
+	scaler = joblib.load(filename+'.scaler') 
+	normal = joblib.load(filename+'.normal')
+	if npy:
+		x_test = np.load(filename+'.test.npy')
+		y_test = np.load(filename+'.name_test.npy')
+		x_train = np.load(filename+'.train.npy')
+		y_train = np.load(filename+'.name_train.npy')
+		return(model,x_train,y_train,x_test,y_test,scaler,normal)
+	else:
+		return(model,scaler,normal)
+	
+def scaleDataSet(mfcc,scaler,normal):
+
+	# Data standardization
+	temp = np.reshape(mfcc,(mfcc.shape[0],mfcc.shape[1]*mfcc.shape[2]),order='C')
+	temp_s = scaler.transform(temp)
+	# Data normalization
+	temp = normal.transform(temp_s)
+
+	return(temp)
+	
+def multiModelPredictor(xnew,models,scalers,normals):
+	ynew = []
+	try: 
+		for m in range(len(models)):
+			temp = scaleDataSet(xnew,scalers[str(m)],normals[str(m)])
+			ynew.append(models[str(m)].predict_proba(temp)[0])
+		idx = np.argmax(np.sum(np.array(ynew),axis=0))
+	except:
+		temp = scaleDataSet(xnew,scalers,normals)
+		ynew.append(models.predict_proba(temp)[0])	
+		idx = np.argmax(np.array(ynew))
+	return(idx)
+												
+def readModels(path):
+
+	def extract_files(members):
+		for tarinfo in members:
+			if os.path.splitext(tarinfo.name)[1] == ".h5": 
+				yield tarinfo
+			elif os.path.splitext(tarinfo.name)[1] == ".normal":
+				yield tarinfo
+			elif os.path.splitext(tarinfo.name)[1] == ".scaler":
+				yield tarinfo
+				
+	# extract data from tar files
+	tar_files = list(glob.glob(os.path.join(path,'*.tar')))
+	for file in tar_files:
+		tar = tarfile.open(file)
+		member=extract_files(tar)
+		tar.extractall(members=member)
+		tar.close()
+
+	# load model parameters, scaler and normalizer for each model
+	modelfiles = list(glob.glob(os.path.join(path,'*.h5')))
+	ynew = []
+	models = {}
+	scalers = {}
+	normals = {}
+	n = 0 
+	for file in modelfiles:
+		models[str(n)],scalers[str(n)],normals[str(n)] = modelLoad(str(file[+2:-3]))
+		n += 1
+	return(models,scalers,normals,modelfiles)
+	
