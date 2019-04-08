@@ -15,7 +15,7 @@
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
 
-import sys,re,time,os,glob
+import sys,re,time,os,glob, tarfile, pickle
 import numpy as np
 from scipy.signal import hilbert
 from scipy.signal import argrelextrema
@@ -720,30 +720,38 @@ def prepareDataSet(mfcc,label,size=0.2):
 	
 	return(x_train,y_train,x_test,y_test,scaler,normal)
 
-def modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res):
-	filename = str(hex(int(time.time())))
-	model.save(filename+str(res.round(3))+'.h5')
-	np.save(filename+str(res.round(3))+'.test',x_test)
-	np.save(filename+str(res.round(3))+'.name_test',y_test)
-	np.save(filename+str(res.round(3))+'.train',x_train)
-	np.save(filename+str(res.round(3))+'.name_train',y_train)
-	joblib.dump(scaler, filename+str(res.round(3))+'.scaler') 
-	joblib.dump(normal, filename+str(res.round(3))+'.normal')
+def modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res,train):
+	filename = str(hex(int(time.time())))+'_'+str(res.round(3))
+	model.save(filename+'.h5')
+	np.save(filename+'.test',x_test)
+	np.save(filename+'.name_test',y_test)
+	np.save(filename+'.train',x_train)
+	np.save(filename+'.name_train',y_train)
+	joblib.dump(scaler, filename+'.scaler') 
+	joblib.dump(normal, filename+'.normal')
+	with open(filename+'.train.dict','wb') as file_pi:
+		pickle.dump(train.history, file_pi)
 	os.system('tar cvf '+filename+'.tar '+filename+'*')
-	os.system('rm '+filename+str(res.round(3))+'*')
+	os.system('rm '+filename+'.h5')
+	os.system('rm '+filename+'*.npy')
+	os.system('rm '+filename+'.scaler')
+	os.system('rm '+filename+'.normal')
+	os.system('rm '+filename+'*.dict')
 	
 def modelLoad(filename,npy=False):
 	model = tf.keras.models.load_model(filename+'.h5')
 	scaler = joblib.load(filename+'.scaler') 
 	normal = joblib.load(filename+'.normal')
+	with open(filename+'.train.dict','rb') as file_pi:
+		trdict=pickle.load(file_pi)
 	if npy:
 		x_test = np.load(filename+'.test.npy')
 		y_test = np.load(filename+'.name_test.npy')
 		x_train = np.load(filename+'.train.npy')
 		y_train = np.load(filename+'.name_train.npy')
-		return(model,x_train,y_train,x_test,y_test,scaler,normal)
+		return(model,x_train,y_train,x_test,y_test,scaler,normal,trdict)
 	else:
-		return(model,scaler,normal)
+		return(model,scaler,normal,trdict)
 	
 def scaleDataSet(mfcc,scaler,normal):
 
