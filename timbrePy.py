@@ -742,8 +742,15 @@ def modelLoad(filename,npy=False):
 	model = tf.keras.models.load_model(filename+'.h5')
 	scaler = joblib.load(filename+'.scaler') 
 	normal = joblib.load(filename+'.normal')
-	with open(filename+'.train.dict','rb') as file_pi:
-		trdict=pickle.load(file_pi)
+	try:
+		with open(filename+'.train.dict','rb') as file_pi:
+			trdict=pickle.load(file_pi)
+	except:
+		try:
+			with open(filename+'train.dict','rb') as file_pi:
+				trdict=pickle.load(file_pi)
+		except:
+			pass
 	if npy:
 		x_test = np.load(filename+'.test.npy')
 		y_test = np.load(filename+'.name_test.npy')
@@ -751,7 +758,10 @@ def modelLoad(filename,npy=False):
 		y_train = np.load(filename+'.name_train.npy')
 		return(model,x_train,y_train,x_test,y_test,scaler,normal,trdict)
 	else:
-		return(model,scaler,normal,trdict)
+		try:
+			return(model,scaler,normal,trdict)
+		except:
+			return(model,scaler,normal)
 	
 def scaleDataSet(mfcc,scaler,normal):
 
@@ -768,13 +778,22 @@ def multiModelPredictor(xnew,models,scalers,normals):
 	try: 
 		for m in range(len(models)):
 			temp = scaleDataSet(xnew,scalers[str(m)],normals[str(m)])
-			ynew.append(models[str(m)].predict_proba(temp)[0])
+			try:
+				ynew.append(models[str(m)].predict_proba(temp)[0])
+			except:
+				temp = np.reshape(temp,(temp.shape[0],xnew.shape[1],xnew.shape[2],1),order='C')
+				ynew.append(models[str(m)].predict_proba(temp)[0])
 		idx = np.argmax(np.sum(np.array(ynew),axis=0))
+		ynew = np.sum(np.array(ynew),axis=0)/len(models)
 	except:
 		temp = scaleDataSet(xnew,scalers,normals)
-		ynew.append(models.predict_proba(temp)[0])	
+		try:
+			ynew.append(models.predict_proba(temp)[0])	
+		except:
+			temp = np.reshape(temp,(1,xnew.shape[1],xnew.shape[2],1),order='C')
+			ynew.append(models.predict_proba(temp)[0])
 		idx = np.argmax(np.array(ynew))
-	return(idx)
+	return(idx,ynew)
 												
 def readModels(path):
 
@@ -785,6 +804,8 @@ def readModels(path):
 			elif os.path.splitext(tarinfo.name)[1] == ".normal":
 				yield tarinfo
 			elif os.path.splitext(tarinfo.name)[1] == ".scaler":
+				yield tarinfo
+			elif os.path.splitext(tarinfo.name)[1] == ".dict":
 				yield tarinfo
 				
 	# extract data from tar files
@@ -801,9 +822,14 @@ def readModels(path):
 	models = {}
 	scalers = {}
 	normals = {}
+	trdicts = {}
 	n = 0 
 	for file in modelfiles:
-		models[str(n)],scalers[str(n)],normals[str(n)] = modelLoad(str(file[+2:-3]))
+		try:
+			models[str(n)],scalers[str(n)],normals[str(n)],trdicts[str(n)] = modelLoad(str(file[+2:-3]))
+		except:
+			models[str(n)],scalers[str(n)],normals[str(n)] = modelLoad(str(file[+2:-3]))
+			trdicts[str(n)] = None
 		n += 1
-	return(models,scalers,normals,modelfiles)
+	return(models,scalers,normals,trdicts,modelfiles)
 	
