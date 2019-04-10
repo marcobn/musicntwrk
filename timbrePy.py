@@ -203,7 +203,7 @@ def computeMFCC(input_path,input_file,barplot=True,zero=True,nmel=16):
 	
 	return(np.sort(waves),np.ascontiguousarray(mfcc0),mfcc)
 	
-def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,maxi=None):
+def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,maxi=None,nbins=None):
 	# read audio files in repository and compute the standardized (equal number of samples per file) 
 	# and normalized MFCC
 	waves = list(glob.glob(os.path.join(input_path,input_file)))
@@ -225,7 +225,11 @@ def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,max
 			wtmp = np.pad(wf[n], (0, lmax-wf[n].shape[0]), 'constant')
 		else:
 			wtmp = wf[n][:lmax]
-		S = librosa.feature.melspectrogram(wtmp, sr=sr, n_mels=nmel)
+		if nbins == None:
+			hopl = 512
+		else:
+			hopl = round(int(lmax/nbins)/2)*2
+		S = librosa.feature.melspectrogram(wtmp, sr=sr, n_mels=nmel,hop_length=hopl)
 		log_S = librosa.power_to_db(S, ref=np.max)
 		temp = librosa.feature.mfcc(S=log_S, n_mfcc=nmfcc)
 #		# normalize mfcc[0] first
@@ -788,14 +792,14 @@ def multiModelPredictor(xnew,models,scalers,normals):
 	except:
 		temp = scaleDataSet(xnew,scalers,normals)
 		try:
-			ynew.append(models.predict_proba(temp)[0])	
+			ynew.append(models.predict_proba(temp)[0])
 		except:
 			temp = np.reshape(temp,(1,xnew.shape[1],xnew.shape[2],1),order='C')
 			ynew.append(models.predict_proba(temp)[0])
 		idx = np.argmax(np.array(ynew))
 	return(idx,ynew)
 												
-def readModels(path):
+def readModels(path,filename):
 
 	def extract_files(members):
 		for tarinfo in members:
@@ -807,9 +811,9 @@ def readModels(path):
 				yield tarinfo
 			elif os.path.splitext(tarinfo.name)[1] == ".dict":
 				yield tarinfo
-				
+
 	# extract data from tar files
-	tar_files = list(glob.glob(os.path.join(path,'*.tar')))
+	tar_files = list(glob.glob(os.path.join(path,filename)))
 	for file in tar_files:
 		tar = tarfile.open(file)
 		member=extract_files(tar)
@@ -832,4 +836,109 @@ def readModels(path):
 			trdicts[str(n)] = None
 		n += 1
 	return(models,scalers,normals,trdicts,modelfiles)
-	
+
+def trainNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes=2,epoch=30,verb=0,thr=0.85,w=False):
+	# train a 2 layers NN
+
+	config = tf.ConfigProto(device_count={'GPU':gpu, 'CPU':cpu})
+	sess = tf.Session(config=config)
+
+	# Train the model
+	for trial in range(niter):
+
+		if trial%10 == 0: x_train,y_train,x_test,y_test,scaler,normal = prepareDataSet(mfcc,label,size=test)
+		shapedata = (x_train.shape[1],)
+
+		# train the model
+		nnn = neur
+		model = tf.keras.models.Sequential([
+			tf.keras.layers.Flatten(input_shape=shapedata),
+			tf.keras.layers.Dense(nnn, activation=tf.nn.relu),
+			tf.keras.layers.Dropout(0.3),
+			tf.keras.layers.Dense(2*nnn, activation=tf.nn.relu),
+			tf.keras.layers.Dropout(0.2),
+			tf.keras.layers.Dense(num_classes, activation=tf.nn.softmax)])
+
+		model.compile(optimizer='adam',
+									loss='sparse_categorical_crossentropy',
+									metrics=['accuracy'])
+
+		train = model.fit(x_train, y_train, epochs=epoch, verbose=verb,validation_data=(x_test,y_test))
+
+		res = model.evaluate(x_test, y_test, verbose=0)
+		print('loss ',res[0],'accuracy ',res[1])
+		if res[1] > thr and w == True:
+			print('found good match ',res[1].round(3))
+			modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)
+	sess.close()
+	return(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)	
+
+def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes=2,
+									epoch=30,verb=0,thr=0.85,w=False):
+	# Convolutional NN
+
+	config = tf.ConfigProto(device_count={'GPU':gpu, 'CPU':cpu})
+	sess = tf.Session(config=config)
+
+	# Train the model
+	for trial in range(niter):
+
+		if trial%10 == 0: x_train,y_train,x_test,y_test,scaler,normal = prepareDataSet(mfcc,label,size=test)
+		shapedata = (x_train.shape[1],)
+		x_train = np.reshape(x_train,(x_train.shape[0],mfcc.shape[1],mfcc.shape[2],1),order='C')
+		x_test = np.reshape(x_test,(x_test.shape[0],mfcc.shape[1],mfcc.shape[2],1),order='C')    
+
+		# train the model
+		batch_size = None
+		nnn = neur
+
+		model = Sequential()
+		model.add(Conv2D(nnn, kernel_size=(3, 3),activation='linear',
+										 input_shape=(mfcc.shape[1],mfcc.shape[2],1),padding='same'))
+		model.add(LeakyReLU(alpha=0.1))
+		model.add(MaxPooling2D((2, 2),padding='same'))
+		model.add(Dropout(0.25))
+		model.add(Conv2D(2*nnn, (3, 3), activation='linear',padding='same'))
+		model.add(LeakyReLU(alpha=0.1))
+		model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+		model.add(Conv2D(4*nnn, (3, 3), activation='linear',padding='same'))
+		model.add(LeakyReLU(alpha=0.1))                  
+		model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+		model.add(Dropout(0.4))
+		model.add(Flatten())
+		model.add(Dense(4*nnn, activation='linear'))
+		model.add(LeakyReLU(alpha=0.1))  
+		model.add(Dropout(0.3))
+		model.add(Dense(num_classes, activation='softmax'))
+
+		model.compile(optimizer='adam',
+									loss='sparse_categorical_crossentropy',
+									metrics=['accuracy'])
+
+		train = model.fit(x_train, y_train, epochs=epoch, verbose=verb,validation_data=(x_test,y_test))
+
+		res = model.evaluate(x_test, y_test, verbose=0)
+		print('loss ',res[0],'accuracy ',res[1])
+		if res[1] >= thr and w == True:
+			print('found good match ',res[1].round(3))
+			modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)
+	sess.close()
+	return(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)
+
+def checkRun(train):
+	# plot accuracy and loss for training and validation sets over epochs
+	accuracy = train.history['acc']
+	val_accuracy = train.history['val_acc']
+	loss = train.history['loss']
+	val_loss = train.history['val_loss']
+	epochs = range(len(accuracy))
+	plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
+	plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
+	plt.title('Training and validation accuracy')
+	plt.legend()
+	plt.figure()
+	plt.plot(epochs, loss, 'bo', label='Training loss')
+	plt.plot(epochs, val_loss, 'b', label='Validation loss')
+	plt.title('Training and validation loss')
+	plt.legend()
+	plt.show()
