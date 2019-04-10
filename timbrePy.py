@@ -835,6 +835,7 @@ def readModels(path,filename):
 			models[str(n)],scalers[str(n)],normals[str(n)] = modelLoad(str(file[+2:-3]))
 			trdicts[str(n)] = None
 		n += 1
+		os.system('rm '+str(file[+2:-3])+'.h5 '+str(file[+2:-3])+'.scaler '+str(file[+2:-3])+'.normal '+str(file[+2:-3])+'.train.dict')
 	return(models,scalers,normals,trdicts,modelfiles)
 
 def trainNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes=2,epoch=30,verb=0,thr=0.85,w=False):
@@ -927,18 +928,35 @@ def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes
 
 def checkRun(train):
 	# plot accuracy and loss for training and validation sets over epochs
-	accuracy = train.history['acc']
-	val_accuracy = train.history['val_acc']
-	loss = train.history['loss']
-	val_loss = train.history['val_loss']
-	epochs = range(len(accuracy))
-	plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
-	plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
-	plt.title('Training and validation accuracy')
-	plt.legend()
-	plt.figure()
-	plt.plot(epochs, loss, 'bo', label='Training loss')
-	plt.plot(epochs, val_loss, 'b', label='Validation loss')
-	plt.title('Training and validation loss')
-	plt.legend()
-	plt.show()
+	try:
+		accuracy = train.history['acc']
+		val_accuracy = train.history['val_acc']
+		loss = train.history['loss']
+		val_loss = train.history['val_loss']
+		epochs = range(len(accuracy))
+		plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
+		plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
+		plt.title('Training and validation accuracy')
+		plt.legend()
+		plt.figure()
+		plt.plot(epochs, loss, 'bo', label='Training loss')
+		plt.plot(epochs, val_loss, 'b', label='Validation loss')
+		plt.title('Training and validation loss')
+		plt.legend()
+		plt.show()
+	except:
+		accuracy = train['0']['acc']
+		val_accuracy = train['0']['val_acc']
+		loss = train['0']['loss']
+		val_loss = train['0']['val_loss']
+		epochs = range(len(accuracy))
+		plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
+		plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
+		plt.title('Training and validation accuracy')
+		plt.legend()
+		plt.figure()
+		plt.plot(epochs, loss, 'bo', label='Training loss')
+		plt.plot(epochs, val_loss, 'b', label='Validation loss')
+		plt.title('Training and validation loss')
+		plt.legend()
+		plt.show()
