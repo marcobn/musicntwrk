@@ -252,7 +252,7 @@ def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,max
 	mfcc = np.asarray(mfcc)
 	return(np.sort(waves),mfcc,lmax)
 
-def computeStandardizedPSCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,maxi=None,nbins=None):
+def computeStandardizedPSCC(input_path,input_file,npscc=13,lmax=None,maxi=None,nbins=None):
 	# read audio files in repository and compute the standardized (equal number of samples per file) 
 	# and normalized PSCC
 	waves = list(glob.glob(os.path.join(input_path,input_file)))
@@ -277,11 +277,11 @@ def computeStandardizedPSCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,max
 		if nbins == None:
 			hopl = 512
 		else:
-			hopl = round(int(lmax/nbins)/2)*2
+			hopl = int((lmax/nbins)*2/2+1)
 		# power (energy-squared) spectrogram
-		D = np.abs(librosa.stft(y,hop_length=hopl))**2
+		D = np.abs(librosa.stft(wtmp,hop_length=hopl))**2
 		log_D = librosa.power_to_db(D, ref=np.max)
-		temp = librosa.feature.mfcc(S=log_D, n_mfcc=nmfcc)
+		temp = librosa.feature.mfcc(S=log_D, n_mfcc=npscc)
 		pscc.append(temp)
 	pscc = np.asarray(pscc)
 	return(np.sort(waves),pscc,lmax)
