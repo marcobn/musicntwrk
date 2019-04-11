@@ -250,7 +250,41 @@ def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,max
 #		temp[1:] = temp[1:]/maxtemp
 		mfcc.append(temp)
 	mfcc = np.asarray(mfcc)
-	return(np.sort(waves),mfcc,lmax) #,maxtemp)
+	return(np.sort(waves),mfcc,lmax)
+
+def computeStandardizedPSCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,maxi=None,nbins=None):
+	# read audio files in repository and compute the standardized (equal number of samples per file) 
+	# and normalized PSCC
+	waves = list(glob.glob(os.path.join(input_path,input_file)))
+	wf = []
+	for wav in np.sort(waves):
+		y, sr = librosa.load(wav)
+		wf.append(y)
+	wf = np.asarray(wf)
+	# standardization of the number of sample in every sound wav
+	if lmax == None:
+		lwf = []
+		for n in range(wf.shape[0]):
+			lwf.append(wf[n].shape[0])
+		lwf = np.asarray(lwf)
+		lmax = np.max(lwf)
+	pscc = []
+	for n in range(wf.shape[0]):
+		if wf[n].shape[0] <= lmax:
+			wtmp = np.pad(wf[n], (0, lmax-wf[n].shape[0]), 'constant')
+		else:
+			wtmp = wf[n][:lmax]
+		if nbins == None:
+			hopl = 512
+		else:
+			hopl = round(int(lmax/nbins)/2)*2
+		# power (energy-squared) spectrogram
+		D = np.abs(librosa.stft(y,hop_length=hopl))**2
+		log_D = librosa.power_to_db(D, ref=np.max)
+		temp = librosa.feature.mfcc(S=log_D, n_mfcc=nmfcc)
+		pscc.append(temp)
+	pscc = np.asarray(pscc)
+	return(np.sort(waves),pscc,lmax)
 		
 def computeCompMPS(input_path,input_file,n_mels=13,barplot=True):
 	# read audio files in repository and compute the MPS
@@ -846,7 +880,7 @@ def readModels(path,filename):
 		os.system('rm '+str(file[+2:-3])+'.h5 '+str(file[+2:-3])+'.scaler '+str(file[+2:-3])+'.normal '+str(file[+2:-3])+'.train.dict')
 	return(models,scalers,normals,trdicts,modelfiles)
 
-def trainNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes=2,epoch=30,verb=0,thr=0.85,w=False):
+def trainNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,num_classes=2,epoch=30,verb=0,thr=0.85,w=False):
 	# train a 2 layers NN
 
 	config = tf.ConfigProto(device_count={'GPU':gpu, 'CPU':cpu})
@@ -855,7 +889,7 @@ def trainNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes=
 	# Train the model
 	for trial in range(niter):
 
-		if trial%10 == 0: x_train,y_train,x_test,y_test,scaler,normal = prepareDataSet(mfcc,label,size=test)
+		if trial%nstep == 0: x_train,y_train,x_test,y_test,scaler,normal = prepareDataSet(mfcc,label,size=test)
 		shapedata = (x_train.shape[1],)
 
 		# train the model
@@ -882,7 +916,7 @@ def trainNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes=
 	sess.close()
 	return(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)	
 
-def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes=2,
+def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,num_classes=2,
 									epoch=30,verb=0,thr=0.85,w=False):
 	# Convolutional NN
 
@@ -892,7 +926,7 @@ def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes
 	# Train the model
 	for trial in range(niter):
 
-		if trial%10 == 0: x_train,y_train,x_test,y_test,scaler,normal = prepareDataSet(mfcc,label,size=test)
+		if trial%nstep == 0: x_train,y_train,x_test,y_test,scaler,normal = prepareDataSet(mfcc,label,size=test)
 		shapedata = (x_train.shape[1],)
 		x_train = np.reshape(x_train,(x_train.shape[0],mfcc.shape[1],mfcc.shape[2],1),order='C')
 		x_test = np.reshape(x_test,(x_test.shape[0],mfcc.shape[1],mfcc.shape[2],1),order='C')    
