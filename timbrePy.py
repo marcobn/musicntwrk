@@ -14,6 +14,10 @@
 # in the root directory of the present distribution,
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+warnings.filterwarnings("ignore", message="Conversion of the second argument of issubdtype")
 
 import sys,re,time,os,glob, tarfile, pickle
 import numpy as np
@@ -26,6 +30,12 @@ import sklearn.metrics as sklm
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler,MinMaxScaler,Normalizer
 from sklearn.externals import joblib
+
+import tensorflow as tf
+from tensorflow.keras.models import Sequential,Model
+from tensorflow.keras.layers import Dense, Dropout, Flatten
+from tensorflow.keras.layers import Conv2D, MaxPooling2D
+from tensorflow.keras.layers import LeakyReLU
 import networkx as nx
 import community as cm
 import music21 as m21
@@ -37,8 +47,6 @@ from vpython import *
 
 import librosa
 import librosa.display
-
-import tensorflow as tf
 
 from bs4 import BeautifulSoup
 import urllib
@@ -945,18 +953,22 @@ def checkRun(train):
 		plt.legend()
 		plt.show()
 	except:
-		accuracy = train['0']['acc']
-		val_accuracy = train['0']['val_acc']
-		loss = train['0']['loss']
-		val_loss = train['0']['val_loss']
-		epochs = range(len(accuracy))
-		plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
-		plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
-		plt.title('Training and validation accuracy')
-		plt.legend()
-		plt.figure()
-		plt.plot(epochs, loss, 'bo', label='Training loss')
-		plt.plot(epochs, val_loss, 'b', label='Validation loss')
-		plt.title('Training and validation loss')
-		plt.legend()
-		plt.show()
+		for n in range(len(train)):
+			accuracy = train[str(n)]['acc']
+			val_accuracy = train[str(n)]['val_acc']
+			loss = train[str(n)]['loss']
+			val_loss = train[str(n)]['val_loss']
+			epochs = range(len(accuracy))
+			print('Model: ',modelfiles[n])
+			plt.figure(figsize=(14,8))
+			plt.subplot(3, 2, 3)
+			plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
+			plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
+			plt.title('Training and validation accuracy')
+			plt.legend()
+			plt.subplot(3, 2, 4)
+			plt.plot(epochs, loss, 'bo', label='Training loss')
+			plt.plot(epochs, val_loss, 'b', label='Validation loss')
+			plt.title('Training and validation loss')
+			plt.legend()
+			plt.show()
