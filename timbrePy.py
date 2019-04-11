@@ -934,7 +934,7 @@ def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,neur=16,test=0.08,num_classes
 	sess.close()
 	return(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)
 
-def checkRun(train):
+def checkRun(train,modelfiles):
 	# plot accuracy and loss for training and validation sets over epochs
 	try:
 		accuracy = train.history['acc']
@@ -942,11 +942,14 @@ def checkRun(train):
 		loss = train.history['loss']
 		val_loss = train.history['val_loss']
 		epochs = range(len(accuracy))
+		print('Model: ',modelfiles)
+		plt.figure(figsize=(14,8))
+		plt.subplot(3, 2, 3)
 		plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
 		plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
 		plt.title('Training and validation accuracy')
 		plt.legend()
-		plt.figure()
+		plt.subplot(3, 2, 4)
 		plt.plot(epochs, loss, 'bo', label='Training loss')
 		plt.plot(epochs, val_loss, 'b', label='Validation loss')
 		plt.title('Training and validation loss')
