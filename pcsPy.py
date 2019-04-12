@@ -41,7 +41,8 @@ class PCSet:
         '''
         •	pcs (int)– pitch class set as list or numpy array
         •	TET (int)- number of allowed pitches in the totality of the musical space (temperament). Default = 12 tones equal temperament
-        •	UNI (logical)– if True, eliminate duplicate pitches (default)
+        •	UNI (logical) – if True, eliminate duplicate pitches (default)
+        •   ORD (logical) - if True, sorts the pcs in ascending order
         '''
         if UNI == True:
             self.pcs = np.unique(pcs)
@@ -340,7 +341,7 @@ def pcsDictionary(Nc,order=0,TET=12,row=False,a=None):
     '''
     •	Generate the dictionary of all possible pcs of a given cardinality in a generalized musical space of TET pitches
     •	Nc (int)– cardinality
-    •	order (logical)– if 0 returns pcs in prime form, if 1 retrns pcs in normal order, if 2, returns pcs in normal 0 order
+    •	order (logical)– if 0 returns pcs in prime form, if 1 returns pcs in normal order, if 2, returns pcs in normal 0 order
     •	row (logical)– if True build dictionary from tone row, if False, build dictionary from all combinatorial pcs of Nc cardinality given the totality of TET.
     •	if row = True, a is the list of pitches in the tone row (int)
     •	returns the dictionary as pandas DataFrame and the list of all Z-related pcs
@@ -1174,9 +1175,16 @@ def init_list_of_objects(size):
         list_of_objects.append( list() ) #different object reference each time
     return list_of_objects
 
-def plotCurve(y):
+def plotCurveY(y):
     stage=canvas()
     f1=gcurve()
     f1 = gcurve(color=color.blue)
     for n in range(y.shape[0]):
         f1.plot(pos=(n,y[n]))
+        
+def plotCurveXY(x,y):
+    stage=canvas()
+    f1=gcurve()
+    f1 = gcurve(color=color.blue)
+    for n in range(y.shape[0]):
+        f1.plot(pos=(x[n],y[n]))
