@@ -236,12 +236,12 @@ def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,max
 		if nbins == None:
 			hopl = 512
 		else:
-			hopl = round(int(lmax/nbins)/2)*2
+			hopl = hopl = int((lmax/nbins)*2/2+1) #round(int(lmax/nbins)/2)*2
 		S = librosa.feature.melspectrogram(wtmp, sr=sr, n_mels=nmel,hop_length=hopl)
 		log_S = librosa.power_to_db(S, ref=np.max)
 		temp = librosa.feature.mfcc(S=log_S, n_mfcc=nmfcc)
-#		# normalize mfcc[0] first
-#		temp[0] = (temp[0]-np.min(temp[0]))/np.max(temp[0]-np.min(temp[0]))
+		# normalize mfcc[0] first
+		temp[0] = (temp[0]-np.min(temp[0]))/np.max(temp[0]-np.min(temp[0]))
 #		temp = np.abs(temp)
 #		if maxi == None:
 #			maxtemp = np.max(temp[1:])
@@ -282,6 +282,8 @@ def computeStandardizedPSCC(input_path,input_file,npscc=13,lmax=None,maxi=None,n
 		D = np.abs(librosa.stft(wtmp,hop_length=hopl))**2
 		log_D = librosa.power_to_db(D, ref=np.max)
 		temp = librosa.feature.mfcc(S=log_D, n_mfcc=npscc)
+		# normalize mfcc[0] first
+		temp[0] = (temp[0]-np.min(temp[0]))/np.max(temp[0]-np.min(temp[0]))
 		pscc.append(temp)
 	pscc = np.asarray(pscc)
 	return(np.sort(waves),pscc,lmax)
@@ -1019,3 +1021,19 @@ def plotCC(cc,title='None'):
 	plt.axis('tight')
 	plt.tight_layout()
 	plt.show()
+
+def findLengthMax(input_path,input_file):
+	# read audio files in repository and compute the number of samples
+	waves = list(glob.glob(os.path.join(input_path,input_file)))
+	wf = []
+	for wav in np.sort(waves):
+		y, sr = librosa.load(wav)
+		wf.append(y)
+	wf = np.asarray(wf)
+	# find length of sound for standardization of the number of samples in every file wav
+	lwf = []
+	for n in range(wf.shape[0]):
+		lwf.append(wf[n].shape[0])
+	lwf = np.asarray(lwf)
+	lmax = np.max(lwf)
+	return(np.sort(waves),lwf,lmax)
