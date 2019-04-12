@@ -1009,3 +1009,13 @@ def checkRun(train,modelfiles):
 			plt.title('Training and validation loss')
 			plt.legend()
 			plt.show()
+
+def plotCC(cc,title='None'):
+	plt.figure(figsize=(10,8))
+	plt.subplot(3, 1, 2)
+	librosa.display.specshow(cc)
+	plt.colorbar()
+	plt.title(title)
+	plt.axis('tight')
+	plt.tight_layout()
+	plt.show()
