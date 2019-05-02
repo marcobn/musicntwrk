@@ -211,6 +211,38 @@ def computeMFCC(input_path,input_file,barplot=True,zero=True,nmel=16):
 	
 	return(np.sort(waves),np.ascontiguousarray(mfcc0),mfcc)
 	
+def computePSCC(input_path,input_file,barplot=True,zero=True):
+	# read audio files in repository and compute the PSCC
+	waves = list(glob.glob(os.path.join(input_path,input_file)))
+	mfcc0 = []
+	for wav in np.sort(waves):
+		y, sr = librosa.load(wav)
+		S = np.abs(librosa.stft(y))**2
+		log_S = librosa.power_to_db(S, ref=np.max)
+		mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=13)
+		# use mfcc[0] as weighting function for the average of the mfcc's over the full impulse
+		mfnorm = (mfcc[0]-np.min(mfcc[0]))/np.max(mfcc[0]-np.min(mfcc[0]))
+		mfcc0.append(mfcc.dot(mfnorm)/mfcc.shape[1])
+	if zero:
+		mfcc0 = np.asarray(mfcc0)
+		mfcc[0] = mfnorm
+	else:
+		# take out the zero-th MFCC - DC value (power distribution)
+		temp = np.asarray(mfcc0)
+		mfcc0 = temp[:,1:]
+
+	if barplot:
+		# print the mfcc0 matrix for all sounds
+		axprops = dict(xticks=[], yticks=[])
+		barprops = dict(aspect='auto', cmap=plt.cm.coolwarm, interpolation='nearest')
+		fig = plt.figure()
+		ax1 = fig.add_axes([0.1, 0.1, 3.1, 0.7], **axprops)
+		cax = ax1.matshow(np.flip(mfcc0.T), **barprops)
+		fig.colorbar(cax)
+		plt.show()
+
+	return(np.sort(waves),np.ascontiguousarray(mfcc0),mfcc)
+	
 def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,maxi=None,nbins=None):
 	# read audio files in repository and compute the standardized (equal number of samples per file) 
 	# and normalized MFCC
