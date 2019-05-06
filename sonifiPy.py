@@ -541,7 +541,6 @@ e
 	cs.reset
 
 	# Clean up files
-	os.remove(path+'DSI_CSound.dat')
 	os.remove(path+'DSIscore.inc')
 
 def scaleMapping(scale):
