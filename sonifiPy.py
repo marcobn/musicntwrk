@@ -336,7 +336,7 @@ def i_spectral2(xv,yv,itime,path='./',instr='noise'):
 	# Clean up files
 	os.remove(path+'DSI_CSound.dat')
 	
-def i_specral_pyo(xv,yv,graphics=False):
+def i_spectral_pyo(xv,yv,graphics=False):
 	# As i_spectral2 but uses pyo as audio engine
 	'''
 	# How to use the function 
