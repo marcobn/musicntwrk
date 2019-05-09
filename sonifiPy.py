@@ -419,6 +419,58 @@ def i_spectral_pyo(xv,yv,graphics=False):
 	if graphics: s.gui(locals())
 	return(s,a)
 
+def i_spectral_pure(sigpath,sigfil,firpath,firsig):
+	
+	# As i_spectral2 but does not need audio engine - requires a signal file (wav) to filter
+	
+	# read signal
+	sf, sr = librosa.load(sigpath+sigfil)
+	# read function for convolution
+	xv, y = r_1Ddata(firpath,firsig)
+	yv = y[0]
+	nlines = xv.shape[0]
+
+	nbins = int(np.sqrt(nlines)-np.sqrt(nlines)%1)**2
+	while nbins > nlines or not(nbins != 0 and ((nbins & (nbins - 1)) == 0)):
+		nbins = int((np.sqrt(nbins)-1)**2)
+	yfft = np.zeros((nbins),dtype=int)
+	for n in range(nbins):
+		yfft[n] = n+1
+
+	xminf = xv[0]
+	xmaxf = xv[-1]
+	xvf=np.asarray(xv)
+	xvs = (xv-xminf)/(xmaxf-xminf)*nbins
+	for line in range(nlines):
+		if xvs[line] >= nbins: xvs[line] = -1 
+		xvf[line] = yfft[int(xvs[line])]
+
+	# Normalization of the data shape into MIDI velocity
+
+	yminf = min(yv)
+	ymaxf = max(yv)
+	yvf=np.asarray(yv)
+	yvf = (yv-yminf)/(ymaxf-yminf)*127
+
+	vel=np.zeros((nbins),dtype=float)
+	nvel=0
+	for note in range(nbins):
+		for line in range(nlines):
+			if xvf[line] == yfft[note]:
+				vel[nvel] = yvf[line]
+				nvel=nvel+1
+				break
+
+	velmax = max(vel)
+	vel /= velmax
+	# FFT for FIR filter
+	ftvel = FFT.irfft(vel)
+	ftvel = FFT.fftshift(ftvel)
+	# convolution:
+	fir = scipy.signal.convolve(sf,ftvel,mode='same')
+	
+	return(fir)
+
 def i_time_series(xv,yv,path='./',instr='csb701'):
 	
 	# Normalization of the bands into frequencies allowing microtones
