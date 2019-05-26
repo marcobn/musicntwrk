@@ -336,7 +336,7 @@ def i_spectral2(xv,yv,itime,path='./',instr='noise'):
 	# Clean up files
 	os.remove(path+'DSI_CSound.dat')
 	
-def i_spectral_pyo(xv,yv,graphics=False):
+def i_spectral_pyo(xv,yv):
 	# As i_spectral2 but uses pyo as audio engine
 	'''
 	# How to use the function 
@@ -413,10 +413,9 @@ def i_spectral_pyo(xv,yv,graphics=False):
 	# assign ftvel to the table memory buffer
 	arr[:] = ftvel
 
-	# do the convolution
-	a = po.Convolve(sf, table=t, size=t.getSize(), mul=.5).mix(2).out()
+	# do the convolution 
+	a = po.Convolve(sf, table=t, size=t.getSize(), mul=.5).out() #mix(2).out()
 
-	if graphics: s.gui(locals())
 	return(s,a)
 
 def i_spectral_pure(sigpath,sigfil,firpath,firsig):
