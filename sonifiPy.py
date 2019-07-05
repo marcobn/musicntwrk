@@ -676,7 +676,7 @@ e
 	# Clean up files
 	os.remove(path+'DSIscore.inc')
 
-def scaleMapping(scale):
+def scaleMapping(scale,fac=2,ini=21,fin=108):
 
 	# Definitions for mapping
 	scale=str(scale)
@@ -769,14 +769,14 @@ def scaleMapping(scale):
 	   nnote=len(ys)
 
 	# microtonal chromatic scale in given interval (from "Meditation" for Vla, voice and Cb)
-	if scale == 'micro':
+	if scale == 'interval':
 		# scale definition (including quarter tones)
 		# Viola: 72-107
 		# Double bass: 74-91
-		i=72  # initial pitch (MIDI)
-		f=107 # final pitch
-		fac = 2 # microtone factor (fac = 2 allows quarter tones)
-		ys = np.round(np.linspace(fac*i,fac*f))/2
+#		ini=72  # initial pitch (MIDI)
+#		fin=107 # final pitch
+#		fac = 2 # microtone factor (fac = 2 allows quarter tones)
+		ys = np.round(np.linspace(fac*ini,fac*fin))/fac
 		nnote=len(ys)
 	
 	# random distribution of pitches in given interval

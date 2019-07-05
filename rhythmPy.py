@@ -365,7 +365,7 @@ def rhythmPDictionary(N,Nc,REF='e'):
     
     # rename entries in ascending order and check for non-retrogradability
     for n in range(len(dictionary)):
-        dictionary.loc[n][0] = str(5)+'-'+str(n+1)
+        dictionary.loc[n][0] = str(Nc)+'-'+str(n+1)
         if RHYTHMSeq(str2frac(dictionary.loc[n][1])).isNonRetro(): 
             dictionary.loc[n][0] += 'N'
     
