@@ -192,6 +192,16 @@ class PCSet:
             outset = None
         return(Remove(outset))
         
+    def Roperator(self,name):
+        # operate on the pcs with a relational distance operator
+        
+        op = []
+        for num in re.findall("[-\d]+", name):
+            op.append(int(num))
+        op = np.asarray(op)
+        selfto = np.unique((self.pcs+op)%self.TET,axis=0)
+        return(PCSet(selfto).normalOrder())
+        
     def LISVector(self):
         '''
         •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
