@@ -151,7 +151,12 @@ def orchestralNetwork(seq):
 	modul = cm.modularity(part,gbch_u)
 	# average degree
 	nnodes=gbch.number_of_nodes()
-	avgdeg = sum(gbch.in_degree().values())/float(nnodes)
+	 # average degree
+	nnodes=gbch.number_of_nodes()
+	avg = 0
+	for node in gbch.in_degree():
+		avg += node[1]
+	avgdeg = avg/float(nnodes)
 		
 	return(dnodes,dedges,avgdeg,modul,part)
 
