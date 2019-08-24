@@ -144,8 +144,8 @@ def orchestralNetwork(seq):
 		dedges = dedges.append(tmp)
 	
 	# evaluate average degree and modularity
-	gbch = nx.from_pandas_dataframe(dedges,'Source','Target','Weight',create_using=nx.DiGraph())
-	gbch_u = nx.from_pandas_dataframe(dedges,'Source','Target','Weight')
+	gbch = nx.from_pandas_edgelist(dedges,'Source','Target','Weight',create_using=nx.DiGraph())
+	gbch_u = nx.from_pandas_edgelist(dedges,'Source','Target','Weight')
 	# modularity 
 	part = cm.best_partition(gbch_u)
 	modul = cm.modularity(part,gbch_u)
