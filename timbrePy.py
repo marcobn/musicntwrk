@@ -52,6 +52,10 @@ from bs4 import BeautifulSoup
 import urllib
 import wget
 
+sys.path.append('/Users/marco/Dropbox (Personal)/Musica/Applications/musicntwrk')
+from pcsPy import *
+from rhythmPy import *
+
 from mpi4py import MPI
 
 from communications import *
@@ -1106,3 +1110,81 @@ def findLengthMax(input_path,input_file):
 	lwf = np.asarray(lwf)
 	lmax = np.max(lwf)
 	return(np.sort(waves),lwf,lmax)
+	
+def analyzeSound(soundfile,outlist,plot=True,crm=True,tms=True,xml=False):
+	var = {}        
+	# load soundfile
+	y, sr = librosa.load(soundfile)
+	var['y'] = y
+	var['sr'] = sr
+	# analyze onsets
+	o_env = librosa.onset.onset_strength(y, sr=sr)
+	times = librosa.frames_to_time(np.arange(len(o_env)), sr=sr)
+	onset_frames = librosa.onset.onset_detect(onset_envelope=o_env, sr=sr)
+	var['onset_frames'] = onset_frames
+	var['times'] = times
+	if plot:
+		plt.figure(figsize=(18,8))
+		ax1 = plt.subplot(2, 1, 1)
+		librosa.display.waveplot(y[:])
+		plt.title('Waveshape')
+		plt.subplot(2, 1, 2, sharex=ax1)
+		plt.plot(times, o_env, label='Onset strength')
+		plt.vlines(times[onset_frames], 0, o_env.max(), color='r', alpha=0.9,linestyle='--', label='Onsets')
+		plt.axis('tight')
+		plt.legend(frameon=True, framealpha=0.75)
+	p = None
+	if crm:
+		chroma = librosa.feature.chroma_stft(y=y, sr=sr)
+		var['chroma'] = chroma
+		nseq = []
+		for i in range(onset_frames.shape[0]-1):
+			nseq.append(np.argwhere(chroma[:,onset_frames[i]] == 1.0)[0,0])
+		var['nseq'] = PCSet(nseq,UNI=False,ORD=False)
+		if plot:
+			plt.figure(figsize=(18, 4))
+			librosa.display.specshow(chroma, y_axis='chroma', x_axis='time')
+			plt.colorbar()
+			plt.title('Chromagram')
+			plt.tight_layout()
+		idx = np.argwhere(chroma == 1.0)
+		p = np.histogram(idx[:,0],12)
+		var['prob'] = np.asarray(p[0]/np.sum(p[0]))
+		if plot:
+			c = np.array(['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'])
+			plt.figure(figsize=(6, 4))
+			plt.bar(c,p[0],width=0.8)
+	if plot: plt.show()
+	tempo = None
+	if tms:
+		tempo = librosa.beat.tempo(onset_envelope=o_env, sr=sr)
+		beat = librosa.frames_to_time(onset_frames, sr=sr)
+		beat = RHYTHMSeq((np.diff(beat)*16).round(0)/16,REF='e')
+		var['beat'] = beat
+		var['tempo'] = int(tempo[0])
+		if plot: beat.displayRhythm(xml)
+	output = []
+	for out in outlist:
+		output.append(var[out])
+	return(output)
+
+def play_with_simpleaudio(seg):
+	return sa.play_buffer(seg.raw_data,num_channels=seg.channels,bytes_per_sample=seg.sample_width,\
+								   sample_rate=seg.frame_rate)
+
+def WRITEscore(obj,nseq,rseq,w=None,outxml='./music',outmidi='./music'):
+	m = m21.stream.Measure()
+	for i in range(nseq.shape[0]):
+		n = m21.note.Note(nseq[i])
+		n.duration = m21.duration.Duration(4*rseq[i])
+		m.append(n)
+	m.append(m21.meter.SenzaMisuraTimeSignature('0'))
+	t = m21.meter.bestTimeSignature(m)
+	bpm = int(np.round(60/(obj.duration_seconds/np.round((t.numerator/t.denominator),0)/4),0))
+	m.insert(0,m21.tempo.MetronomeMark(number=bpm))
+	if w == 'musicxml':
+		m.write('musicxml',outxml+'.xml')
+	elif w == 'MIDI':
+		m.write('midi',outmidi+'.mid')
+	else:
+		m.show()
