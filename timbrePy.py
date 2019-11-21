@@ -42,8 +42,6 @@ import music21 as m21
 import matplotlib.pyplot as plt
 import matplotlib.style as ms
 ms.use('seaborn-muted')
-#%matplotlib inline
-from vpython import *
 
 import librosa
 import librosa.display

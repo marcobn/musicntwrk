@@ -24,7 +24,7 @@ import networkx as nx
 import community as cm
 import music21 as m21
 import matplotlib.pyplot as plt
-from vpython import *
+import vpython as vp
 from mpi4py import MPI
 
 from communications import *
@@ -1191,15 +1191,13 @@ def init_list_of_objects(size):
     return list_of_objects
 
 def plotCurveY(y):
-    stage=canvas()
-    f1=gcurve()
-    f1 = gcurve(color=color.blue)
+    stage=vp.canvas()
+    f1 = vp.gcurve(color=vp.color.green)
     for n in range(y.shape[0]):
         f1.plot(pos=(n,y[n]))
-        
+                
 def plotCurveXY(x,y):
-    stage=canvas()
-    f1=gcurve()
-    f1 = gcurve(color=color.blue)
+    stage=vp.canvas()
+    f1 = vp.gcurve(color=vp.color.blue)
     for n in range(y.shape[0]):
         f1.plot(pos=(x[n],y[n]))
