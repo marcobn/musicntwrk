@@ -215,8 +215,11 @@ class RHYTHMSeq:
                 n.beams.fill('32nd', type='start')
                 m.append(n)  
         m.append(m21.meter.SenzaMisuraTimeSignature('0'))
-        m.show()
-        if xml: m.show('musicxml')
+        
+        if xml: 
+            m.show('musicxml')
+        else:
+            m.show()
         return
     
 ########### Network functions ###########
