@@ -31,10 +31,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler,MinMaxScaler,Normalizer
 from sklearn.externals import joblib
 
-#import tensorflow as tf
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
-# above is a quick fix - need to update the tensorflow calls!
+import tensorflow as tf
+
 from tensorflow.keras.models import Sequential,Model
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
@@ -959,8 +957,8 @@ def readModels(path,filename):
 def trainNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,num_classes=2,epoch=30,verb=0,thr=0.85,w=False):
     # train a 2 layers NN
 
-    config = tf.ConfigProto(device_count={'GPU':gpu, 'CPU':cpu})
-    sess = tf.Session(config=config)
+#    config = tf.ConfigProto(device_count={'GPU':gpu, 'CPU':cpu})
+#    sess = tf.Session(config=config)
 
     # Train the model
     for trial in range(niter):
@@ -989,15 +987,15 @@ def trainNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,num
         if res[1] > thr and w == True:
             print('found good match ',res[1].round(3))
             modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)
-    sess.close()
+#    sess.close()
     return(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)    
 
 def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,num_classes=2,
                                     epoch=30,verb=0,thr=0.85,w=False):
     # Convolutional NN
 
-    config = tf.ConfigProto(device_count={'GPU':gpu, 'CPU':cpu})
-    sess = tf.Session(config=config)
+#    config = tf.ConfigProto(device_count={'GPU':gpu, 'CPU':cpu})
+#    sess = tf.Session(config=config)
 
     # Train the model
     for trial in range(niter):
@@ -1041,14 +1039,14 @@ def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,nu
         if res[1] >= thr and w == True:
             print('found good match ',res[1].round(3))
             modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)
-    sess.close()
+#    sess.close()
     return(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)
 
 def checkRun(train,modelfiles):
     # plot accuracy and loss for training and validation sets over epochs
     try:
-        accuracy = train.history['acc']
-        val_accuracy = train.history['val_acc']
+        accuracy = train.history['accuracy']
+        val_accuracy = train.history['val_accuracy']
         loss = train.history['loss']
         val_loss = train.history['val_loss']
         epochs = range(len(accuracy))
@@ -1067,8 +1065,8 @@ def checkRun(train,modelfiles):
         plt.show()
     except:
         for n in range(len(train)):
-            accuracy = train[str(n)]['acc']
-            val_accuracy = train[str(n)]['val_acc']
+            accuracy = train[str(n)]['accuracy']
+            val_accuracy = train[str(n)]['val_accuracy']
             loss = train[str(n)]['loss']
             val_loss = train[str(n)]['val_loss']
             epochs = range(len(accuracy))
