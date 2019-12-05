@@ -29,7 +29,8 @@ import pandas as pd
 import sklearn.metrics as sklm
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler,MinMaxScaler,Normalizer
-from sklearn.externals import joblib
+#from sklearn.externals import joblib
+import joblib as jlib
 
 import tensorflow as tf
 
@@ -847,8 +848,8 @@ def modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res,train):
     np.save(filename+'.name_test',y_test)
     np.save(filename+'.train',x_train)
     np.save(filename+'.name_train',y_train)
-    joblib.dump(scaler, filename+'.scaler') 
-    joblib.dump(normal, filename+'.normal')
+    jlib.dump(scaler, filename+'.scaler') 
+    jlib.dump(normal, filename+'.normal')
     with open(filename+'.train.dict','wb') as file_pi:
         pickle.dump(train.history, file_pi)
     os.system('tar cvf '+filename+'.tar '+filename+'*')
@@ -860,8 +861,8 @@ def modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res,train):
     
 def modelLoad(filename,npy=False):
     model = tf.keras.models.load_model(filename+'.h5')
-    scaler = joblib.load(filename+'.scaler') 
-    normal = joblib.load(filename+'.normal')
+    scaler = jlib.load(filename+'.scaler') 
+    normal = jlib.load(filename+'.normal')
     try:
         with open(filename+'.train.dict','rb') as file_pi:
             trdict=pickle.load(file_pi)
@@ -1045,8 +1046,12 @@ def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,nu
 def checkRun(train,modelfiles):
     # plot accuracy and loss for training and validation sets over epochs
     try:
-        accuracy = train.history['accuracy']
-        val_accuracy = train.history['val_accuracy']
+        try:
+            accuracy = train.history['accuracy']
+            val_accuracy = train.history['val_accuracy']
+        except:
+            accuracy = train.history['acc']
+            val_accuracy = train.history['val_acc']
         loss = train.history['loss']
         val_loss = train.history['val_loss']
         epochs = range(len(accuracy))
@@ -1065,8 +1070,12 @@ def checkRun(train,modelfiles):
         plt.show()
     except:
         for n in range(len(train)):
-            accuracy = train[str(n)]['accuracy']
-            val_accuracy = train[str(n)]['val_accuracy']
+            try:
+                accuracy = train[str(n)]['accuracy']
+                val_accuracy = train[str(n)]['val_accuracy']
+            except:
+                accuracy = train[str(n)]['acc']
+                val_accuracy = train[str(n)]['val_acc']
             loss = train[str(n)]['loss']
             val_loss = train[str(n)]['val_loss']
             epochs = range(len(accuracy))
