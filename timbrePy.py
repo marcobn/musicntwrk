@@ -31,7 +31,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler,MinMaxScaler,Normalizer
 from sklearn.externals import joblib
 
-import tensorflow as tf
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+# above is a quick fix - need to update the tensorflow calls!
 from tensorflow.keras.models import Sequential,Model
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
