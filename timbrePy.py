@@ -282,7 +282,11 @@ def computeStandardizedMFCC(input_path,input_file,nmel=16,nmfcc=13,lmax=None,max
         log_S = librosa.power_to_db(S, ref=np.max)
         temp = librosa.feature.mfcc(S=log_S, n_mfcc=nmfcc)
         # normalize mfcc[0] first
-        temp[0] = (temp[0]-np.min(temp[0]))/np.max(temp[0]-np.min(temp[0]))
+        try:
+#            print(n,np.max(temp[0]),np.min(temp[0]))
+            temp[0] = (temp[0]-np.min(temp[0]))/(np.max(temp[0])-np.min(temp[0]))
+        except:
+            print(n,np.max(temp[0]),np.min(temp[0]))
 #        temp = np.abs(temp)
 #        if maxi == None:
 #            maxtemp = np.max(temp[1:])
@@ -355,8 +359,8 @@ def computeStandardizedPSCC(input_path,input_file,npscc=13,lmax=None,maxi=None,n
         D = np.abs(librosa.stft(wtmp,hop_length=hopl))**2
         log_D = librosa.power_to_db(D, ref=np.max)
         temp = librosa.feature.mfcc(S=log_D, n_mfcc=npscc)
-        # normalize mfcc[0] first
-        temp[0] = (temp[0]-np.min(temp[0]))/np.max(temp[0]-np.min(temp[0]))
+        # normalize pscc[0] first
+        temp[0] = (temp[0]-np.min(temp[0]))/(np.max(temp[0])-np.min(temp[0]))
         pscc.append(temp)
     pscc = np.asarray(pscc)
     return(np.sort(waves),pscc,lmax)
