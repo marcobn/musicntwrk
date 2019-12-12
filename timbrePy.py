@@ -1202,3 +1202,19 @@ def WRITEscore(file,nseq,rseq,w=None,outxml='./music',outmidi='./music'):
         m.write('midi',outmidi+'.mid')
     else:
         m.show()
+
+def WRITEscoreNoTime(nseq,rseq,w=None,outxml='./music',outmidi='./music'):
+    
+    m = m21.stream.Measure()
+    for i in range(nseq.shape[0]):
+        n = m21.note.Note(nseq[i])
+        n.duration = m21.duration.Duration(4*rseq[i])
+        m.append(n)
+    m.append(m21.meter.SenzaMisuraTimeSignature('0'))
+    
+    if w == 'musicxml':
+        m.write('musicxml',outxml+'.xml')
+    elif w == 'MIDI':
+        m.write('midi',outmidi+'.mid')
+    else:
+        m.show()

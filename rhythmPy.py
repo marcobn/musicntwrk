@@ -197,20 +197,21 @@ class RHYTHMSeq:
         return(np.histogram(durv,bins)[0],str(bins[:(bins.shape[0]-1)]).replace('Fraction','').replace(', ','/')\
                             .replace('(','').replace(')','').replace('\n','').replace('[','').replace(']',''))
     
-    def displayRhythm(self,xml=False,prime=False):
+    def displayRhythm(self,note=None,xml=False,prime=False):
         '''
         •	Display rhythm sequence in score in musicxml format. If prime is True, display the prime form.
         '''
+        if note == None: note=60
         m = m21.stream.Measure()
         if prime: 
             for l in range(self.rseq.shape[0]):
-                n = m21.note.Note(60)
+                n = m21.note.Note(note)
                 n.duration = m21.duration.Duration(4*self.primeForm()[l])
                 n.beams.fill('32nd', type='start')
                 m.append(n)   
         else:
              for l in range(self.rseq.shape[0]):
-                n = m21.note.Note(60)
+                n = m21.note.Note(note)
                 n.duration = m21.duration.Duration(4*self.rseq[l])
                 n.beams.fill('32nd', type='start')
                 m.append(n)  
