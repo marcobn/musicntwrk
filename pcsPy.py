@@ -1189,8 +1189,8 @@ def opsHistogram(values,counts):
     for i in range(len(values)):
         ops_dict.update({values[i]:counts[i]})
 
-    newvalues = list(ops_dict.keys())
-    newcounts = list(ops_dict.values())
+    newvalues = np.asarray(list(ops_dict.keys()))
+    newcounts = np.asarray(list(ops_dict.values()))
     return(newvalues,newcounts,ops_dict)
     
 def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
