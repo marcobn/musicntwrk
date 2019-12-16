@@ -1158,6 +1158,56 @@ def opsCheckByNameVec(a,b,name,TET=12):
     opname = opsNameVec(a,b,TET)
     opname = np.where(opname == name,True,False)
     return(opname)
+    
+def opsHistogram(values,counts):
+    ops = []
+    for i in range(1,6):
+        ops.append('O('+str(i)+')')
+    for i in range(1,6):
+        for j in range(i,6):
+            ops.append('O('+str(i)+','+str(j)+')')
+    for i in range(1,6):
+        for j in range(i,6):
+            for k in range(j,6):
+                ops.append('O('+str(i)+','+str(j)+','+str(k)+')')
+    for i in range(1,6):
+        for j in range(i,6):
+            for k in range(j,6):
+                for l in range(k,6):
+                    ops.append('O('+str(i)+','+str(j)+','+str(k)+','+str(l)+')')
+    ops = np.array(ops)
+    dist = np.zeros(ops.shape[0])
+    for i in range(ops.shape[0]):
+        dist[i] = opsDistance(ops[i])[1]
+    idx = np.argsort(dist)
+    ops = ops[idx]
+
+    ops_dict = {}
+    for i in range(len(ops)):
+        ops_dict.update({ops[i]:0})
+
+    for i in range(len(values)):
+        ops_dict.update({values[i]:counts[i]})
+
+    newvalues = list(ops_dict.keys())
+    newcounts = list(ops_dict.values())
+    return(newvalues,newcounts)
+    
+def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
+    plt.rcParams['font.family'] = 'arial'
+    plt.rcParams['axes.edgecolor']='#333F4B'
+    plt.rcParams['axes.linewidth']=1.5
+    plt.rcParams['xtick.color']='#333F4B'
+    plt.rcParams['ytick.color']='#333F4B'
+
+    plt.figure(figsize=(fx,fy))
+
+    plt.ylabel('Percentage',fontsize=24, fontweight='black', color = '#333F4B')
+    plt.yticks(fontsize=18,fontweight='black', color = '#333F4B')
+    plt.setp(plt.gca().get_xticklabels(), rotation=-90, horizontalalignment='center',fontsize=10, 
+             fontweight='black', color = '#000000')
+#     plt.xticks([])
+    plt.bar(newvalues,newcounts,width=0.85,color='grey')
             
 def Remove(duplicate): 
     # function to remove duplicates from list

@@ -1212,8 +1212,8 @@ def WRITEscoreNoTime(nseq,rseq,w=None,outxml='./music',outmidi='./music'):
         m.append(n)
     m.append(m21.meter.SenzaMisuraTimeSignature('0'))
     
-    if w == 'musicxml':
-        m.write('musicxml',outxml+'.xml')
+    if w == True:
+        m.show('musicxml')
     elif w == 'MIDI':
         m.write('midi',outmidi+'.mid')
     else:
