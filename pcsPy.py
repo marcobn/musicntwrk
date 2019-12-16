@@ -1191,7 +1191,7 @@ def opsHistogram(values,counts):
 
     newvalues = list(ops_dict.keys())
     newcounts = list(ops_dict.values())
-    return(newvalues,newcounts)
+    return(newvalues,newcounts,ops_dict)
     
 def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
     plt.rcParams['font.family'] = 'arial'
