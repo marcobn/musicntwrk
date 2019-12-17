@@ -960,6 +960,10 @@ def readScore(input_xml,TET=12,music21=False,show=False):
     if TET == 12:
         if music21: 
             score = m21.corpus.parse(input_xml)
+            try:
+                score = score.mergeScores()
+            except:
+                pass
         else:
             score = m21.converter.parse(input_xml)
         chords = score.chordify()
