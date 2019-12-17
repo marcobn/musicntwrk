@@ -849,7 +849,10 @@ def scoreNetwork(seq,TET=12):
     for n in range(len(seq)):
         p = PCSet(np.asarray(seq[n]),TET)
         if TET == 12:
-            nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
+            if p.pcs.shape[0] == 1:
+                nn = ''.join(m21.chord.Chord(p.pcs.tolist()).pitchNames)
+            else:
+                nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
             nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
         elif TET == 24:
             dict24 = {'C':0,'C~':1,'C#':2,'D-':2,'D`':3,'D':4,'D~':5,'D#':6,'E-':6,'E`':7,'E':8,
@@ -949,7 +952,7 @@ def scoreDictionary(seq,TET=12):
     
     return(dictionary)
 
-def readScore(input_xml,TET=12,music21=False):
+def readScore(input_xml,TET=12,music21=False,show=False):
     '''
     •	read a score in musicxml format
     •	returns the sequence of chords
@@ -960,6 +963,7 @@ def readScore(input_xml,TET=12,music21=False):
         else:
             score = m21.converter.parse(input_xml)
         chords = score.chordify()
+        if show: chords.show()
         seq = []
         for c in chords.recurse().getElementsByClass('Chord'):
             seq.append(c.normalOrder)
@@ -971,6 +975,7 @@ def readScore(input_xml,TET=12,music21=False):
                             
         score = m21.converter.parse(input_xml)
         chords = score.chordify()
+        if show: chords.show()
         seq = []
         for c in chords.recurse().getElementsByClass('Chord'):
             seq.append(str(c))
@@ -1191,7 +1196,7 @@ def opsHistogram(values,counts):
 
     newvalues = np.asarray(list(ops_dict.keys()))
     newcounts = np.asarray(list(ops_dict.values()))
-    return(newvalues,newcounts,ops_dict)
+    return(newvalues,newcounts,ops_dict,dist[idx])
     
 def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
     plt.rcParams['font.family'] = 'arial'
