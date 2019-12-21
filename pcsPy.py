@@ -835,7 +835,7 @@ def vLeadNetworkByNameVec(input_csv,name,TET=12,w=True,distance='euclidean'):
     
     return(dnodes,dedges)
 
-def scoreNetwork(seq,TET=12):
+def scoreNetwork(seq,TET=12,ntx=False):
     
     ''' 
     •	generates the directional network of chord progressions from any score in musicxml format
@@ -904,7 +904,10 @@ def scoreNetwork(seq,TET=12):
         avg += node[1]
     avgdeg = avg/float(nnodes)
         
-    return(dnodes,dedges,avgdeg,modul)
+    if ntx:
+        return(dnodes,dedges,avgdeg,modul,gbch,gbch_u)
+    else:
+        return(dnodes,dedges,avgdeg,modul)
 
 def scoreDictionary(seq,TET=12):
     '''
