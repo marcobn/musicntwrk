@@ -1167,14 +1167,40 @@ def opsNameVec(a,b,TET=12):
 def generalizedOpsName(a,b,TET=12):
 # generalizes the operator name function for no-bijective chord progression
     if len(a) == len(b):
-        return(opsName(a,b,TET))
+        return(opsNameFull(a,b,TET))
     else:
         if len(a) > len(b):
             pair,r = minimalNoBijDistance(a,b)
-            return(opsName(a,r,TET))
+            return(opsNameFull(a,r,TET))
         else:
             pair,r = minimalNoBijDistance(b,a)
-            return(opsName(b,r,TET))
+            return(opsNameFull(r,b,TET))
+
+def opsNameFull(a,b,TET=12):
+    # given two vectors returns the name of the operator that connects them
+    a = PCSet(a,UNI=False).normalOrder()
+    b = PCSet(b,UNI=False).normalOrder()   
+    d = np.zeros((b.shape[0]),dtype=int) 
+    for n in range(b.shape[0]):
+        c = np.roll(b,n)
+        diff = a-c
+        for i in range(diff.shape[0]):
+            if diff[i] >= int(TET/2):
+                diff[i] -= TET
+            if diff[i] < -int(TET/2):
+                diff[i] += TET
+        diff = np.abs(diff)
+        d[n] = diff.dot(diff)
+    nmin = np.argmin(d)
+    b = np.roll(b,nmin)
+    diff = b-a
+    for i in range(diff.shape[0]):
+        if diff[i] >= int(TET/2):
+            diff[i] -= TET
+        if diff[i] < -int(TET/2):
+            diff[i] += TET
+#    diff = PCSet(diff,UNI=False).normalOrder()
+    return('O('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
     
 def opsCheckByNameVec(a,b,name,TET=12):
     # given two vectors returns check if the connecting operator is the one sought for

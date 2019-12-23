@@ -1218,3 +1218,21 @@ def WRITEscoreNoTime(nseq,rseq,w=None,outxml='./music',outmidi='./music'):
         m.write('midi',outmidi+'.mid')
     else:
         m.show()
+
+def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music'):
+    try:
+        ntot = nseq.shape[0]
+    except:
+        ntot = len(nseq)
+    m = m21.stream.Stream()
+    m.append(m21.meter.TimeSignature('4/4'))
+    for i in range(ntot):
+        n = m21.chord.Chord(nseq[i])
+        if i < ntot-1: n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1])[1])
+        m.append(n)    
+    if w == True:
+        m.show('musicxml')
+    elif w == 'MIDI':
+        m.write('midi',outmidi+'.mid')
+    else:
+        m.show()
