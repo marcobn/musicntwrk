@@ -1163,6 +1163,18 @@ def opsNameVec(a,b,TET=12):
                     .replace(" ","").replace("[","").replace("]","")+')')
 
     return(np.asarray(name))
+
+def generalizedOpsName(a,b,TET=12):
+# generalizes the operator name function for no-bijective chord progression
+    if len(a) == len(b):
+        return(opsName(a,b,TET))
+    else:
+        if len(a) > len(b):
+            pair,r = minimalNoBijDistance(a,b)
+            return(opsName(a,r,TET))
+        else:
+            pair,r = minimalNoBijDistance(b,a)
+            return(opsName(b,r,TET))
     
 def opsCheckByNameVec(a,b,name,TET=12):
     # given two vectors returns check if the connecting operator is the one sought for
