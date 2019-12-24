@@ -1228,7 +1228,16 @@ def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music'):
     m.append(m21.meter.TimeSignature('4/4'))
     for i in range(ntot):
         n = m21.chord.Chord(nseq[i])
-        if i < ntot-1: n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1])[1])
+        if i < ntot-1: 
+            n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1])[1])
+            if len(nseq[i]) == len(nseq[i+1]):
+                n.addLyric(str(i)+' '+opsName(nseq[i],nseq[i+1]))
+            else:
+                r = generalizedOpsName(nseq[i],nseq[i+1])[0]
+                if len(nseq[i]) > len(nseq[i+1]):
+                    n.addLyric(str(i)+' '+opsName(nseq[i],r))
+                else:
+                    n.addLyric(str(i)+' '+opsName(r,nseq[i+1]))
         m.append(n)    
     if w == True:
         m.show('musicxml')

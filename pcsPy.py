@@ -1167,14 +1167,14 @@ def opsNameVec(a,b,TET=12):
 def generalizedOpsName(a,b,TET=12):
 # generalizes the operator name function for no-bijective chord progression
     if len(a) == len(b):
-        return(opsNameFull(a,b,TET))
+        return(a,opsNameFull(a,b,TET))
     else:
         if len(a) > len(b):
             pair,r = minimalNoBijDistance(a,b)
-            return(opsNameFull(a,r,TET))
+            return(r,opsNameFull(a,r,TET))
         else:
             pair,r = minimalNoBijDistance(b,a)
-            return(opsNameFull(r,b,TET))
+            return(r,opsNameFull(r,b,TET))
 
 def opsNameFull(a,b,TET=12):
     # given two vectors returns the name of the operator that connects them
