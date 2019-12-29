@@ -1219,7 +1219,7 @@ def WRITEscoreNoTime(nseq,rseq,w=None,outxml='./music',outmidi='./music'):
     else:
         m.show()
 
-def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music'):
+def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None):
     try:
         ntot = nseq.shape[0]
     except:
@@ -1227,7 +1227,11 @@ def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music'):
     m = m21.stream.Stream()
     m.append(m21.meter.TimeSignature('4/4'))
     for i in range(ntot):
-        n = m21.chord.Chord(nseq[i])
+        ch = np.copy(seq[i])
+        for n in range(1,len(ch)):
+            if ch[n] < ch[n-1]: ch[n] += 12
+        ch += 60
+        n = m21.chord.Chord(ch.tolist())
         if i < ntot-1: 
             n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1])[1])
             if len(nseq[i]) == len(nseq[i+1]):
@@ -1238,6 +1242,9 @@ def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music'):
                     n.addLyric(str(i)+' '+opsName(nseq[i],r))
                 else:
                     n.addLyric(str(i)+' '+opsName(r,nseq[i+1]))
+        if keysig != None:
+            rn = m21.roman.romanNumeralFromChord(n, m21.key.Key(keysig))
+            n.addLyric(str(rn.figure))
         m.append(n)    
     if w == True:
         m.show('musicxml')
