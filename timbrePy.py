@@ -1227,7 +1227,7 @@ def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None):
     m = m21.stream.Stream()
     m.append(m21.meter.TimeSignature('4/4'))
     for i in range(ntot):
-        ch = np.copy(seq[i])
+        ch = np.copy(nseq[i])
         for n in range(1,len(ch)):
             if ch[n] < ch[n-1]: ch[n] += 12
         ch += 60
