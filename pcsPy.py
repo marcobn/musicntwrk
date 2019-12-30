@@ -25,6 +25,10 @@ import community as cm
 import music21 as m21
 import matplotlib.pyplot as plt
 import vpython as vp
+
+from scipy.optimize import curve_fit
+import collections
+
 from mpi4py import MPI
 
 from communications import *
@@ -1258,7 +1262,34 @@ def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
              fontweight='black', color = '#000000')
 #     plt.xticks([])
     plt.bar(newvalues,newcounts,width=0.85,color='grey')
-            
+
+def scaleFreeFit(Gx,plot=True):
+    # Fits the degree distribution to a power low - check for scale free network
+    degree_sequenceJ = np.trim_zeros(sorted([d for n, d in Gx.in_degree()],reverse=True))
+    degreeCount = collections.Counter(degree_sequenceJ)
+    deg, cnt = zip(*degreeCount.items())
+
+    popt,_,fit = curve_fit_log(deg,cnt)
+    
+    if plot:
+        plt.plot(deg,cnt, 'b-')
+        plt.plot(deg,fit, 'r-')
+        # fit = 10**popt[0]*np.power(deg,popt[1])
+        plt.ylabel("Count")
+        plt.xlabel("Degree")
+        plt.show()
+    print('power low distribution - count = ',10**popt[0],'*degree^(',popt[1],')')
+    return(deg,cnt,fit)
+
+def curve_fit_log(xdata, ydata) :
+#   Fit degree distribution to a power law in loglog scale (linear)
+    xdata_log = np.log10(xdata)
+    ydata_log = np.log10(ydata)
+    linlaw = lambda x,a,b: a+x*b
+    popt_log, pcov_log = curve_fit(linlaw, xdata_log, ydata_log)
+    ydatafit_log = np.power(10, linlaw(xdata_log, *popt_log))
+    return (popt_log, pcov_log, ydatafit_log)
+
 def Remove(duplicate): 
     # function to remove duplicates from list
     final_list = [] 
