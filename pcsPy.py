@@ -1264,16 +1264,27 @@ def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
     plt.bar(newvalues,newcounts,width=0.85,color='grey')
 
 def scaleFreeFit(Gx,plot=True):
-    # Fits the degree distribution to a power low - check for scale free network
-    degree_sequenceJ = np.trim_zeros(sorted([d for n, d in Gx.in_degree()],reverse=True))
+    # Fits the degree distribution to a power law - check for scale free network
+    def curve_fit_log(xdata, ydata) :
+    #   Fit data to a power law in loglog scale (linear)
+        xdata_log = np.log10(xdata)
+        ydata_log = np.log10(ydata)
+        linlaw = lambda x,a,b: a+x*b
+        popt_log, pcov_log = curve_fit(linlaw, xdata_log, ydata_log)
+        ydatafit_log = np.power(10, linlaw(xdata_log, *popt_log))
+        return (popt_log, pcov_log, ydatafit_log)
+    try:
+        degree_sequenceJ = (sorted([d for n, d in Gx.in_degree()],reverse=True))
+    except:
+        degree_sequenceJ = Gx
     degreeCount = collections.Counter(degree_sequenceJ)
     deg, cnt = zip(*degreeCount.items())
 
     popt,_,fit = curve_fit_log(deg,cnt)
     
     if plot:
-        plt.plot(deg,cnt, 'b-')
-        plt.plot(deg,fit, 'r-')
+        plt.loglog(deg,cnt, 'bo')
+        plt.loglog(deg,fit, 'r-')
         # fit = 10**popt[0]*np.power(deg,popt[1])
         plt.ylabel("Count")
         plt.xlabel("Degree")
@@ -1281,14 +1292,72 @@ def scaleFreeFit(Gx,plot=True):
     print('power low distribution - count = ',10**popt[0],'*degree^(',popt[1],')')
     return(deg,cnt,fit)
 
-def curve_fit_log(xdata, ydata) :
-#   Fit degree distribution to a power law in loglog scale (linear)
-    xdata_log = np.log10(xdata)
-    ydata_log = np.log10(ydata)
-    linlaw = lambda x,a,b: a+x*b
-    popt_log, pcov_log = curve_fit(linlaw, xdata_log, ydata_log)
-    ydatafit_log = np.power(10, linlaw(xdata_log, *popt_log))
-    return (popt_log, pcov_log, ydatafit_log)
+def powerFit(Gx,mode='power_law',xmin=None,xmax=None,linear=False,indeg=True,undir=False):
+    # fit power law distribution using the powerlaw package
+    try:
+        if indeg == True:
+            data = np.array(sorted([d for n, d in Gx.in_degree()],reverse=True))
+        elif indeg == False and undir == False:
+            data = np.array(sorted([d for n, d in Gx.out_degree()],reverse=True))
+        elif indeg == False and undir == True:
+            data = np.array(sorted([d for n, d in Gx.degree()],reverse=True))
+    except:
+        data = Gx
+    ####
+    fig = figure(figsize=(16,8))
+    linf = fig.add_subplot(1,2,1)
+    x, y = powerlaw.pdf(data[data>0], linear_bins=True)
+    ind = y>0
+    y = y[ind]
+    x = x[:-1]
+    x = x[ind]
+    plt.scatter(x, y, color='r', s=5.5)
+    powerlaw.plot_pdf(data[data>0], color='b', linewidth=2, linear_bins=linear, ax=linf)
+
+    if xmin != None and xmax == None:
+        fit = powerlaw.Fit(data,discrete=True,xmin=xmin)
+    elif xmax != None and xmin == None:
+        fit = powerlaw.Fit(data,discrete=True,xmax=xmax)
+    elif xmax != None and xmin != None:
+        fit = powerlaw.Fit(data,discrete=True,xmin=xmin,xmax=xmax)
+    else:
+        fit = powerlaw.Fit(data,discrete=True)
+
+    fitf = fig.add_subplot(1,2,2, sharey=linf)
+    powerlaw.plot_pdf(data,color='b', linewidth=2, ax=fitf)
+    if mode == 'truncated_power_law':
+        fit.truncated_power_law.plot_pdf(color='r', linestyle='--', ax=fitf)
+        print('alpha = ',fit.truncated_power_law.alpha)
+        print('Lambda = ',fit.truncated_power_law.Lambda)
+        print('xmin,xmax = ',fit.xmin, fit.xmax)
+    elif mode == 'power_law':
+        fit.power_law.plot_pdf(color='r', linestyle='--', ax=fitf)
+        print('alpha = ',fit.power_law.alpha)
+        print('sigma = ',fit.power_law.sigma)
+        print('xmin,xmax = ',fit.xmin, fit.xmax)
+    elif mode == 'lognormal':
+        fit.lognormal.plot_pdf(color='r', linestyle='--', ax=fitf)
+        print('mu = ',fit.lognormal.mu)
+        print('sigma = ',fit.lognormal.sigma)
+        print('xmin,xmax = ',fit.xmin, fit.xmax)
+    elif mode == 'lognormal_positive':
+        fit.lognormal_positive.plot_pdf(color='r', linestyle='--', ax=fitf)
+        print('mu = ',fit.lognormal_positive.mu)
+        print('sigma = ',fit.lognormal_positive.sigma)
+        print('xmin,xmax = ',fit.xmin, fit.xmax)
+    elif mode == 'exponential':
+        fit.exponential.plot_pdf(color='r', linestyle='--', ax=fitf)
+        print('Lambda = ',fit.exponential.Lambda)
+        print('xmin,xmax = ',fit.xmin, fit.xmax)
+    elif mode == 'stretched_exponential':
+        fit.stretched_exponential.plot_pdf(color='r', linestyle='--', ax=fitf)
+        print('Lambda = ',fit.stretched_exponential.Lambda)
+        print('beta = ',fit.stretched_exponential.beta)
+        print('xmin,xmax = ',fit.xmin, fit.xmax)
+    else:
+        fit = None
+        print('mode not allowed')
+    return(fit)
 
 def Remove(duplicate): 
     # function to remove duplicates from list
