@@ -28,6 +28,7 @@ import vpython as vp
 
 from scipy.optimize import curve_fit
 import collections
+import powerlaw
 
 from mpi4py import MPI
 
@@ -869,10 +870,13 @@ def scoreNetwork(seq,TET=12,ntx=False):
         dnodes = dnodes.append(nameseq)
     df = np.asarray(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
-    dff,idx = np.unique(df,return_inverse=True)
+    dcounts = pd.DataFrame(None,columns=['Label','Counts'])
+    dff,idx,cnt = np.unique(df,return_inverse=True,return_counts=True)
     for n in range(dff.shape[0]):
         nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
         dnodes = dnodes.append(nameseq)
+        namecnt = pd.DataFrame([[str(dff[n]),cnt[n]]],columns=['Label','Counts'])
+        dcounts = dcounts.append(namecnt)
 
     for n in range(1,len(seq)):
         if len(seq[n-1]) == len(seq[n]):
@@ -894,8 +898,6 @@ def scoreNetwork(seq,TET=12,ntx=False):
             dedges = dedges.append(tmp)
     
     # evaluate average degree and modularity
-#    gbch = nx.from_pandas_dataframe(dedges,'Source','Target',['Weight','Label'],create_using=nx.DiGraph())
-#    gbch_u = nx.from_pandas_dataframe(dedges,'Source','Target',['Weight','Label'])
     gbch = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight','Label'],create_using=nx.DiGraph())
     gbch_u = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight','Label'])
     # modularity 
@@ -909,9 +911,9 @@ def scoreNetwork(seq,TET=12,ntx=False):
     avgdeg = avg/float(nnodes)
         
     if ntx:
-        return(dnodes,dedges,avgdeg,modul,gbch,gbch_u)
+        return(dnodes,dedges,dcounts,avgdeg,modul,gbch,gbch_u)
     else:
-        return(dnodes,dedges,avgdeg,modul)
+        return(dnodes,dedges,dcounts,avgdeg,modul)
 
 def scoreDictionary(seq,TET=12):
     '''
@@ -1266,21 +1268,23 @@ def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
 def scaleFreeFit(Gx,plot=True):
     # Fits the degree distribution to a power law - check for scale free network
     def curve_fit_log(xdata, ydata) :
+        xdata = np.array(xdata)
+        ydata = np.array(ydata)
+        ind = xdata > 0
+        ydata = ydata[ind]
+        xdata = xdata[ind]
     #   Fit data to a power law in loglog scale (linear)
         xdata_log = np.log10(xdata)
         ydata_log = np.log10(ydata)
         linlaw = lambda x,a,b: a+x*b
         popt_log, pcov_log = curve_fit(linlaw, xdata_log, ydata_log)
         ydatafit_log = np.power(10, linlaw(xdata_log, *popt_log))
-        return (popt_log, pcov_log, ydatafit_log)
-    try:
-        degree_sequenceJ = (sorted([d for n, d in Gx.in_degree()],reverse=True))
-    except:
-        degree_sequenceJ = Gx
+        return (xdata,ydata,popt_log, pcov_log, ydatafit_log)
+    degree_sequenceJ = ((sorted([d for n, d in Gx.in_degree()],reverse=True)))
     degreeCount = collections.Counter(degree_sequenceJ)
     deg, cnt = zip(*degreeCount.items())
 
-    popt,_,fit = curve_fit_log(deg,cnt)
+    deg,cnt,popt,_,fit = curve_fit_log(deg,cnt)
     
     if plot:
         plt.loglog(deg,cnt, 'bo')
@@ -1292,7 +1296,27 @@ def scaleFreeFit(Gx,plot=True):
     print('power low distribution - count = ',10**popt[0],'*degree^(',popt[1],')')
     return(deg,cnt,fit)
 
-def powerFit(Gx,mode='power_law',xmin=None,xmax=None,linear=False,indeg=True,undir=False):
+def powerFit(Gx,mode='power_law',xmin=None,xmax=None,linear=False,indeg=True,undir=False,units=None):
+    # set-up
+    import pylab
+    pylab.rcParams['xtick.major.pad']='24'
+    pylab.rcParams['ytick.major.pad']='24'
+    #pylab.rcParams['font.sans-serif']='Arial'
+
+
+    from matplotlib import rc
+    rc('font', family='sans-serif')
+    rc('font', size=14.0)
+    rc('text', usetex=False)
+
+
+    from matplotlib.font_manager import FontProperties
+
+    panel_label_font = FontProperties().copy()
+    panel_label_font.set_weight("bold")
+    panel_label_font.set_size(12.0)
+    panel_label_font.set_family("sans-serif")
+    
     # fit power law distribution using the powerlaw package
     try:
         if indeg == True:
@@ -1304,15 +1328,19 @@ def powerFit(Gx,mode='power_law',xmin=None,xmax=None,linear=False,indeg=True,und
     except:
         data = Gx
     ####
-    fig = figure(figsize=(16,8))
+    annotate_coord = (-.4, .95)
+    fig = plt.figure(figsize=(16,8))
     linf = fig.add_subplot(1,2,1)
     x, y = powerlaw.pdf(data[data>0], linear_bins=True)
     ind = y>0
     y = y[ind]
     x = x[:-1]
     x = x[ind]
-    plt.scatter(x, y, color='r', s=5.5)
+    linf.scatter(x, y, color='r', s=5.5)
     powerlaw.plot_pdf(data[data>0], color='b', linewidth=2, linear_bins=linear, ax=linf)
+    linf.annotate(" ", annotate_coord, xycoords="axes fraction", fontproperties=panel_label_font)
+    linf.set_ylabel(u"p(X)")# (10^n)")
+    linf.set_xlabel(units)
 
     if xmin != None and xmax == None:
         fit = powerlaw.Fit(data,discrete=True,xmin=xmin)
@@ -1324,40 +1352,47 @@ def powerFit(Gx,mode='power_law',xmin=None,xmax=None,linear=False,indeg=True,und
         fit = powerlaw.Fit(data,discrete=True)
 
     fitf = fig.add_subplot(1,2,2, sharey=linf)
+    fitf.set_xlabel(units)
     powerlaw.plot_pdf(data,color='b', linewidth=2, ax=fitf)
     if mode == 'truncated_power_law':
         fit.truncated_power_law.plot_pdf(color='r', linestyle='--', ax=fitf)
         print('alpha = ',fit.truncated_power_law.alpha)
         print('Lambda = ',fit.truncated_power_law.Lambda)
         print('xmin,xmax = ',fit.xmin, fit.xmax)
+        print('Kolmogorov-Smirnov distance = ',fit.truncated_power_law.D)
     elif mode == 'power_law':
         fit.power_law.plot_pdf(color='r', linestyle='--', ax=fitf)
         print('alpha = ',fit.power_law.alpha)
         print('sigma = ',fit.power_law.sigma)
         print('xmin,xmax = ',fit.xmin, fit.xmax)
+        print('Kolmogorov-Smirnov distance = ',fit.power_law.D)
     elif mode == 'lognormal':
         fit.lognormal.plot_pdf(color='r', linestyle='--', ax=fitf)
         print('mu = ',fit.lognormal.mu)
         print('sigma = ',fit.lognormal.sigma)
         print('xmin,xmax = ',fit.xmin, fit.xmax)
+        print('Kolmogorov-Smirnov distance = ',fit.lognormal.D)
     elif mode == 'lognormal_positive':
         fit.lognormal_positive.plot_pdf(color='r', linestyle='--', ax=fitf)
         print('mu = ',fit.lognormal_positive.mu)
         print('sigma = ',fit.lognormal_positive.sigma)
         print('xmin,xmax = ',fit.xmin, fit.xmax)
+        print('Kolmogorov-Smirnov distance = ',fit.lognormal_positive.D)
     elif mode == 'exponential':
         fit.exponential.plot_pdf(color='r', linestyle='--', ax=fitf)
         print('Lambda = ',fit.exponential.Lambda)
         print('xmin,xmax = ',fit.xmin, fit.xmax)
+        print('Kolmogorov-Smirnov distance = ',fit.exponential.D)
     elif mode == 'stretched_exponential':
         fit.stretched_exponential.plot_pdf(color='r', linestyle='--', ax=fitf)
         print('Lambda = ',fit.stretched_exponential.Lambda)
         print('beta = ',fit.stretched_exponential.beta)
         print('xmin,xmax = ',fit.xmin, fit.xmax)
+        print('Kolmogorov-Smirnov distance = ',fit.stretched_exponential.D)
     else:
         fit = None
         print('mode not allowed')
-    return(fit)
+    return(data,fit)
 
 def Remove(duplicate): 
     # function to remove duplicates from list
