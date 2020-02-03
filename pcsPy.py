@@ -840,7 +840,7 @@ def vLeadNetworkByNameVec(input_csv,name,TET=12,w=True,distance='euclidean'):
     
     return(dnodes,dedges)
 
-def scoreNetwork(seq,TET=12,ntx=False):
+def scoreNetwork(seq,TET=12,general=False,ntx=False):
     
     ''' 
     •	generates the directional network of chord progressions from any score in musicxml format
@@ -893,8 +893,12 @@ def scoreNetwork(seq,TET=12,ntx=False):
                 a = np.asarray(seq[n])
                 pair,r = minimalNoBijDistance(a,b)
         if pair != 0:
-            tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),opsName(a,r,TET)]],
-                               columns=['Source','Target','Weight','Label'])
+            if general == False:
+                tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),opsName(a,r,TET)]],
+                                    columns=['Source','Target','Weight','Label'])
+            else:
+                tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),generalizedOpsName(a,r,TET)[1]]],
+                                    columns=['Source','Target','Weight','Label'])
             dedges = dedges.append(tmp)
     
     # evaluate average degree and modularity
@@ -1248,6 +1252,41 @@ def opsHistogram(values,counts):
     newvalues = np.asarray(list(ops_dict.keys()))
     newcounts = np.asarray(list(ops_dict.values()))
     return(newvalues,newcounts,ops_dict,dist[idx])
+    
+def generalizedOpsHistogram(values,counts):
+    ops = []
+    for i in range(-3,3):
+        ops.append('O('+str(i)+')')
+    for i in range(-3,3):
+        for j in range(i,3):
+            ops.append('O('+str(i)+','+str(j)+')')
+    for i in range(-3,3):
+        for j in range(i,3):
+            for k in range(j,3):
+                ops.append('O('+str(i)+','+str(j)+','+str(k)+')')
+    for i in range(-3,3):
+        for j in range(i,3):
+            for k in range(j,3):
+                for l in range(k,3):
+                    ops.append('O('+str(i)+','+str(j)+','+str(k)+','+str(l)+')')
+    ops = np.array(ops)
+    dist = np.zeros(ops.shape[0])
+    for i in range(ops.shape[0]):
+        dist[i] = opsDistance(ops[i])[1]
+    idx = np.argsort(dist)
+    ops = ops[idx]
+
+    ops_dict = {}
+    for i in range(len(ops)):
+        ops_dict.update({ops[i]:0})
+
+    for i in range(len(values)):
+        ops_dict.update({values[i]:counts[i]})
+
+    newvalues = np.asarray(list(ops_dict.keys()))
+    newcounts = np.asarray(list(ops_dict.values()))
+    return(newvalues,newcounts,ops_dict,dist[idx])
+
     
 def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
     plt.rcParams['font.family'] = 'arial'
