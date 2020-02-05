@@ -1310,13 +1310,17 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
     col = header[1:]
     tab = np.array(table)[:,1:]
 
+    norm = 0
     value = np.zeros((len(row),len(col)))
     for i in range(len(row)):
         for j in range(len(col)):
             try:
                 value[i,j] = dictionary[tab[i,j]]
+                norm += value[i,j]
             except:
                 value[i,j] = 0
+
+    value /= norm*0.01
 
     fig, ax = plt.subplots()
     im = ax.imshow(value, aspect='auto',cmap=colmap)
