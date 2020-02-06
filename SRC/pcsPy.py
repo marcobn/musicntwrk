@@ -24,6 +24,7 @@ import networkx as nx
 import community as cm
 import music21 as m21
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 import vpython as vp
 
 from scipy.optimize import curve_fit
