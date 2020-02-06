@@ -460,29 +460,6 @@ def init_list_of_objects(size):
         list_of_objects.append( list() ) #different object reference each time
     return list_of_objects
 
-def minimalDistance(a,b,TET=12,distance='euclidean'):
-    '''
-    •    calculates the minimal distance between two pcs of same cardinality (bijective)
-    •    a,b (int) – pcs as numpy arrays or lists
-    '''
-    a = np.asarray(a)
-    b = np.asarray(b)
-    n = a.shape[0]
-    if a.shape[0] != b.shape[0]:
-        print('dimension of arrays must be equal')
-        sys.exit()
-    a = np.sort(a)
-    iTET = np.vstack([np.identity(n,dtype=int)*TET,-np.identity(n,dtype=int)*TET])
-    iTET = np.vstack([iTET,np.zeros(n,dtype=int)])
-    diff = np.zeros(2*n+1,dtype=float)
-    v = []
-    for i in range(2*n+1):
-        r = np.sort(b - iTET[i])
-        diff[i] = sklm.pairwise_distances(a.reshape(1, -1),r.reshape(1, -1),metric=distance)[0]
-        v.append(r)
-    imin = np.argmin(diff)
-    return(diff.min(),np.asarray(v[imin]).astype(int))
-
 def fetchWaves(url):
     # fetch wave files from remote web repository
     html_page = urllib.request.urlopen(url)
@@ -1183,72 +1160,3 @@ def analyzeSound(soundfile,outlist,plot=True,crm=True,tms=True,xml=False):
 def play_with_simpleaudio(seg):
     return sa.play_buffer(seg.raw_data,num_channels=seg.channels,bytes_per_sample=seg.sample_width,\
                                    sample_rate=seg.frame_rate)
-
-def WRITEscore(file,nseq,rseq,w=None,outxml='./music',outmidi='./music'):
-    import pydub as pb
-    obj = pb.AudioSegment.from_file(file)
-    m = m21.stream.Measure()
-    for i in range(nseq.shape[0]):
-        n = m21.note.Note(nseq[i])
-        n.duration = m21.duration.Duration(4*rseq[i])
-        m.append(n)
-    m.append(m21.meter.SenzaMisuraTimeSignature('0'))
-    t = m21.meter.bestTimeSignature(m)
-    bpm = int(np.round(60/(obj.duration_seconds/np.round((t.numerator/t.denominator),0)/4),0))
-    m.insert(0,m21.tempo.MetronomeMark(number=bpm))
-    if w == 'musicxml':
-        m.write('musicxml',outxml+'.xml')
-    elif w == 'MIDI':
-        m.write('midi',outmidi+'.mid')
-    else:
-        m.show()
-
-def WRITEscoreNoTime(nseq,rseq,w=None,outxml='./music',outmidi='./music'):
-    
-    m = m21.stream.Measure()
-    for i in range(nseq.shape[0]):
-        n = m21.note.Note(nseq[i])
-        n.duration = m21.duration.Duration(4*rseq[i])
-        m.append(n)
-    m.append(m21.meter.SenzaMisuraTimeSignature('0'))
-    
-    if w == True:
-        m.show('musicxml')
-    elif w == 'MIDI':
-        m.write('midi',outmidi+'.mid')
-    else:
-        m.show()
-
-def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None):
-    try:
-        ntot = nseq.shape[0]
-    except:
-        ntot = len(nseq)
-    m = m21.stream.Stream()
-    m.append(m21.meter.TimeSignature('4/4'))
-    for i in range(ntot):
-        ch = np.copy(nseq[i])
-        for n in range(1,len(ch)):
-            if ch[n] < ch[n-1]: ch[n] += 12
-        ch += 60
-        n = m21.chord.Chord(ch.tolist())
-        if i < ntot-1: 
-            n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1])[1])
-            if len(nseq[i]) == len(nseq[i+1]):
-                n.addLyric(str(i)+' '+opsName(nseq[i],nseq[i+1]))
-            else:
-                r = generalizedOpsName(nseq[i],nseq[i+1])[0]
-                if len(nseq[i]) > len(nseq[i+1]):
-                    n.addLyric(str(i)+' '+opsName(nseq[i],r))
-                else:
-                    n.addLyric(str(i)+' '+opsName(r,nseq[i+1]))
-        if keysig != None:
-            rn = m21.roman.romanNumeralFromChord(n, m21.key.Key(keysig))
-            n.addLyric(str(rn.figure))
-        m.append(n)    
-    if w == True:
-        m.show('musicxml')
-    elif w == 'MIDI':
-        m.write('midi',outmidi+'.mid')
-    else:
-        m.show()

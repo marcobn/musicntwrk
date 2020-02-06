@@ -1010,6 +1010,75 @@ def readScore(input_xml,TET=12,music21=False,show=False):
         sys.exit()
     return
 
+def WRITEscore(file,nseq,rseq,w=None,outxml='./music',outmidi='./music'):
+    import pydub as pb
+    obj = pb.AudioSegment.from_file(file)
+    m = m21.stream.Measure()
+    for i in range(nseq.shape[0]):
+        n = m21.note.Note(nseq[i])
+        n.duration = m21.duration.Duration(4*rseq[i])
+        m.append(n)
+    m.append(m21.meter.SenzaMisuraTimeSignature('0'))
+    t = m21.meter.bestTimeSignature(m)
+    bpm = int(np.round(60/(obj.duration_seconds/np.round((t.numerator/t.denominator),0)/4),0))
+    m.insert(0,m21.tempo.MetronomeMark(number=bpm))
+    if w == 'musicxml':
+        m.write('musicxml',outxml+'.xml')
+    elif w == 'MIDI':
+        m.write('midi',outmidi+'.mid')
+    else:
+        m.show()
+
+def WRITEscoreNoTime(nseq,rseq,w=None,outxml='./music',outmidi='./music'):
+    
+    m = m21.stream.Measure()
+    for i in range(nseq.shape[0]):
+        n = m21.note.Note(nseq[i])
+        n.duration = m21.duration.Duration(4*rseq[i])
+        m.append(n)
+    m.append(m21.meter.SenzaMisuraTimeSignature('0'))
+    
+    if w == True:
+        m.show('musicxml')
+    elif w == 'MIDI':
+        m.write('midi',outmidi+'.mid')
+    else:
+        m.show()
+
+def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None):
+    try:
+        ntot = nseq.shape[0]
+    except:
+        ntot = len(nseq)
+    m = m21.stream.Stream()
+    m.append(m21.meter.TimeSignature('4/4'))
+    for i in range(ntot):
+        ch = np.copy(nseq[i])
+        for n in range(1,len(ch)):
+            if ch[n] < ch[n-1]: ch[n] += 12
+        ch += 60
+        n = m21.chord.Chord(ch.tolist())
+        if i < ntot-1: 
+            n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1])[1])
+            if len(nseq[i]) == len(nseq[i+1]):
+                n.addLyric(str(i)+' '+opsName(nseq[i],nseq[i+1]))
+            else:
+                r = generalizedOpsName(nseq[i],nseq[i+1])[0]
+                if len(nseq[i]) > len(nseq[i+1]):
+                    n.addLyric(str(i)+' '+opsName(nseq[i],r))
+                else:
+                    n.addLyric(str(i)+' '+opsName(r,nseq[i+1]))
+        if keysig != None:
+            rn = m21.roman.romanNumeralFromChord(n, m21.key.Key(keysig))
+            n.addLyric(str(rn.figure))
+        m.append(n)    
+    if w == True:
+        m.show('musicxml')
+    elif w == 'MIDI':
+        m.write('midi',outmidi+'.mid')
+    else:
+        m.show()
+
 def extractByString(name,label,string):
     '''
     •	extract rows of any dictionary (from csv file or pandas DataFrame) according to a particular string in column 'label'
