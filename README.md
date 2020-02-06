@@ -27,7 +27,7 @@ A python library for pitch class set and rhythmic sequences classification and m
 ## Quick start
 
 Get started with **musicntwrk**:
-- [Download the latest release.](https://github.com/marcobn/musicntwrk/releases/tag/v1.0)
+- [Download the latest release.](https://github.com/marcobn/musicntwrk/releases/tag/v1.2)
 - Clone the repo: `git clone https://github.com/marcobn/musicntwrk.git`
 - cd musicntwrk
 - python setup.py install
