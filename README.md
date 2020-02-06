@@ -29,21 +29,23 @@ A python library for pitch class set and rhythmic sequences classification and m
 Get started with **musicntwrk**:
 - [Download the latest release.](https://github.com/marcobn/musicntwrk/releases/tag/v1.0)
 - Clone the repo: `git clone https://github.com/marcobn/musicntwrk.git`
+- cd musicntwrk
+- python setup.py install
 
 ## What's included
 **musicntwrk** is a software written for python 3 and comprises of four modules, `pcsPy`, `rhythmPy`, `timbrePy` and `sonifiPy`:
-- `pcsPy` - a module for pitch class set classification and manipulation in any arbitrary temperament; the construction of generalized pitch class set networks using distances between common descriptors (interval vectors, voice leadings); the analysis of scores and the generation of compositional frameworks.
-- `rhythmPy` - a module for rhythmic sequence classification and manipulation; and the construction of rhythmic sequence networks using various definitions of rhythmic distance.
-- `timbrePy` - comprises of two sections: the first deals with orchestration color and it is the natural extension of the score analyzer in `pscPy`; the second deals with analysis and characterization of timbre from a (psycho-)acoustical point of view. In particular, it provides: the characterization of sound using, among others, Mel Frequency or Power Spectrum Cepstrum Coefficients (MFCC or PSCC); the construction of timbral networks using descriptors based on MF- or PS-CCs; and machine learning models for timbre recognition through the TensorFlow Keras framework.
-- `sonifiPy` - a module for the sonification of arbitrary data structures, including automatic score (musicxml) and MIDI generation.
+- `musicntwrk.pcsPy` - a module for pitch class set classification and manipulation in any arbitrary temperament; the construction of generalized pitch class set networks using distances between common descriptors (interval vectors, voice leadings); the analysis of scores and the generation of compositional frameworks.
+- `musicntwrk.rhythmPy` - a module for rhythmic sequence classification and manipulation; and the construction of rhythmic sequence networks using various definitions of rhythmic distance.
+- `musicntwrk.timbrePy` - comprises of two sections: the first deals with orchestration color and it is the natural extension of the score analyzer in `pscPy`; the second deals with analysis and characterization of timbre from a (psycho-)acoustical point of view. In particular, it provides: the characterization of sound using, among others, Mel Frequency or Power Spectrum Cepstrum Coefficients (MFCC or PSCC); the construction of timbral networks using descriptors based on MF- or PS-CCs; and machine learning models for timbre recognition through the TensorFlow Keras framework.
+- `musicntwrk.sonifiPy` - a module for the sonification of arbitrary data structures, including automatic score (musicxml) and MIDI generation.
 - A jupyter notebook with selected examples is provided in the TESTS directory.
 
 ## Documentation
 **musicntwrk** requires the installation of the following modules via the “pip install” (or equivalent, depending on individual environments) command:
 1.	System modules: `sys`, `re`, `time`, `os`,`urllib`,`wget`,`bs4`,`warnings`
 2.	Math modules: `numpy`, `scipy`, `itertools`, `fractions`, `gcd`, `functools`
-3.	Data modules: `pandas`, `sklearn`, `networkx`, `community`,`tensorflow`
-4.	Music modules: `music21`,`librosa`
+3.	Data modules: `pandas`, `sklearn`, `networkx`, `community`,`tensorflow`,`powerlaw`
+4.	Music modules: `music21`,`librosa`,`pyo`
 5.  Visualization modules: `matplotlib`, `vpython`
 6.	Parallel processing: `mpi4py`
 
