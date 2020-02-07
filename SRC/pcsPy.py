@@ -1440,11 +1440,11 @@ def lookupOps(ops,table,header,Pnumber):
     operator = ops
     tab = np.array(table)
     try:
-        idx,idy = np.where(tab == operator)
+        print('Pnumber of operator '+operator+' =',Pnumber[operator],'\n')
     except:
         print('operator not found in table')
         return
-    print('Pnumber of operator '+operator+' =',Pnumber[operator],'\n')
+    idx,idy = np.where(tab == operator)
     for n in range(len(idy)):
         print(str(header[idx[n]+1]).ljust(12),str(' ->\t'+header[idy[n]]).rjust(0))
     
