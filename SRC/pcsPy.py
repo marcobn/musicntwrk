@@ -1375,7 +1375,7 @@ def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
 #     plt.xticks([])
     plt.bar(newvalues,newcounts,width=0.85,color='grey')
     
-def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Reds,coltxt='White',vmin=None):
+def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Reds,coltxt='White',vmin=None,label=True):
     
     row = header[1:]
     col = header[1:]
@@ -1405,10 +1405,11 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
     # ... and label them with the respective list entries
     ax.set_xticklabels(row)
     ax.set_yticklabels(col)
-    ax.xaxis.tick_top()
+    ax.tick_params(top=True, bottom=False,
+                   labeltop=True, labelbottom=False)
 
     # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=0, ha="right",
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="left",
              rotation_mode="anchor",fontsize=16)
 
     plt.setp(ax.get_yticklabels(), rotation=0, ha="right",
@@ -1416,11 +1417,12 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
 
     ax.set_ylim(len(col)-0.5, -0.5)
 
-    for i in range(len(row)):
-        for j in range(len(col)):
-            if value[i,j] > 0:
-                text = ax.text(j, i, tab[i, j],
-                               ha="center", va="center", color=coltxt, fontsize=16)
+    if label == True:
+        for i in range(len(row)):
+            for j in range(len(col)):
+                if value[i,j] > 0:
+                    text = ax.text(j, i, tab[i, j],
+                                    ha="center", va="center", color=coltxt, fontsize=16)
 
     cbar = ax.figure.colorbar(im, ax=ax)
     cbar.ax.set_ylabel('probability of progression', rotation=-90, va="center", fontsize=16, labelpad=22)
