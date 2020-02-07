@@ -1046,7 +1046,7 @@ def WRITEscoreNoTime(nseq,rseq,w=None,outxml='./music',outmidi='./music'):
     else:
         m.show()
 
-def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None):
+def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None,abs=False):
     try:
         ntot = nseq.shape[0]
     except:
@@ -1061,14 +1061,15 @@ def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None):
         n = m21.chord.Chord(ch.tolist())
         if i < ntot-1: 
             n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1])[1])
-            if len(nseq[i]) == len(nseq[i+1]):
-                n.addLyric(str(i)+' '+opsName(nseq[i],nseq[i+1]))
-            else:
-                r = generalizedOpsName(nseq[i],nseq[i+1])[0]
-                if len(nseq[i]) > len(nseq[i+1]):
-                    n.addLyric(str(i)+' '+opsName(nseq[i],r))
+            if abs:
+                if len(nseq[i]) == len(nseq[i+1]):
+                    n.addLyric(str(i)+' '+opsName(nseq[i],nseq[i+1]))
                 else:
-                    n.addLyric(str(i)+' '+opsName(r,nseq[i+1]))
+                    r = generalizedOpsName(nseq[i],nseq[i+1])[0]
+                    if len(nseq[i]) > len(nseq[i+1]):
+                        n.addLyric(str(i)+' '+opsName(nseq[i],r))
+                    else:
+                        n.addLyric(str(i)+' '+opsName(r,nseq[i+1]))
         if keysig != None:
             rn = m21.roman.romanNumeralFromChord(n, m21.key.Key(keysig))
             n.addLyric(str(rn.figure))
