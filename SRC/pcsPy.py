@@ -1375,7 +1375,7 @@ def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
 #     plt.xticks([])
     plt.bar(newvalues,newcounts,width=0.85,color='grey')
     
-def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Reds):
+def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Reds,vmin=None):
     
     row = header[1:]
     col = header[1:]
@@ -1394,7 +1394,10 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
     value /= norm*0.01
 
     fig, ax = plt.subplots()
-    im = ax.imshow(value, aspect='auto',cmap=colmap)
+    if vmin == None:
+        im = ax.imshow(value, aspect='auto',cmap=colmap)
+    else:
+        im = ax.imshow(value, aspect='auto',cmap=colmap,vmin=vmin)
 
     # We want to show all ticks...
     ax.set_xticks(np.arange(len(row)))
@@ -1415,8 +1418,9 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
 
     for i in range(len(row)):
         for j in range(len(col)):
-            text = ax.text(j, i, tab[i, j],
-                           ha="center", va="center", color="black", fontsize=16)
+            if value[i,j] > 0:
+                text = ax.text(j, i, tab[i, j],
+                               ha="center", va="center", color="white", fontsize=16)
 
     cbar = ax.figure.colorbar(im, ax=ax)
     cbar.ax.set_ylabel('probability of progression', rotation=-90, va="center", fontsize=16, labelpad=22)
