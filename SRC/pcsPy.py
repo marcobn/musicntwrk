@@ -1375,7 +1375,7 @@ def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
 #     plt.xticks([])
     plt.bar(newvalues,newcounts,width=0.85,color='grey')
     
-def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Reds,vmin=None):
+def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Reds,coltxt='White',vmin=None):
     
     row = header[1:]
     col = header[1:]
@@ -1420,7 +1420,7 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
         for j in range(len(col)):
             if value[i,j] > 0:
                 text = ax.text(j, i, tab[i, j],
-                               ha="center", va="center", color="white", fontsize=16)
+                               ha="center", va="center", color=coltxt, fontsize=16)
 
     cbar = ax.figure.colorbar(im, ax=ax)
     cbar.ax.set_ylabel('probability of progression', rotation=-90, va="center", fontsize=16, labelpad=22)
@@ -1432,7 +1432,7 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
     fig.set_figwidth(width)
 
     plt.show()
-
+    
 def scaleFreeFit(Gx,indeg=True,imin=0,undir=False,lfit='powerlaw',plot=True):
     # Fits the degree distribution to a power law - check for scale free network
     def curve_fit_log(xdata, ydata) :
