@@ -1434,6 +1434,19 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
     fig.set_figwidth(width)
 
     plt.show()
+
+def lookupOps(ops,table):
+
+    operator = ops
+    tab = np.array(table)
+    try:
+        idx,idy = np.where(tab == operator)
+    except:
+        print('operator not found in table')
+        return
+    print('Pnumber of operator '+operator+' =',Pnumber[operator],'\n')
+    for n in range(len(idy)):
+        print(str(min_headers[idx[n]+1]).ljust(12),str(' ->\t'+min_headers[idy[n]]).rjust(0))
     
 def scaleFreeFit(Gx,indeg=True,imin=0,undir=False,lfit='powerlaw',plot=True):
     # Fits the degree distribution to a power law - check for scale free network
