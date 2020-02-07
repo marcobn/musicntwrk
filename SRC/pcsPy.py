@@ -1435,7 +1435,7 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
 
     plt.show()
 
-def lookupOps(ops,table,header):
+def lookupOps(ops,table,header,Pnumber):
 
     operator = ops
     tab = np.array(table)
