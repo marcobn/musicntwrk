@@ -1375,7 +1375,7 @@ def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
 #     plt.xticks([])
     plt.bar(newvalues,newcounts,width=0.85,color='grey')
     
-def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Reds,coltxt='White',vmin=None,label=True):
+def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Reds,coltxt='White',vmin=None,label=True,star=None):
     
     row = header[1:]
     col = header[1:]
@@ -1421,8 +1421,12 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
         for i in range(len(row)):
             for j in range(len(col)):
                 if value[i,j] > 0:
-                    text = ax.text(j, i, tab[i, j],
-                                    ha="center", va="center", color=coltxt, fontsize=16)
+                    if star != 'x':
+                        text = ax.text(j, i, tab[i, j],
+                                        ha="center", va="center", color=coltxt, fontsize=16)
+                    else:
+                        text = ax.text(j, i, 'x',
+                                        ha="center", va="center", color=coltxt, fontsize=10)
 
     cbar = ax.figure.colorbar(im, ax=ax)
     cbar.ax.set_ylabel('probability of progression', rotation=-90, va="center", fontsize=16, labelpad=22)
