@@ -1,12 +1,11 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(name='musicntwrk',
 	version='1.0',
 	description='music as data, data as music',
 	author='Marco Buongiorno Nardelli',
 	author_email='mbn@unt.edu',
-	platforms='Linux',
+	platforms='Mac',
 	url='www.musicntwrk.com',
-	package_dir={'': 'SRC'},
-	packages=['']
+	packages=find_packages()
 	)
