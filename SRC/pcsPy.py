@@ -1448,6 +1448,14 @@ def lookupOps(ops,table,header,Pnumber=None):
     idx,idy = np.where(tab == operator)
     for n in range(len(idy)):
         print(str(header[idx[n]+1]).ljust(12),str(' ->\t'+header[idy[n]]).rjust(0))
+        
+def lookupProgr(ch1,ch2,table,header):
+
+    tab = np.array(table)
+    head = np.array(header)
+    idx = np.where(head == ch1)
+    idy = np.where(head == ch2)
+    print(str(ch1).ljust(8),'->',tab[idx[0]-1,idy[0]][0],'->',str(ch2).rjust(8))
     
 def scaleFreeFit(Gx,indeg=True,imin=0,undir=False,lfit='powerlaw',plot=True):
     # Fits the degree distribution to a power law - check for scale free network
