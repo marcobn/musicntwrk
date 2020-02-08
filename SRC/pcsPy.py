@@ -1435,15 +1435,16 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
 
     plt.show()
 
-def lookupOps(ops,table,header,Pnumber):
+def lookupOps(ops,table,header,Pnumber=None):
 
     operator = ops
     tab = np.array(table)
-    try:
-        print('Pnumber of operator '+operator+' =',Pnumber[operator],'\n')
-    except:
-        print('operator not found in table')
-        return
+    if Pnumber != None:
+        try:
+            print('Pnumber of operator '+operator+' =',Pnumber[operator],'\n')
+        except:
+            print('operator not found in Pnumber')
+            return
     idx,idy = np.where(tab == operator)
     for n in range(len(idy)):
         print(str(header[idx[n]+1]).ljust(12),str(' ->\t'+header[idy[n]]).rjust(0))
