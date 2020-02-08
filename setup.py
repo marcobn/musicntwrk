@@ -7,5 +7,6 @@ setup(name='musicntwrk',
 	author_email='mbn@unt.edu',
 	platforms='Mac',
 	url='www.musicntwrk.com',
-	packages=find_packages()
+	package_dir={'': 'SRC'},
+	packages=['']
 	)

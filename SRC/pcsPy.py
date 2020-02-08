@@ -1439,7 +1439,7 @@ def plotHarmonicTable(header,table,dictionary,height=7,width=12,colmap=plt.cm.Re
 
     plt.show()
 
-def lookupOps(ops,table,header,Pnumber=None):
+def lookupOps(ops,table,header,Pnumber=None,ch1=None):
 
     operator = ops
     tab = np.array(table)
@@ -1451,7 +1451,11 @@ def lookupOps(ops,table,header,Pnumber=None):
             return
     idx,idy = np.where(tab == operator)
     for n in range(len(idy)):
-        print(str(header[idx[n]+1]).ljust(12),str(' ->\t'+header[idy[n]]).rjust(0))
+        if ch1 == None:
+            print(str(header[idx[n]+1]).ljust(12),str(' ->\t'+header[idy[n]]).rjust(0))
+        else:
+            if str(header[idx[n]+1]) == ch1:
+                print(str(header[idx[n]+1]).ljust(12),str(' ->\t'+header[idy[n]]).rjust(0))
         
 def lookupProgr(ch1,ch2,table,header):
 
