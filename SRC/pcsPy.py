@@ -1059,6 +1059,16 @@ def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None,abs
             if ch[n] < ch[n-1]: ch[n] += 12
         ch += 60
         n = m21.chord.Chord(ch.tolist())
+        r = n.root()
+        if n[0].name != r.name:
+            c = []
+            for i in range(len(n)):
+                n = m21.chord.Chord(np.roll(n,-1))
+                if n[0].name == r.name: 
+                    for j in range(len(n)):
+                        c.append(n.pitches[j].pitchClass)
+                    break    
+            n = c
         if i < ntot-1: 
             n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1])[1])
             if abs:
