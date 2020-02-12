@@ -915,8 +915,6 @@ def scoreNetwork(seq,TET=12,general=False,ntx=False):
         for node in gbch.in_degree():
             avg += node[1]
         avgdeg = avg/float(nnodes)
-        
-    if ntx:
         return(dnodes,dedges,dcounts,avgdeg,modul,gbch,gbch_u)
     else:
         return(dnodes,dedges,dcounts)
