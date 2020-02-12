@@ -902,23 +902,24 @@ def scoreNetwork(seq,TET=12,general=False,ntx=False):
                                     columns=['Source','Target','Weight','Label'])
             dedges = dedges.append(tmp)
     
-    # evaluate average degree and modularity
-    gbch = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight','Label'],create_using=nx.DiGraph())
-    gbch_u = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight','Label'])
-    # modularity 
-    part = cm.best_partition(gbch_u)
-    modul = cm.modularity(part,gbch_u)
-    # average degree
-    nnodes=gbch.number_of_nodes()
-    avg = 0
-    for node in gbch.in_degree():
-        avg += node[1]
-    avgdeg = avg/float(nnodes)
+    if ntx:
+        # evaluate average degree and modularity
+        gbch = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight','Label'],create_using=nx.DiGraph())
+        gbch_u = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight','Label'])
+        # modularity 
+        part = cm.best_partition(gbch_u)
+        modul = cm.modularity(part,gbch_u)
+        # average degree
+        nnodes=gbch.number_of_nodes()
+        avg = 0
+        for node in gbch.in_degree():
+            avg += node[1]
+        avgdeg = avg/float(nnodes)
         
     if ntx:
         return(dnodes,dedges,dcounts,avgdeg,modul,gbch,gbch_u)
     else:
-        return(dnodes,dedges,dcounts,avgdeg,modul)
+        return(dnodes,dedges,dcounts)
 
 def scoreDictionary(seq,TET=12):
     '''
