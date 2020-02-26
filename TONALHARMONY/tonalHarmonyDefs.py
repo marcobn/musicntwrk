@@ -27,6 +27,7 @@ def shortHands():
             '63': '6',
             '65': '7',
             '753': '7',
+            '#753':'7',
             '75': '7[no3]',  # controversial perhaps
             '73': '7[no5]',  # controversial perhaps
             '9753': '9',
@@ -281,8 +282,9 @@ def scoreAnalysis(seq,moduldict,keydict,keychange=None,altrn=None,table='',verbo
                     check = i
                     rn.pop()
                     ch = np.copy(PCSet(seq[i-1]).normalOrder().tolist())
-                    for n in range(1,len(ch)):
-                        if ch[n] < ch[n-1]: ch[n] += 12
+#                    probably not needed
+#                    for n in range(1,len(ch)):
+#                        if ch[n] < ch[n-1]: ch[n] += 12
                     ch += 60
                     m = m21.chord.Chord(ch.tolist())
                     key = keydict[moduldict[''.join(m.pitchNames)]]

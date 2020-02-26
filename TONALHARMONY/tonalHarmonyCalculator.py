@@ -80,8 +80,9 @@ while True:
             for num in re.findall("[-\d]+", value['ch1']):
                 a.append(int(num))
             ch = np.copy(PCSet(a).normalOrder().tolist())
-            for n in range(1,len(ch)):
-                if ch[n] < ch[n-1]: ch[n] += 12
+#            probably not needed
+#            for n in range(1,len(ch)):
+#                if ch[n] < ch[n-1]: ch[n] += 12
             ch += 60
             p = []
             for c in ch:
