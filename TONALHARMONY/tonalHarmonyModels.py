@@ -136,7 +136,7 @@ for c in rnlist_M:
 		rn.append(f)
 		
 # ad-hoc additions
-adhoc = ['viio532','I[no3]','I543','IV543']
+adhoc = ['viio532','I[no3]','I543','IV543','V9[no5][no3]','I732']
 for f in adhoc:
 	chd = m21.roman.RomanNumeral(f)
 	seq.append(chd.pitchClasses)

@@ -23,8 +23,11 @@ def shortHands():
             '42':'7',
             '43':'7',
             '53': '',
+            '54': '52',
             '3': '',
-            '63': '6',
+            '63': '',
+            '6' : '',
+            '64' : '',
             '65': '7',
             '753': '7',
             '#753':'7',
@@ -42,6 +45,7 @@ def shortHands():
             '643': '7',
         #  '642': '42',
         #  '642': '7[no5]',
+            'o64' : 'o',
             'o6b5':'o7',
             'o5b3':'o',
             'bb7b5b3': 'o7',
@@ -177,7 +181,7 @@ def applyOps(name,chord):
                 else:
                         print('operation not defined')
 
-def tonalPartition(nodes,Gx,Gxu,resolution=1.0,display=False):
+def tonalPartition(seq,chords,nodes,Gx,Gxu,resolution=1.0,display=False):
     part = cm.best_partition(Gxu,resolution=resolution)
     dn = np.array(nodes)
     labe = []
