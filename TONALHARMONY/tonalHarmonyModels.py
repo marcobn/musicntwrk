@@ -42,7 +42,7 @@ elif sys.argv[1] == 'minimal':
 	auglist = ['+']
 	suslist = ['52']
 	extlist = ['532','7','b7','#7','743','7#43'] #,'75#3']
-	extno5 = ['[no5]','7[no5]','7[no5][no1]','9[no5]']
+	extno5 = ['[no5]','7[no5]','7[no5][no1]','9[no5]','9[no3]']
 	extM7no5 = ['#7[no#3]']
 	extm7no5 = ['b7[no3]']
 	filout = 'tonal.harmony.minimal'
@@ -136,7 +136,7 @@ for c in rnlist_M:
 		rn.append(f)
 		
 # ad-hoc additions
-adhoc = ['viio532','I[no3]','I543','IV543','V9[no5][no3]','I732']
+adhoc = ['viio532','I[no3]','I543','IV543','V9[no5][no3]','I732','VII/o9[no3]']
 for f in adhoc:
 	chd = m21.roman.RomanNumeral(f)
 	seq.append(chd.pitchClasses)

@@ -33,10 +33,12 @@ def shortHands():
             '#753':'7',
             '75': '7[no3]',  # controversial perhaps
             '73': '7[no5]',  # controversial perhaps
+            '752': '9[no3]',
             '9753': '9',
             '975': '9',  # controversial perhaps
             '953': '9[no7]',  # controversial perhaps
             '97': '9[no7][no5]',  # controversial perhaps
+            '32': '9[no5][no3]',
             '95': '9[no7][no3]',  # controversial perhaps
             '93': '9[no7][no5]',  # controversial perhaps
         #  '653': '65',
@@ -200,7 +202,10 @@ def tonalPartition(seq,chords,nodes,Gx,Gxu,resolution=1.0,display=False):
         seqmc = []
         for n in range(len(seq)):
             p = PCSet(np.asarray(seq[n]))
-            nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
+            if p.pcs.shape[0] == 1:
+                nn = ''.join(m21.chord.Chord(p.pcs.tolist()).pitchNames)
+            else:
+                nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
             mc.append(nn)
             seqmc.append(moduldict[nn])
 
