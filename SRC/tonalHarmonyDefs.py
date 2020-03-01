@@ -219,7 +219,7 @@ def tonalPartition(seq,chords,nodes,Gx,Gxu,resolution=1.0,display=False):
         analyzed.show('musicxml')
     return(moduldict,modul)
 
-def scoreAnalysis(seq,moduldict,keydict,keychange=None,altrn=None,table='',verbose=False):
+def scoreAnalysis(seq,moduldict,keydict,first=None,keychange=None,altrn=None,table='',verbose=False):
 # Score analysis
 
 # Read tonal harmony model
@@ -246,14 +246,17 @@ def scoreAnalysis(seq,moduldict,keydict,keychange=None,altrn=None,table='',verbo
 
 # First chord
     rn = []
-    ch = np.copy(seq[0])
-    for n in range(1,len(ch)):
-        if ch[n] < ch[n-1]: ch[n] += 12
-    ch += 60
-    n = m21.chord.Chord(ch.tolist())
-    chord = ''.join(n.pitchNames)
-    key = keydict[moduldict[chord]] 
-    rn.append(m21.roman.romanNumeralFromChord(n, m21.key.Key(key)).figure)
+    if first == None:
+        ch = np.copy(seq[0])
+        for n in range(1,len(ch)):
+            if ch[n] < ch[n-1]: ch[n] += 12
+        ch += 60
+        n = m21.chord.Chord(ch.tolist())
+        chord = ''.join(n.pitchNames)
+        key = keydict[moduldict[chord]] 
+        rn.append(m21.roman.romanNumeralFromChord(n, m21.key.Key(key)).figure)
+    else:
+        rn.append(first)
     # Full score
     nxt = ntot-1
     i = 0
