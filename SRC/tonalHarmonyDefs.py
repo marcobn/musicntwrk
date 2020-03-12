@@ -53,7 +53,7 @@ def shortHands():
             'bb7b5b3': 'o7',
             'bb7b53': 'o7',
             # '6b5bb3': 'o65',
-            'b7b5b3': 'ø7',
+            'b7b5b3': '/o7',
         }
         return(figureShorthands)
 
@@ -156,32 +156,43 @@ def lookupWrapper(table,head,ops='',cstart='',cend=''):
                 lookupProgr(cstart,cend,table,head)
                 print('===============================')
 
-def applyOps(name,chord):
-        # operate on the pcs with a relational distance operator
-
-        op = []
-        for num in re.findall("[-\d]+", name):
-                op.append(int(num))
-        op = np.asarray(op)
-        pcs = []
-        for num in re.findall("[-\d]+", chord):
-                pcs.append(int(num))
-        pcs = np.asarray(pcs)
-        if len(op) == len(pcs):
-                selfto = (PCSet(pcs).normalOrder()+op)%12
-                print(PCSet(selfto).normalOrder().tolist())
-        elif len(op) > len(pcs):
-                if len(op) - len(pcs) == 1:
-                        # duplicate pitches
-                        c = np.zeros(len(op),dtype=int)
-                        pitch = PCSet(pcs,UNI=False,ORD=False).normalOrder()
-                        c[:len(op)-1] = pitch
-                        for i in range(len(op)-1):
-                                c[len(op)-1] = pitch[i]
-                                selfto = (PCSet(c,UNI=False,ORD=False).normalOrder()+op)%12
-                                print(PCSet(selfto).normalOrder().tolist())
-                else:
-                        print('operation not defined')
+def applyOps(name,chord,prt=True):
+    # operate on the pcs with a relational distance operator
+    op = []
+    for num in re.findall("[-\d]+", name):
+        op.append(int(num))
+    op = np.asarray(op)
+    pcs = []
+    for num in re.findall("[-\d]+", chord):
+        pcs.append(int(num))
+    pcs = np.asarray(pcs)
+    if len(op) == len(pcs):
+        selfto = (PCSet(pcs).normalOrder()+op)%12
+        if prt: print(PCSet(selfto).normalOrder().tolist())
+        return([str(PCSet(selfto).normalOrder().tolist())])
+    elif len(op) - len(pcs) == 1:
+        # duplicate pitches
+        c = np.zeros(len(op),dtype=int)
+        pitch = PCSet(pcs,UNI=False,ORD=False).normalOrder()
+        c[:len(op)-1] = pitch
+        add = []
+        for i in range(len(op)-1):
+            c[len(op)-1] = pitch[i]
+            selfto = (PCSet(c,UNI=False,ORD=False).normalOrder()+op)%12
+            add.append(str(PCSet(selfto).normalOrder().tolist()))
+        if prt: print(Remove(add))
+        return(Remove(add))
+    elif len(pcs) - len(op) == 1:
+        # add a unison operator (0)
+        add = []
+        for i in range(pcs.shape[0]): 
+            c = np.insert(op,i,0)
+            selfto = (PCSet(pcs).normalOrder()+c)%12
+            add.append(str(PCSet(selfto).normalOrder().tolist()))
+        if prt: print(Remove(add))
+        return(Remove(add))
+    else:
+        print('operation not defined')
 
 def tonalPartition(seq,chords,nodes,Gx,Gxu,resolution=1.0,display=False):
     part = cm.best_partition(Gxu,resolution=resolution)
@@ -327,7 +338,7 @@ def scoreAnalysis(seq,moduldict,keydict,first=None,keychange=None,altrn=None,tab
     nxt = i
     return(nxt,rn,ops)
 
-def showAnalysis(nt,chords,seq,rn,ops,keydict,moduldict,last=False,display=False):
+def showAnalysis(nt,chords,seq,rn,ops,keydict,moduldict,wops=False,last=False,display=False):
 # Create dictionary of score analysis
     reference = []
     for n in range(nt):
@@ -355,9 +366,12 @@ def showAnalysis(nt,chords,seq,rn,ops,keydict,moduldict,last=False,display=False
             c.closedPosition(forceOctave=4,inPlace=True)
             c.addLyric('')
             c.addLyric('')
-        #     c.addLyric(str(ops[l]))
+            if wops: c.addLyric(str(ops[l]))
             c.addLyric(str(rn[l]))
-            l += 1
+            if l < nt-1: 
+                l += 1
+            else: 
+                break
         analyzed.show('musicxml')
     return(analysis)
 

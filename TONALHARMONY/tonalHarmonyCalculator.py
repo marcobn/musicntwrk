@@ -59,7 +59,7 @@ while True:
         if func_to_call.__name__ == 'lookupWrapper':
             func_to_call(table,head,ops=value['ops'],cstart=value['ch1'],cend=value['ch2'])
         elif func_to_call.__name__ == 'applyOps':
-            func_to_call(value['ops'],value['ch1'])
+            _ = func_to_call(value['ops'],value['ch1'])
         elif func_to_call.__name__ == 'generalizedOpsName':
             a = []
             for num in re.findall("[-\d]+", value['ch1']):
