@@ -194,8 +194,8 @@ def applyOps(name,chord,prt=True):
     else:
         print('operation not defined')
 
-def tonalPartition(seq,chords,nodes,Gx,Gxu,resolution=1.0,display=False):
-    part = cm.best_partition(Gxu,resolution=resolution)
+def tonalPartition(seq,chords,nodes,Gx,Gxu,resolution=1.0,randomize=None,display=False):
+    part = cm.best_partition(Gxu,resolution=resolution,randomize=randomize)
     dn = np.array(nodes)
     labe = []
     modu = []
