@@ -136,11 +136,12 @@ for c in rnlist_M:
 		rn.append(f)
 		
 # ad-hoc additions
-adhoc = ['viio532','I[no3]','I543','IV543','V9[no5][no3]','I732','VII/o9[no3]']
+adhoc = ['viio532','I[no3]','I543','IV543','V9[no5][no3]','I732','VII/o9[no3]','#iv/o','#viio','Ger']
 for f in adhoc:
-	chd = m21.roman.RomanNumeral(f)
+	chd = m21.roman.RomanNumeral(f,m21.key.Key('C'))
 	seq.append(chd.pitchClasses)
 	rn.append(f)
+
 
 # make table of operators
 opstable = []
