@@ -79,10 +79,11 @@ while True:
             a = []
             for num in re.findall("[-\d]+", value['ch1']):
                 a.append(int(num))
-            ch = np.copy(PCSet(a).normalOrder().tolist())
-#            probably not needed
-#            for n in range(1,len(ch)):
-#                if ch[n] < ch[n-1]: ch[n] += 12
+#            ch = np.copy(PCSet(a).normalOrder().tolist())
+            ch = np.copy(PCSet(a,UNI=False,ORD=False).pcs.tolist())
+
+            for n in range(1,len(ch)):
+                if ch[n] < ch[n-1]: ch[n] += 12
             ch += 60
             p = []
             for c in ch:

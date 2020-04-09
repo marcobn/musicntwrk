@@ -28,7 +28,7 @@ if sys.argv[1] == 'full':
 	# roman numeral classes - full
 	rnlist_m = ['bi', 'i', '#i', 'bii', 'ii', '#ii', 'biii', 'iii', '#iii', 'biv', 'iv', '#iv', 'bv', 'v', '#v', 'bvi', 'vi', '#vi', 'bvii', 'vii', '#vii'] 
 	rnlist_M = ['bI', 'I', '#I', 'bII', 'II', '#II', 'bIII', 'III', '#III', 'bIV', 'IV', '#IV','bV', 'V', '#V', 'bVI', 'VI', '#VI','bVII', 'VII', '#VII']
-	dimlist = ['o','o7','ø7']
+	dimlist = ['o','o7','/o7']
 	auglist = ['+']
 	suslist = ['52']
 	extlist = ['7','b7','#7','7#43']

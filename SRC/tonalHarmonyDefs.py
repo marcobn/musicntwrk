@@ -19,43 +19,66 @@ import pickle, copy
 
 def shortHands():
         # This is taken from roman.py in music21 and modified here
+#        figureShorthands = {
+#            '42':'7',
+#            '43':'7',
+#            '53': '',
+#            '54': '52',
+#            '3': '',
+#            '63': '',
+#            '6' : '',
+#            '64' : '',
+#            '65': '7',
+#            '753': '7',
+#            '#753':'7',
+#            '75': '7[no3]',  # controversial perhaps
+#            '73': '7[no5]',  # controversial perhaps
+#            '752': '9[no3]',
+#            '9753': '9',
+#            '975': '9',  # controversial perhaps
+#            '953': '9[no7]',  # controversial perhaps
+#            '97': '9[no7][no5]',  # controversial perhaps
+#            '32': '9[no5][no3]',
+#            '95': '9[no7][no3]',  # controversial perhaps
+#            '93': '9[no7][no5]',  # controversial perhaps
+#        #  '653': '65',
+#            '653': '7',
+#            '6b53': '6b5',
+#            '643': '7',
+#        #  '642': '42',
+#        #  '642': '7[no5]',
+#            'o64' : 'o',
+#            'o6b5':'o7',
+#            'o5b3':'o',
+#            'bb7b5b3': 'o7',
+#            'bb7b53': 'o7',
+#            # '6b5bb3': 'o65',
+#            'b7b5b3': '/o7',
+#        }
         figureShorthands = {
-            '42':'7',
-            '43':'7',
             '53': '',
-            '54': '52',
             '3': '',
-            '63': '',
-            '6' : '',
-            '64' : '',
-            '65': '7',
+            '63': '6',
             '753': '7',
-            '#753':'7',
-            '75': '7[no3]',  # controversial perhaps
-            '73': '7[no5]',  # controversial perhaps
-            '752': '9[no3]',
+            '75': '7',  # controversial perhaps
+            '73': '7',  # controversial perhaps
             '9753': '9',
             '975': '9',  # controversial perhaps
-            '953': '9[no7]',  # controversial perhaps
-            '97': '9[no7][no5]',  # controversial perhaps
-            '32': '9[no5][no3]',
-            '95': '9[no7][no3]',  # controversial perhaps
-            '93': '9[no7][no5]',  # controversial perhaps
-        #  '653': '65',
-            '653': '7',
+            '953': '9',  # controversial perhaps
+            '97': '9',  # controversial perhaps
+            '95': '9',  # controversial perhaps
+            '93': '9',  # controversial perhaps
+            '653': '65',
             '6b53': '6b5',
-            '643': '7',
-        #  '642': '42',
-        #  '642': '7[no5]',
-            'o64' : 'o',
-            'o6b5':'o7',
-            'o5b3':'o',
+            '643': '43',
+            '642': '42',
             'bb7b5b3': 'o7',
             'bb7b53': 'o7',
             # '6b5bb3': 'o65',
-            'b7b5b3': '/o7',
+            'b7b5b3': 'ø7',
         }
         return(figureShorthands)
+
 
 def enharmonicDictionary():
     keys = ['C','C#','D-','D','D#','E-','E','F','F#','G-','G','G#','A-','A','A#','B-','B']
@@ -92,6 +115,28 @@ def enharmonicDictionary():
         enharmonicDict.update({k:Cdict})
     return(enharmonicDict)
 
+def getRN(a,key,TET=12):
+    
+    ch = np.copy(PCSet(a,UNI=False,ORD=False,TET=TET).pcs.tolist())
+
+    for n in range(1,len(ch)):
+        if ch[n] < ch[n-1]: ch[n] += TET
+    ch += 60
+    
+    enharmonicDict = enharmonicDictionary()
+    p = []
+    for c in ch:
+        p.append(enharmonicDict[key][c])
+    n = m21.chord.Chord(p)
+
+    rn = m21.roman.romanNumeralFromChord(n,m21.key.Key(key)).romanNumeralAlone
+    fig =m21.roman.postFigureFromChordAndKey(n, m21.key.Key(key))
+    try:
+        fig = figureShorthands[fig]
+    except:
+        pass
+    return(rn+fig)
+    
 def lookupOps(ops,table,header,Pnumber='',ch1='',ch2=''):
         operator = ops
         tab = np.array(table)
