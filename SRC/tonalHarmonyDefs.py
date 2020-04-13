@@ -84,8 +84,8 @@ def enharmonicDictionary():
     keys = ['C','C#','D-','D','D#','E-','E','F','F#','G-','G','G#','A-','A','A#','B-','B']
     enharmonicDict = {}
     for k in keys:
-        ini = m21.note.Note(60).nameWithOctave
-        end = m21.note.Note(84).nameWithOctave
+        ini = m21.note.Note(40).nameWithOctave
+        end = m21.note.Note(96).nameWithOctave
         major = [p for p in m21.scale.MajorScale(k).getPitches(ini,end)]
         minor = [p for p in m21.scale.MinorScale(k).getPitches(ini,end)]
         melod = [p for p in m21.scale.MelodicMinorScale(k).getPitches(ini,end)]
@@ -124,18 +124,22 @@ def getRN(a,key,TET=12):
     ch += 60
     
     enharmonicDict = enharmonicDictionary()
+    if key.islower():
+        keyup = key.upper()
+    else:
+        keyup = key
     p = []
     for c in ch:
-        p.append(enharmonicDict[key][c])
+        p.append(enharmonicDict[keyup][c])
     n = m21.chord.Chord(p)
 
-    rn = m21.roman.romanNumeralFromChord(n,m21.key.Key(key)).romanNumeralAlone
+    rn = m21.roman.romanNumeralFromChord(n,m21.key.Key(key)).romanNumeral
     fig =m21.roman.postFigureFromChordAndKey(n, m21.key.Key(key))
     try:
         fig = figureShorthands[fig]
     except:
         pass
-    return(rn+fig)
+    return(n,rn+fig)
     
 def lookupOps(ops,table,header,Pnumber='',ch1='',ch2=''):
         operator = ops
