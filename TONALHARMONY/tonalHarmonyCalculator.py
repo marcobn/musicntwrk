@@ -89,7 +89,7 @@ while True:
             for c in ch:
                 p.append(enharmonicDict[value['ch2']][c])
             n = m21.chord.Chord(p)
-            rn = m21.roman.romanNumeralFromChord(n,m21.key.Key(value['ch2'])).romanNumeralAlone
+            rn = m21.roman.romanNumeralFromChord(n,m21.key.Key(value['ch2'])).romanNumeral
             fig =m21.roman.postFigureFromChordAndKey(n, m21.key.Key(value['ch2']))
             try:
                 fig = figureShorthands[fig]
