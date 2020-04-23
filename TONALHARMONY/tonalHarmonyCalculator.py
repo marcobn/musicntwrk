@@ -19,8 +19,8 @@ import pickle
 import PySimpleGUI as sg
 from tonalHarmonyDefs import *
 
-enharmonicDict = enharmonicDictionary()
-figureShorthands = shortHands()
+#enharmonicDict = enharmonicDictionary()
+#figureShorthands = shortHands()
 
 # Lookup dictionary that maps button to function to call
 func_dict = {'lookup':lookupWrapper,'applyOp':applyOps,'findOp':generalizedOpsName,'findRN':showRN,'pitches':showPitches,'CLEAR':clearOutput}
@@ -77,25 +77,14 @@ while True:
             print(pcs)
         elif func_to_call.__name__ == 'showRN':
             a = []
-            for num in re.findall("[-\d]+", value['ch1']):
-                a.append(int(num))
-#            ch = np.copy(PCSet(a).normalOrder().tolist())
-            ch = np.copy(PCSet(a,UNI=False,ORD=False).pcs.tolist())
-
-            for n in range(1,len(ch)):
-                if ch[n] < ch[n-1]: ch[n] += 12
-            ch += 60
-            p = []
-            for c in ch:
-                p.append(enharmonicDict[value['ch2']][c])
-            n = m21.chord.Chord(p)
-            rn = m21.roman.romanNumeralFromChord(n,m21.key.Key(value['ch2'])).romanNumeral
-            fig =m21.roman.postFigureFromChordAndKey(n, m21.key.Key(value['ch2']))
-            try:
-                fig = figureShorthands[fig]
-            except:
-                pass
-            print(rn+fig)
+            for num in value['ch1'].replace('[','').replace(']','').split(','):
+                if num.isdecimal():
+                    a.append(int(num))
+                else:
+                    a.append(num)
+            n = m21.chord.Chord(a)
+            rn = m21.roman.romanNumeralFromChord(n,m21.key.Key(str(value['ch2']))).figure 
+            print(rn)
         elif func_to_call.__name__ == 'clearOutput':
             window.FindElement('_output_').Update('')
     except Exception as e:

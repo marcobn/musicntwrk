@@ -133,12 +133,13 @@ def getRN(a,key,TET=12):
         p.append(enharmonicDict[keyup][c])
     n = m21.chord.Chord(p)
 
-    rn = m21.roman.romanNumeralFromChord(n,m21.key.Key(key)).romanNumeral
-    fig =m21.roman.postFigureFromChordAndKey(n, m21.key.Key(key))
-    try:
-        fig = figureShorthands[fig]
-    except:
-        pass
+    rn = m21.roman.romanNumeralFromChord(n,m21.key.Key(key)).figure
+#    fig =m21.roman.postFigureFromChordAndKey(n, m21.key.Key(key))
+#    try:
+#        fig = figureShorthands[fig]
+#    except:
+#        pass
+    fig = ''
     return(n,rn+fig)
     
 def lookupOps(ops,table,header,Pnumber='',ch1='',ch2=''):

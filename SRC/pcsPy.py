@@ -350,6 +350,261 @@ class PCSet:
             if xml: c.show('musicxml')
             return(c)
 
+class PCSetR:
+
+    def __init__(self,pcs,TET=12,UNI=False,ORD=False):
+        '''
+        •	pcs (int)– pitch class set as list or numpy array
+        •	TET (int)- number of allowed pitches in the totality of the musical space (temperament).
+            Default = 12 tones equal temperament
+        •	UNI (logical) – if True, eliminate duplicate pitches (default)
+        •   ORD (logical) - if True, sorts the pcs in ascending order
+        '''
+        if UNI == True:
+            self.pcs = np.unique(pcs)
+        else:
+            if ORD == True:
+                self.pcs = np.sort(pcs)
+            else:
+                self.pcs = np.asarray(pcs)
+        self.TET = TET
+
+    def normalOrder(self):
+        '''
+        •	Order the pcs according to the most compact ascending scale
+            in pitch-class space that spans less than an octave by cycling permutations.
+        '''
+        self.pcs = np.sort(self.pcs)
+        
+        # trivial sets
+        if len(self.pcs) == 1:
+            return(self.pcs-self.pcs[0])
+        if len(self.pcs) == 2:
+            return(self.pcs)
+
+        # 1. cycle to find the most compact ascending order
+        nroll = np.linspace(0,len(self.pcs)-1,len(self.pcs),dtype=int)
+        dist = np.zeros((len(self.pcs)),dtype=int)
+        for i in range(len(self.pcs)):
+            dist[i] = (np.roll(self.pcs,i)[len(self.pcs)-1] - np.roll(self.pcs,i)[0])%self.TET
+
+        # 2. check for multiple compact orders
+        for l in range(1,len(self.pcs)):
+            if np.array(np.where(dist == dist.min())).shape[1] != 1:
+                indx = np.array(np.where(dist == dist.min()))[0]
+                nroll = nroll[indx]
+                dist = np.zeros((len(nroll)),dtype=int)
+                i = 0
+                for n in nroll:
+                    dist[i] = (np.roll(self.pcs,n)[len(self.pcs)-(1+l)] - np.roll(self.pcs,n)[0])%self.TET
+                    i += 1
+            else:
+                indx = np.array(np.where(dist == dist.min()))[0]
+                nroll = nroll[int(indx[0])]
+                pcs_norm = np.roll(self.pcs,nroll)
+                break
+        if np.array(np.where(dist == dist.min())).shape[1] != 1: pcs_norm = self.pcs
+        return(PCSetR(pcs_norm,TET=self.TET))
+
+    def normal0Order(self):
+        '''
+        •	As normal order, transposed so that the first pitch is 0
+        '''
+        return(PCSetR((self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET))
+
+    def transpose(self,t=0):
+        '''
+        •	Transposition by t (int) units (modulo TET)
+        '''
+        return(PCSetR((self.pcs+t)%self.TET,TET=self.TET))
+        
+    def multiply(self,t=1):
+        '''
+        •	Multiplication by t (int) units (modulo TET)
+        '''
+        return(PCSetR(np.unique((self.pcs*t)%self.TET//1,TET=self.TET).astype(int)))
+        
+    def multiplyBoulez(self,b):
+        # Boulez pitch class multiplication of a x b
+        ivec = self.LISVector()
+        m = []
+        for i in range(ivec.shape[0]-1):
+            mm = (b+ivec[i])%self.TET
+            m.append(mm.tolist())
+        return(PCSetR(Remove(flatten(m+b)),TET=self.TET))
+    
+    def zeroOrder(self):
+        '''
+        •	transposed so that the first pitch is 0
+        '''
+        return(PCSetR((self.pcs-self.pcs[0])%self.TET,TET=self.TET))
+
+    def inverse(self,pivot=0):
+        '''
+        •	inverse operation: (-pcs modulo TET)
+        '''
+        return(PCSetR((pivot-self.pcs)%self.TET,TET=self.TET))
+
+    def primeForm(self):
+        '''
+        •	most compact normal 0 order between pcs and its inverse
+        '''
+        s_orig = self.pcs
+        sn = np.sum((self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET)
+        self.pcs = self.inverse().pcs
+        si = np.sum((self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET)
+        if sn <= si:
+            self.pcs = s_orig
+            return(PCSetR((self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET,TET=self.TET))
+        else:
+            tmp = (self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET
+            self.pcs = s_orig
+            return(PCSetR(tmp,TET=self.TET))
+
+    def intervalVector(self):
+        '''
+        •	 total interval content of the pcs
+        '''
+        npc = int((len(self.pcs)**2-len(self.pcs))/2)
+        itv = np.zeros(npc,dtype=int)
+        n= 0
+        for i in range(len(self.pcs)):
+            for j in range(i+1,len(self.pcs)):
+                if np.abs(self.pcs[i]-self.pcs[j]) > self.TET/2:
+                    itv[n] = self.TET-np.abs(self.pcs[i]-self.pcs[j])
+                else:
+                    itv[n] = np.abs(self.pcs[i]-self.pcs[j])
+                n += 1
+        bins = np.linspace(1,self.TET/2+1,self.TET/2+1,dtype=int)
+        return(np.histogram(itv,bins)[0])
+
+    def operator(self,name):
+        # operate on the pcs with a distance operator O({x})
+        
+        def plusAndMinusPermutations(items):
+            for p in iter.permutations(items):
+                for signs in iter.product([-1,1], repeat=len(items)):
+                    yield [a*sign for a,sign in zip(p,signs)]
+
+        op = ' '.join(i for i in name if i.isdigit()).split()
+        op = np.asarray([list(map(int, x)) for x in op])
+        op = np.reshape(op,op.shape[0]*op.shape[1])
+        if self.pcs.shape[0] == op.shape[0]:
+            pop = np.asarray(list(plusAndMinusPermutations(op)))
+            selfto = np.unique((self.pcs+pop)%self.TET,axis=0)
+            outset = []
+            for n in range(selfto.shape[0]):
+                if minimalNoBijDistance(self.normalOrder().pcs,
+                                        PCSetR(selfto[n]).normalOrder().pcs)[0] == opsDistance(name)[1]:
+                    outset.append(PCSetR(selfto[n]).normalOrder().pcs.tolist())
+        if self.pcs.shape[0] > op.shape[0]:
+            op = np.pad(op,(0,self.pcs.shape[0]-op.shape[0]),'constant')
+            pop = np.asarray(list(plusAndMinusPermutations(op)))
+            selfto = np.unique((self.pcs+pop)%self.TET,axis=0)
+            outset = []
+            for n in range(selfto.shape[0]):
+                if minimalNoBijDistance(self.normalOrder().pcs,
+                                        PCSetR(selfto[n]).normalOrder().pcs)[0] == opsDistance(name)[1]:
+                    outset.append(PCSetR(selfto[n]).normalOrder().pcs.tolist())
+        if self.pcs.shape[0] < op.shape[0]:
+            print("increase cardinality by duplicating pc's - program will stop")
+            outset = None
+        return(PCSetR(Remove(outset),TET=self.TET))
+        
+    def Roperator(self,name):
+        # operate on the pcs with a normal-ordered relational operator R({x})
+        op = []
+        for num in re.findall("[-\d]+", name):
+            op.append(int(num))
+        op = np.asarray(op)
+        selfto = np.unique((self.normalOrder().pcs+op)%self.TET,axis=0)
+        return(PCSetR(selfto,TET=self.TET).normalOrder())
+    
+    def NROperator(self,ops=None):
+        x = self.pcs[1]-self.pcs[0]
+        y = self.pcs[2]-self.pcs[1]
+        if ops == None:
+            print("specify NRO ('P','L','R')")
+            return
+        elif ops == 'P':
+            return(PCSetR((x+y-self.pcs)%self.TET,TET=self.TET))
+        elif ops == 'L':
+            return(PCSetR((x-self.pcs)%self.TET,TET=self.TET))
+        elif ops == 'R':
+            return(PCSetR((2*x+y-self.pcs)%self.TET,TET=self.TET))
+
+    def opsNameR(self,b,TET=12):
+        # given two vectors returns the name of the normal-ordered voice-leading operator R that connects them
+        a = self.normalOrder().pcs
+        b = b.normalOrder().pcs  
+        d = np.zeros((b.shape[0]),dtype=int) 
+        for n in range(b.shape[0]):
+            c = np.roll(b,n)
+            diff = a-c
+            for i in range(diff.shape[0]):
+                if diff[i] >= int(TET/2):
+                    diff[i] -= TET
+                if diff[i] < -int(TET/2):
+                    diff[i] += TET
+            diff = np.abs(diff)
+            d[n] = diff.dot(diff)
+        nmin = np.argmin(d)
+        b = np.roll(b,nmin)
+        diff = b-a
+        for i in range(diff.shape[0]):
+            if diff[i] >= int(TET/2):
+                diff[i] -= TET
+            if diff[i] < -int(TET/2):
+                diff[i] += TET
+        return('R('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
+
+    def opsNameO(self,b,TET=12):
+        # given two vectors returns the name of the distance 
+        # operator O that connects them
+        a = np.sort(self.pcs)
+        b = np.sort(b.pcs)
+        d = np.zeros((b.shape[0]),dtype=int) 
+        for n in range(b.shape[0]):
+            c = np.roll(b,n)
+            diff = a-c
+            for i in range(diff.shape[0]):
+                if diff[i] >= int(TET/2):
+                    diff[i] -= TET
+                if diff[i] < -int(TET/2):
+                    diff[i] += TET
+            diff = np.abs(diff)
+            d[n] = diff.dot(diff)
+        nmin = np.argmin(d)
+        b = np.roll(b,nmin)
+        diff = b-a
+        for i in range(diff.shape[0]):
+            if diff[i] >= int(TET/2):
+                diff[i] -= TET
+            if diff[i] < -int(TET/2):
+                diff[i] += TET
+        diff = np.sort(np.abs(diff))
+        return('O('+np.array2string(np.trim_zeros(diff),separator=',')\
+               .replace(" ","").replace("[","").replace("]","")+')')
+    
+    def LISVector(self):
+        '''
+        •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
+        •	also known as step-interval vector (see Cohn, Neo-Riemannian Operations, 
+            Parsimonious Trichords, and Their "Tonnetz" Representations,
+            Journal of Music Theory, Vol. 41, No. 1 (Spring, 1997), pp. 1-66)
+        '''
+        return((np.roll(self.normalOrder().pcs,-1)-self.normalOrder().pcs)%self.TET)
+
+    def forteClass(self):
+        '''
+        •	Name of pcs according to the Forte classification scheme (only for TET=12)
+        '''
+        if self.TET != 12:
+            print('Forte class defined only for 12-TET')
+            return()
+        Fname = m21.chord.Chord(self.primeForm().pcs.tolist()).forteClass
+        return(Fname)
+        
 ########### Network functions ###########
 
 def pcsDictionary(Nc,order=0,TET=12,row=False,a=None):
@@ -1345,7 +1600,7 @@ def opsDictionary(distance):
     return(Oname)
     
 def opsName(a,b,TET=12):
-    # given two vectors returns the name of the operator that connects them
+    # given two vectors returns the name of the minimal distance operator that connects them
     a = np.sort(a)
     b = np.sort(b)   
     d = np.zeros((b.shape[0]),dtype=int) 
@@ -1428,7 +1683,7 @@ def generalizedOpsName(a,b,TET=12):
             return(r,opsNameFull(r,b,TET))
 
 def opsNameFull(a,b,TET=12):
-    # given two vectors returns the name of the operator that connects them
+    # given two vectors returns the name of the normal ordered distance operator (R) that connects them
     a = PCSet(a,UNI=False).normalOrder()
     b = PCSet(b,UNI=False).normalOrder()   
     d = np.zeros((b.shape[0]),dtype=int) 
@@ -1450,7 +1705,7 @@ def opsNameFull(a,b,TET=12):
             diff[i] -= TET
         if diff[i] < -int(TET/2):
             diff[i] += TET
-#    diff = PCSet(diff,UNI=False).normalOrder()
+
     return('O('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
     
 def opsCheckByNameVec(a,b,name,TET=12):
