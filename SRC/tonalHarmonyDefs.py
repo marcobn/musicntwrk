@@ -16,6 +16,7 @@
 
 from pcsPy import *
 import pickle, copy
+import itertools
 
 def shortHands():
         # This is taken from roman.py in music21 and modified here
