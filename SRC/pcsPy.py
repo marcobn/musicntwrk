@@ -199,7 +199,7 @@ class PCSet:
         return(Remove(outset))
         
     def Roperator(self,name):
-        # operate on the pcs with a relational distance operator
+        # operate on the pcs with a normal-ordered voice-leading operator
         
         op = []
         for num in re.findall("[-\d]+", name):
