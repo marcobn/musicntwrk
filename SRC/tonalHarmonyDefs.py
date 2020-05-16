@@ -490,11 +490,14 @@ def chinese_postman(graph,starting_node):
     odd_degree_pairs = itertools.combinations(odd_degree_nodes, 2)
     odd_nodes_pairs_shortest_path = get_shortest_distance(graph, odd_degree_pairs, "distance")
     graph_complete_odd = create_graph(odd_nodes_pairs_shortest_path, flip_weight=True)
+    print('Number of nodes (odd): {}'.format(len(graph_complete_odd.nodes())))
+    print('Number of edges (odd): {}'.format(len(graph_complete_odd.edges())))
     odd_matching_edges = nx.algorithms.max_weight_matching(graph_complete_odd, True)
+    print('Number of edges in matching: {}'.format(len(odd_matching_edges)))
     multi_graph = create_new_graph(graph, odd_matching_edges)
 
     return(create_eulerian_circuit(multi_graph, starting_node))
-
+    
 def clearOutput():
         return
 
