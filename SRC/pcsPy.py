@@ -52,11 +52,10 @@ class PCSet:
         '''
         if UNI == True:
             self.pcs = np.unique(pcs)
+        if ORD == True:
+            self.pcs = np.sort(pcs)
         else:
-            if ORD == True:
-                self.pcs = np.sort(pcs)
-            else:
-                self.pcs = np.asarray(pcs)
+            self.pcs = np.asarray(pcs)
         self.TET = TET
 
     def normalOrder(self):
@@ -213,6 +212,12 @@ class PCSet:
         •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
         '''
         return((np.roll(self.normalOrder(),-1)-self.normalOrder())%self.TET)
+    
+    def LISVectorRow(self):
+        '''
+        •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
+        '''
+        return((np.roll(self,-1)-self)%self.TET)
 
     def forteClass(self):
         '''
@@ -362,11 +367,10 @@ class PCSetR:
         '''
         if UNI == True:
             self.pcs = np.unique(pcs)
+        if ORD == True:
+            self.pcs = np.sort(pcs)
         else:
-            if ORD == True:
-                self.pcs = np.sort(pcs)
-            else:
-                self.pcs = np.asarray(pcs)
+            self.pcs = np.asarray(pcs)
         self.TET = TET
 
     def normalOrder(self):
@@ -594,6 +598,16 @@ class PCSetR:
             Journal of Music Theory, Vol. 41, No. 1 (Spring, 1997), pp. 1-66)
         '''
         return((np.roll(self.normalOrder().pcs,-1)-self.normalOrder().pcs)%self.TET)
+    
+    def LISVectorRow(self):
+        '''
+        •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
+        •	also known as step-interval vector (see Cohn, Neo-Riemannian Operations, 
+            Parsimonious Trichords, and Their "Tonnetz" Representations,
+            Journal of Music Theory, Vol. 41, No. 1 (Spring, 1997), pp. 1-66)
+        '''
+        return((np.roll(self.pcs,-1)-self.pcs)%self.TET)
+
 
     def forteClass(self):
         '''
