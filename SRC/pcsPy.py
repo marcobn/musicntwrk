@@ -619,6 +619,62 @@ class PCSetR:
         Fname = m21.chord.Chord(self.primeForm().pcs.tolist()).forteClass
         return(Fname)
         
+class PCrow:
+#     Helper class for 12-tone rows operations (T,I,R,M,Q)
+    def __init__(self,pcs,TET=12):
+        self.pcs = np.array(pcs)%TET
+        self.TET = TET
+    def normalOrder(self):
+        self.pcs -= self.pcs[0]
+        return(PCrow(self.pcs%12))
+    def intervals(self):
+        return((np.roll(self.pcs,-1)-self.pcs)%self.TET)
+    def T(self,t=0):
+        return(PCrow((self.pcs+t)%self.TET,TET=self.TET))
+    def I(self,pivot=0):
+        return(PCrow((pivot-self.pcs)%self.TET,TET=self.TET))
+    def R(self):
+        return(PCrow(self.pcs[::-1]).T(6))
+    def Q(self):
+        lisv = PCrow(self.pcs).intervals()
+        lisvQ = np.roll(lisv,np.where(lisv==6)[0][1]-np.where(lisv==6)[0][0])
+        Qrow = [0]
+        for n in lisvQ:
+            Qrow.append((Qrow[-1]+n)%self.TET)
+        Qrow.pop()
+        return(PCrow(Qrow))
+    def M(self):
+        return(PCrow((self.pcs*5)%self.TET//1,TET=self.TET))
+    def constellation(self):
+#         Following Morris and Starr
+        reference = []
+        entry = ['P',str(self.pcs),str(self.I().pcs),str(self.M().I().pcs),str(self.M().pcs)]
+        reference.append(entry)
+        entry = ['R',str(self.R().pcs),str(self.I().R().pcs),str(self.M().I().R().pcs),str(self.M().R().pcs)]
+        reference.append(entry)
+        entry = ['QR',str(self.R().Q().pcs),str(self.I().R().Q().pcs),str(self.M().I().R().Q().pcs),
+                 str(self.M().R().Q().pcs)]
+        reference.append(entry)
+        entry = ['Q',str(self.Q().pcs),str(self.I().Q().pcs),str(self.M().I().Q().pcs),str(self.M().Q().pcs)]
+        reference.append(entry)
+        star = pd.DataFrame(reference,columns=['','P','I','IM','M'])
+        return(star)
+    def star(self):
+#         star of the row in prime form
+        reference = []
+        entry = ['P',(self.pcs)]
+        reference.append(entry)
+        entry = ['I',(self.I().pcs)]
+        reference.append(entry)
+        entry = ['R',(self.R().pcs)]
+        reference.append(entry)
+        entry = ['Q',(self.Q().pcs)]
+        reference.append(entry)
+        entry = ['M',(self.M().pcs)]
+        reference.append(entry)
+        star = pd.DataFrame(reference,columns=['Op','Row'])
+        return(star)
+        
 ########### Network functions ###########
 
 def pcsDictionary(Nc,order=0,TET=12,row=False,a=None):
