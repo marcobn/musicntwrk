@@ -51,11 +51,11 @@ class PCSet:
         •   ORD (logical) - if True, sorts the pcs in ascending order
         '''
         if UNI == True:
-            self.pcs = np.unique(pcs)
+            self.pcs = np.unique(pcs)%TET
         if ORD == True:
-            self.pcs = np.sort(pcs)
+            self.pcs = np.sort(pcs)%TET
         else:
-            self.pcs = np.asarray(pcs)
+            self.pcs = np.asarray(pcs)%TET
         self.TET = TET
 
     def normalOrder(self):
