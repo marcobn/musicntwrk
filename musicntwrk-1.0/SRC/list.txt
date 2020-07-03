@@ -1,0 +1,94 @@
+communications.py:import numpy as np
+communications.py:import time
+communications.py:from mpi4py import MPI
+communications.py:from load_balancing import *
+load_balancing.py:import numpy as np
+pcsPy.py:import sys,re,time,os
+pcsPy.py:import numpy as np
+pcsPy.py:import itertools as iter
+pcsPy.py:import pandas as pd
+pcsPy.py:import sklearn.metrics as sklm
+pcsPy.py:import networkx as nx
+pcsPy.py:import community as cm
+pcsPy.py:import music21 as m21
+pcsPy.py:import matplotlib.pyplot as plt
+pcsPy.py:import matplotlib.ticker as mtick
+pcsPy.py:import vpython as vp
+pcsPy.py:from scipy.optimize import curve_fit
+pcsPy.py:import collections
+pcsPy.py:import powerlaw
+pcsPy.py:from mpi4py import MPI
+pcsPy.py:from communications import *
+pcsPy.py:from load_balancing import *
+pcsPy.py:    •	use readScore() to import the score data as sequence
+pcsPy.py:    •	use readScore() to import the score data as sequence
+pcsPy.py:    •	use readScore() to import the score data as sequence
+pcsPy.py:    •	use readScore() to import the score data as sequence
+pcsPy.py:    import pydub as pb
+pcsPy.py:    import pylab
+pcsPy.py:    from matplotlib import rc
+pcsPy.py:    from matplotlib.font_manager import FontProperties
+rhythmPy.py:import sys,re,time,os
+rhythmPy.py:import numpy as np
+rhythmPy.py:from functools import reduce
+rhythmPy.py:import fractions as fr
+rhythmPy.py:from math import gcd
+rhythmPy.py:import pandas as pd
+rhythmPy.py:import sklearn.metrics as sklm
+rhythmPy.py:import networkx as nx
+rhythmPy.py:import community as cm
+rhythmPy.py:import music21 as m21
+rhythmPy.py:import itertools as itr
+rhythmPy.py:from mpi4py import MPI
+rhythmPy.py:from communications import *
+rhythmPy.py:from load_balancing import *
+sonifiPy.py:import numpy as np
+sonifiPy.py:import numpy.random as rn
+sonifiPy.py:import sys,os,re
+sonifiPy.py:import scipy.fftpack as FFT
+sonifiPy.py:import random
+sonifiPy.py:import music21 as m21
+sonifiPy.py:import pyo as po
+sonifiPy.py:# import CSound wrapper ctcsound (from csound installation directory)
+sonifiPy.py:import ctcsound
+sonifiPy.py:	import numpy as np
+sonifiPy.py:	import sys,os,re,time
+sonifiPy.py:	from sonifiPy import *
+timbrePy.py:import warnings
+timbrePy.py:import sys,re,time,os,glob, tarfile, pickle
+timbrePy.py:import numpy as np
+timbrePy.py:from scipy.signal import hilbert
+timbrePy.py:from scipy.signal import argrelextrema
+timbrePy.py:from numpy.linalg import lstsq
+timbrePy.py:import itertools as iter
+timbrePy.py:import pandas as pd
+timbrePy.py:import sklearn.metrics as sklm
+timbrePy.py:from sklearn.model_selection import train_test_split
+timbrePy.py:from sklearn.preprocessing import StandardScaler,MinMaxScaler,Normalizer
+timbrePy.py:#from sklearn.externals import joblib
+timbrePy.py:import joblib as jlib
+timbrePy.py:import tensorflow as tf
+timbrePy.py:from tensorflow.keras.models import Sequential,Model
+timbrePy.py:from tensorflow.keras.layers import Dense, Dropout, Flatten
+timbrePy.py:from tensorflow.keras.layers import Conv2D, MaxPooling2D
+timbrePy.py:from tensorflow.keras.layers import LeakyReLU
+timbrePy.py:import networkx as nx
+timbrePy.py:import community as cm
+timbrePy.py:import music21 as m21
+timbrePy.py:import matplotlib.pyplot as plt
+timbrePy.py:import matplotlib.style as ms
+timbrePy.py:import librosa
+timbrePy.py:import librosa.display
+timbrePy.py:from bs4 import BeautifulSoup
+timbrePy.py:import urllib
+timbrePy.py:import wget
+timbrePy.py:from pcsPy import *
+timbrePy.py:from rhythmPy import *
+timbrePy.py:from mpi4py import MPI
+timbrePy.py:from communications import *
+timbrePy.py:from load_balancing import *
+timbrePy.py:    •    use orchestralScore() to import the score data as sequence
+timbrePy.py:    import warnings
+tonalHarmonyDefs.py:from pcsPy import *
+tonalHarmonyDefs.py:import pickle, copy
+tonalHarmonyDefs.py:import itertools
