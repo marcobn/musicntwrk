@@ -80,5 +80,5 @@ def vLeadNetwork(dictionary,thup,thdw,distance,prob,write,TET):
 
     # write csv for edges
     if write: dedges.to_csv('edges.csv',index=False)
-
+    
     return(dnodes,dedges)

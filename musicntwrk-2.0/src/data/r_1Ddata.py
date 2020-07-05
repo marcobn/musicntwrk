@@ -15,13 +15,13 @@
 
 import numpy as np
 
-def r_1Ddata(path,fileread):
+def r_1Ddata(fileread):
 
 	# Read data as columns (x,y1,y2,y3...)
 
 	# Read the whole file into a single variable, which is a list of every row of the file.
 
-	f=open(path+fileread,'r')
+	f=open(fileread,'r')
 	lines=f.readlines()
 	f.close()
 	nlines = len(lines)
@@ -31,7 +31,7 @@ def r_1Ddata(path,fileread):
 		x = np.zeros(nlines,dtype=float)
 		y = np.zeros((ncol-1,nlines),dtype=float)
 
-		f=open(path+fileread,'r')
+		f=open(fileread,'r')
 		for l,line in enumerate(f):
 			p = line.split()
 			x[l] = float(p[0])
@@ -41,7 +41,7 @@ def r_1Ddata(path,fileread):
 	elif ncol ==1:
 		x = np.linspace(0,nlines,nlines)
 		y = np.zeros((1,nlines),dtype=float)
-		f=open(path+fileread,'r')
+		f=open(fileread,'r')
 		for l,line in enumerate(f):
 			y[0,l] = float(line.split()[0])
 		f.close()

@@ -33,7 +33,7 @@ except:
     size = 1
     para = False
 
-def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,TET):
+def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,write,TET):
     
     '''
     •	network generated from a focal node (ego) and the nodes to whom ego is directly connected to (alters)
@@ -70,7 +70,7 @@ def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,TET):
                       
     # write csv for nodes
     dnodes = pd.DataFrame(np.asarray(name),columns=['Label'])
-    dnodes.to_csv('nodes_ego.csv',index=False)
+    if write: dnodes.to_csv('nodes_ego.csv',index=False)
     nodes_ego = dnodes
     
     # find edges according to a metric
@@ -86,7 +86,7 @@ def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,TET):
             tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0,j])]],columns=['Source','Target','Weight'])
             dedges = dedges.append(tmp)
     # write csv for ego's edges
-    dedges.to_csv('edges_ego.csv',index=False)   
+    if write: dedges.to_csv('edges_ego.csv',index=False)   
     edges_ego = dedges     
     
     # alters edges
@@ -121,7 +121,7 @@ def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,TET):
                 dedges = dedges.append(tmp)
                 os.remove('edges'+str(i)+'.csv')
             # write csv for edges
-            dedges.to_csv('edges_alters.csv',index=False)
+            if write: dedges.to_csv('edges_alters.csv',index=False)
             edges_alters = dedges
     else:
         N = len(name)-1
@@ -136,7 +136,7 @@ def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,TET):
                     dedges = dedges.append(tmp)
 
         # write csv for alters' edges
-        dedges.to_csv('edges_alters.csv',index=False)
+        if write: dedges.to_csv('edges_alters.csv',index=False)
         edges_alters = dedges
     
     return(nodes_ego, edges_ego, edges_alters)

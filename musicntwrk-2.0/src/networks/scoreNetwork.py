@@ -18,6 +18,7 @@ import numpy as np
 import music21 as m21
 import networkx as nx
 import community as cm
+import matplotlib.pyplot as plt
 
 from ..musicntwrk import PCSet
 from ..utils.minimalDistance import minimalDistance

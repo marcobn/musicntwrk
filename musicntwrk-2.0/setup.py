@@ -23,7 +23,7 @@ setup(name='musicntwrk',
 	packages=['musicntwrk', 'musicntwrk.data','musicntwrk.harmony','musicntwrk.ml_utils','musicntwrk.networks','musicntwrk.plotting',
 			  'musicntwrk.timbre','musicntwrk.utils'],
 	package_dir={'musicntwrk':'src'},
-	install_requires=['numpy','scipy','pandas','python-louvain','networkx','music21','librosa','pyo',
-					  'matplotlib','tensorflow','powerlaw','vpython','wget','PySimpleGUI'],
+	install_requires=['numpy','scipy','pandas','python-louvain','networkx','music21','librosa','numba==0.48','pyo',
+					  'matplotlib','tensorflow','powerlaw','vpython','wget','PySimpleGUI','pydub'],
 	extras_require=extras
 	)

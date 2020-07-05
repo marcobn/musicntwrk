@@ -12,6 +12,10 @@
 # in the root directory of the present distribution,
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
+
+import vpython as vp
+import numpy as np
+
 def plotCurveXY(x,y):
     stage=vp.canvas()
     f1 = vp.gcurve(color=vp.color.blue)

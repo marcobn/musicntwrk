@@ -32,7 +32,7 @@ except:
     size = 1
     para = False
 
-def pcsNetwork(dictionary,thup,thdw,distance,prob,TET):
+def pcsNetwork(dictionary,thup,thdw,distance,prob,write,TET):
     
     '''
     •	generate the network of pcs based on distances between interval vectors
@@ -51,7 +51,7 @@ def pcsNetwork(dictionary,thup,thdw,distance,prob,TET):
     
     # write csv for nodes
     dnodes = pd.DataFrame(df[:,0],columns=['Label'])
-    dnodes.to_csv('nodes.csv',index=False)
+    if write: dnodes.to_csv('nodes.csv',index=False)
     if para: comm.Barrier()
     
     # find edges according to a metric
@@ -91,7 +91,7 @@ def pcsNetwork(dictionary,thup,thdw,distance,prob,TET):
 
     # write csv for partial edges
     dedges.to_csv('edges'+str(rank)+'.csv',index=False)
-    if para = comm.Barrier()
+    if para: comm.Barrier()
     
     if size != 1 and rank == 0:
         dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
@@ -104,8 +104,9 @@ def pcsNetwork(dictionary,thup,thdw,distance,prob,TET):
         dedges.loc[cond, ['Source', 'Target']] = dedges.loc[cond, ['Target', 'Source']].values
         dedges = dedges.drop_duplicates(subset=['Source', 'Target'])
         # write csv for edges
-        dedges.to_csv('edges.csv',index=False)
+        if write: dedges.to_csv('edges.csv',index=False)
     elif size == 1:
         os.rename('edges'+str(rank)+'.csv','edges.csv')
+        if not write: os.remove('edges.csv')
 
     return(dnodes,dedges)

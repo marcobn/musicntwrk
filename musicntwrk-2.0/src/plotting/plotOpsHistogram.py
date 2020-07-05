@@ -13,11 +13,24 @@
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
 
+from ..utils.opsHistogram import opsHistogram
+from ..utils.generalizedOpsHistogram import generalizedOpsHistogram
+
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.style as ms
 ms.use('seaborn-muted')
 
-def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
+#def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
+def plotOpsHistogram(edges,fx=15,fy=4):
+    
+    values = edges['Label'].value_counts().keys().tolist()
+    counts = edges['Label'].value_counts().tolist()
+    counts /= np.sum(counts)*0.01
+
+    newvalues, newcounts,pal_dict,dist = generalizedOpsHistogram(values,counts)
+    idx = np.argwhere(newcounts)
+    
     plt.rcParams['font.family'] = 'arial'
     plt.rcParams['axes.edgecolor']='#333F4B'
     plt.rcParams['axes.linewidth']=1.5
@@ -31,4 +44,4 @@ def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
     plt.setp(plt.gca().get_xticklabels(), rotation=-90, horizontalalignment='center',fontsize=10, 
              fontweight='black', color = '#000000')
 #     plt.xticks([])
-    plt.bar(newvalues,newcounts,width=0.85,color='grey')
+    plt.bar(newvalues[idx][:,0],newcounts[idx][:,0],width=0.85,color='grey')

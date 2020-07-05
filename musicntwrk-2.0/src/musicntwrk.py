@@ -10,7 +10,7 @@
 #in the root directory of the present distribution, or http://www.gnu.org/copyleft/gpl.txt .
 #
 
-import re
+import re, sys, time
 import numpy as np
 import music21 as m21
 from functools import reduce
@@ -806,12 +806,12 @@ class musicntwrk:
         '''
         if space == 'pcs':
             from .networks.pcsNetwork import pcsNetwork
-            nodes, edges = pcsNetwork(dictionary,thup,thdw,distance,prob,TET=self.TET)
+            nodes, edges = pcsNetwork(dictionary,thup,thdw,distance,prob,write,TET=self.TET)
             return(nodes,edges)
         
         if space == 'pcsEgo':
             from .networks.pcsEgoNetwork import pcsEgoNetwork
-            nodes_e, edges_e, edges_a = pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,TET=self.TET)
+            nodes_e, edges_e, edges_a = pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,write,TET=self.TET)
             return(nodes_e,edges_e,edges_a)
         
         if space == 'vLead' and vector != True and ops != True:
@@ -924,3 +924,34 @@ class musicntwrk:
             from .harmony.tonalHarmonyModels import tonalHarmonyModels
             tonalHarmonyModels(mode)
         
+    def sonify(self,descriptor=None,data=None,length=None,midi=None,scalemap=None,ini=None,fin=None,fac=None,dur=None,transp=None,
+               col=None,write=None,vnorm=None,plot=None,crm=None,tms=None,xml=None):
+        '''
+        sonification strategies - simple sound (spectral) or score (melodic progression)
+        '''
+        if descriptor == 'spectrum':
+            from .data.r_1Ddata import r_1Ddata
+            from .data.i_spectral_pyo import i_spectral_pyo
+            x, y = r_1Ddata(data)
+            s,a = i_spectral_pyo(x,y[0])
+            s.start()
+            time.sleep(length)
+            s.stop()
+            s.shutdown()
+            
+        if descriptor == 'melody':
+            from .data.r_1Ddata import r_1Ddata
+            from .data.scaleMapping import scaleMapping
+            from .data.MIDImap import MIDImap
+            from .data.MIDIscore import MIDIscore
+            from .data.MIDImidi import MIDImidi
+            x, y = r_1Ddata(data)
+            scale, nnote = scaleMapping(scalemap,ini=ini,fin=fin,fac=fac)
+            MIDIscore(MIDImap(y[col],scale,nnote)-transp,dur=dur,w=write)
+            if midi: MIDImidi(MIDImap(y[col],scale,nnote)-transp,dur=2*dur,vnorm=vnorm)
+        
+        if descriptor == 'sound':
+            from .data.analyzeSound import analyzeSound
+            from .data.WRITEscore import WRITEscore
+            nseq,beat,prob = analyzeSound(data,outlist=['nseq','beat','prob'],plot=plot,crm=crm,tms=tms,xml=xml)
+            WRITEscore(data,nseq.pcs,beat.rseq,w=write)
