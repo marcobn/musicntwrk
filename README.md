@@ -27,10 +27,24 @@ A python library for pitch class set and rhythmic sequences classification and m
 ## Quick start
 
 Get started with **musicntwrk**:
-- [Download the latest release.](https://github.com/marcobn/musicntwrk/releases/tag/v1.2)
+
+# NEW!!! version 2.0 now on PiPy
+
+## pip install musicntwrk
+or
+## pip install musicntwrk[with_MPI]
+(if there is a pre-existing installation of MPI, pip will automatically install the mpi4pi wrapper)
+
+- [OR download the latest release and the Example notebook and support files](https://github.com/marcobn/musicntwrk/)
+
 - Clone the repo: `git clone https://github.com/marcobn/musicntwrk.git`
-- cd musicntwrk
-- python setup.py install
+- cd musicntwrk-2.0
+- pip install .
+
+# The following documentation is for the old release
+# NEW DOCUMENTATION COMING SOON
+
+## In the meantime, the old documentation is still usable (main routines are still the same)
 
 ## What's included
 **musicntwrk** is a software written for python 3 and comprises of four modules, `pcsPy`, `rhythmPy`, `timbrePy` and `sonifiPy`:
