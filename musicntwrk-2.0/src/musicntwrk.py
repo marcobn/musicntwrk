@@ -765,13 +765,13 @@ class musicntwrk:
     def __init__(self,TET=12):
         self.TET = TET
         
-    def dictionary(self,space=None,N=None,Nc=None,order=None,row=None,a=None,REF=None,scorefil=None,music21=None,show=None):
+    def dictionary(self,space=None,N=None,Nc=None,order=None,row=None,a=None,prob=None,REF=None,scorefil=None,music21=None,show=None):
         '''
         define dictionary in the musical space specified in 'space': pcs, rhythm, rhythmP, score
         '''
         if space == 'pcs':
             from .networks.pcsDictionary import pcsDictionary
-            dictionary,ZrelT = pcsDictionary(Nc,row,a,order,TET=self.TET)
+            dictionary,ZrelT = pcsDictionary(Nc,row,a,order,prob,TET=self.TET)
             return(dictionary,ZrelT)
         
         if space == 'rhythm':

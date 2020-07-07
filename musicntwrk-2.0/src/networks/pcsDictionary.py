@@ -33,7 +33,7 @@ except:
 
 from ..musicntwrk import PCSet
 
-def pcsDictionary(Nc,row,a,order,TET):
+def pcsDictionary(Nc,row,a,order,prob,TET):
 
     '''
     •	Generate the dictionary of all possible pcs of a given cardinality in a generalized musical space of TET pitches
@@ -117,5 +117,15 @@ def pcsDictionary(Nc,row,a,order,TET):
             reference.append(entry)
 
         dictionary = pd.DataFrame(reference,columns=['class','pcs','interval'])
+        
+        if prob != None:
+            df = np.asarray(dictionary)
+            pruned = pd.DataFrame(None,columns=['class','pcs','interval'])
+            for i in range(df.shape[0]):
+                r = np.random.rand()
+                if r <= prob:
+                    tmp = pd.DataFrame([[str(df[i,0]),str(df[i,1]),str(df[i,2])]],columns=['class','pcs','interval'])
+                    pruned = pruned.append(tmp)
+            dictionary = pruned
         
     return(dictionary,ZrelT)

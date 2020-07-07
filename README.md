@@ -28,7 +28,7 @@ A python library for pitch class set and rhythmic sequences classification and m
 
 Get started with **musicntwrk**:
 
-# NEW!!! version 2.0 now on PiPy
+# NEW!!! version 2.0 now on PyPi
 
 ## pip install musicntwrk
 or

@@ -19,7 +19,7 @@ import numpy as np
 from ..utils.generalizedOpsName import generalizedOpsName
 from ..utils.opsName import opsName
 
-def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None,abs=False):
+def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None,abs=False,TET=12,distance='euclidean'):
     try:
         ntot = nseq.shape[0]
     except:
@@ -33,12 +33,12 @@ def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None,abs
         ch += 60
         n = m21.chord.Chord(ch.tolist())
         if i < ntot-1: 
-            n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1])[1])
+            n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1],TET,distance)[1])
             if abs:
                 if len(nseq[i]) == len(nseq[i+1]):
                     n.addLyric(str(i)+' '+opsName(nseq[i],nseq[i+1]))
                 else:
-                    r = generalizedOpsName(nseq[i],nseq[i+1])[0]
+                    r = generalizedOpsName(nseq[i],nseq[i+1],TET,distance)[0]
                     if len(nseq[i]) > len(nseq[i+1]):
                         n.addLyric(str(i)+' '+opsName(nseq[i],r))
                     else:

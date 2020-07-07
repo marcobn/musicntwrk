@@ -1,5 +1,7 @@
+import setuptools
 from distutils.core import setup
 import os
+from os import path
 
 data = os.path.join('src','data')
 harmony = os.path.join('src','harmony')
@@ -13,17 +15,25 @@ extras = {
 	'with_MPI': ['mpi4py']
 }
 
+# read the contents of your README file
+#this_directory = '../'
+#with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+#	long_description = f.read()
+
+
 setup(name='musicntwrk',
-	version='2.0',
+	version='2.0.1',
 	description='music as data, data as music',
+#	long_description=long_description,
+#	long_description_content_type='text/markdown',
 	author='Marco Buongiorno Nardelli',
 	author_email='mbn@unt.edu',
 	platforms='OS independent',
-	url='www.materialssoundmusic.com',
+	url='https://www.musicntwrk.com',
 	packages=['musicntwrk', 'musicntwrk.data','musicntwrk.harmony','musicntwrk.ml_utils','musicntwrk.networks','musicntwrk.plotting',
 			  'musicntwrk.timbre','musicntwrk.utils'],
 	package_dir={'musicntwrk':'src'},
 	install_requires=['numpy','scipy','pandas','python-louvain','networkx','music21','librosa','numba==0.48','pyo',
-					  'matplotlib','tensorflow','powerlaw','vpython','wget','PySimpleGUI','pydub'],
+					  'matplotlib','tensorflow','powerlaw','vpython','wget','PySimpleGUI','pydub','ruptures'],
 	extras_require=extras
 	)
