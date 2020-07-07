@@ -1,7 +1,7 @@
 <p></p>
 <p align="center">
   <a href="https://www.musicntwrk.com">
-    <img src="./IMAGES/logo.png" alt="musicntwrk logo" height="84">
+    <img src="https://github.com/marcobn/musicntwrk/blob/master/IMAGES/logo.png" alt="musicntwrk logo" height="84">
   </a>
 </p>
 
@@ -88,16 +88,16 @@ Marco Buongiorno Nardelli, _"musicntwrk, a python library for pitch class set an
 This project has been made possible by contributions from the following institutions:
 <p align="center">
   <a href="https://www.unt.edu">
-    <img src="./IMAGES/unt.png" alt="UNT logo" height="148" align="bottom">
+    <img src="https://github.com/marcobn/musicntwrk/blob/master/IMAGES/unt.png" alt="UNT logo" height="148" align="bottom">
   </a>&ensp;&ensp;&ensp;
   <a href="https://cemi.music.unt.edu">
-    <img src="./IMAGES/cemi.png" alt="CEMI logo" height="84" align="bottom">
+    <img src="https://github.com/marcobn/musicntwrk/blob/master/IMAGES/cemi.png" alt="CEMI logo" height="84" align="bottom">
   </a>&ensp;&ensp;&ensp;
   <a href="https://www.prism.cnrs.fr">
-    <img src="./IMAGES/prism.png" alt="PRISM logo" height="132" align="bottom">
+    <img src="https://github.com/marcobn/musicntwrk/blob/master/IMAGES/prism.png" alt="PRISM logo" height="132" align="bottom">
   </a>&ensp;&ensp;&ensp;
   <a href="https://imera.univ-amu.fr">
-    <img src="./IMAGES/imera.png" alt="IMeRA logo" height="72" align="bottom">
+    <img src="https://github.com/marcobn/musicntwrk/blob/master/IMAGES/imera.png" alt="IMeRA logo" height="72" align="bottom">
   </a>
 </p>
 <p>
