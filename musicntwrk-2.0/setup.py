@@ -23,7 +23,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 
 setup(name='musicntwrk',
-	version='2.1.0',
+	version='2.1.1',
 	description='music as data, data as music',
 	long_description=long_description,
 	long_description_content_type='text/markdown',
