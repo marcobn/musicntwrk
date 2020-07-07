@@ -16,7 +16,6 @@ extras = {
 }
 
 # read the contents of your README file including images
-sys.path.append('../IMAGES')
 this_directory = '../'
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 	long_description = f.read()

@@ -37,7 +37,10 @@ def harmonicDesign(mk,nnodes,nedges,refnodes,refedges,nstart=None,seed=None,reve
     euler_circuit = chinese_postman(scfree,nstart)
     print('Length of Eulerian circuit: {}'.format(len(euler_circuit)))
     # reference node degree distribution
-    bnet = nx.from_pandas_edgelist(refedges,'Source','Target',['Weight','Label'])
+    try:
+        bnet = nx.from_pandas_edgelist(refedges,'Source','Target',['Weight','Label'])
+    except:
+        bnet = nx.from_pandas_edgelist(refedges,'Source','Target',['Weight'])
     bnode = np.zeros((nnodes),dtype=int)
     bweight = np.zeros((nnodes),dtype=int)
     for n in range(nnodes):
