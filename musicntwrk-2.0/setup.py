@@ -1,6 +1,6 @@
 import setuptools
 from distutils.core import setup
-import os
+import os,sys
 from os import path
 
 data = os.path.join('src','data')
@@ -15,17 +15,18 @@ extras = {
 	'with_MPI': ['mpi4py']
 }
 
-# read the contents of your README file
-#this_directory = '../'
-#with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
-#	long_description = f.read()
+# read the contents of your README file including images
+sys.path.append('../IMAGES')
+this_directory = '../'
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+	long_description = f.read()
 
 
 setup(name='musicntwrk',
-	version='2.0.1',
+	version='2.1.0',
 	description='music as data, data as music',
-#	long_description=long_description,
-#	long_description_content_type='text/markdown',
+	long_description=long_description,
+	long_description_content_type='text/markdown',
 	author='Marco Buongiorno Nardelli',
 	author_email='mbn@unt.edu',
 	platforms='OS independent',

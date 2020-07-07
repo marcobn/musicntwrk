@@ -17,10 +17,12 @@ import time,re
 import numpy as np
 import itertools as iter
 import pandas as pd
+import music21 as m21
 
+from ..musicntwrk import PCSet
 from ..utils.minimalDistanceVec import minimalDistanceVec
 
-def vLeadNetworkVec(dictionary,thup,thdw,distance,prob,write,TET):
+def vLeadNetworkVec(dictionary,thup,thdw,distance,prob,write,pcslabel,TET):
     
     # Create network of minimal voice leadings from the pcsDictionary
     # vector version
@@ -28,7 +30,18 @@ def vLeadNetworkVec(dictionary,thup,thdw,distance,prob,write,TET):
     df = np.asarray(dictionary)
 
     # write csv for nodes
-    dnodes = pd.DataFrame(df[:,0],columns=['Label'])
+    if pcslabel:
+        dnodes = pd.DataFrame(None,columns=['Label'])
+        for n in range(len(df)):
+            p = PCSet(np.asarray(list(map(int,re.findall('\d+',df[n,1])))))
+            if p.pcs.shape[0] == 1:
+                nn = ''.join(m21.chord.Chord(p.pcs.tolist()).pitchNames)
+            else:
+                nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
+            nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
+            dnodes = dnodes.append(nameseq)
+    else:
+        dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     if write: dnodes.to_csv('nodes.csv',index=False)
 
     # find edges according to a metric

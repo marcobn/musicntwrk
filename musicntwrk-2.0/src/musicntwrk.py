@@ -798,15 +798,15 @@ class musicntwrk:
 
         
     def network(self,space=None,label=None,dictionary=None,thup=None,thdw=None,thup_e=None,thdw_e=None,distance=None,prob=None,write=None,\
-                vector=None,ops=None,name=None,ntx=None,general=None,seq=None,sub=None,start=None,end=None,grphtype=None,wavefil=None,\
-                cepstrum=None,color=None):
+                pcslabel=None,vector=None,ops=None,name=None,ntx=None,general=None,seq=None,sub=None,start=None,end=None,grphtype=None,\
+                wavefil=None,cepstrum=None,color=None):
         '''
         define networks in the musical space specified in 'space': pcs (reg and ego), vLead (reg, vec, name and nameVec), 
         rhythm, rLead, score (reg, name and sub), timbre, orch
         '''
         if space == 'pcs':
             from .networks.pcsNetwork import pcsNetwork
-            nodes, edges = pcsNetwork(dictionary,thup,thdw,distance,prob,write,TET=self.TET)
+            nodes, edges = pcsNetwork(dictionary,thup,thdw,distance,prob,write,pcslabel,TET=self.TET)
             return(nodes,edges)
         
         if space == 'pcsEgo':
@@ -816,22 +816,22 @@ class musicntwrk:
         
         if space == 'vLead' and vector != True and ops != True:
             from .networks.vLeadNetwork import vLeadNetwork
-            nodes, edges = vLeadNetwork(dictionary,thup,thdw,distance,prob,write,TET=self.TET)
+            nodes, edges = vLeadNetwork(dictionary,thup,thdw,distance,prob,write,pcslabel,TET=self.TET)
             return(nodes, edges)
         
         if space == 'vLead' and vector and ops != True:
             from .networks.vLeadNetworkVec import vLeadNetworkVec
-            nodes, edges = vLeadNetworkVec(dictionary,thup,thdw,distance,prob,write,TET=self.TET)
+            nodes, edges = vLeadNetworkVec(dictionary,thup,thdw,distance,prob,write,pcslabel,TET=self.TET)
             return(nodes, edges)
         
         if space == 'vLead' and vector != True and ops:
             from .networks.vLeadNetworkByName import vLeadNetworkByName
-            nodes, edges = vLeadNetworkByName(dictionary,name,distance,prob,write,TET=self.TET)
+            nodes, edges = vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET=self.TET)
             return(nodes, edges)
         
         if space == 'vLead' and vector and ops:
             from .networks.vLeadNetworkByNameVec import vLeadNetworkByNameVec
-            nodes, edges = vLeadNetworkByNameVec(dictionary,name,distance,prob,write,TET=self.TET)
+            nodes, edges = vLeadNetworkByNameVec(dictionary,name,distance,prob,write,pcslabel,TET=self.TET)
             return(nodes, edges)
 
         if space == 'rhythm':
@@ -871,6 +871,7 @@ class musicntwrk:
             from .networks.orchestralNetwork import orchestralNetwork
             nodes,edges,deg,modul,part = orchestralNetwork(seq,distance,TET=self.TET)
             return(nodes,edges,deg,modul,part)
+        
             
     def timbre(self,descriptor=None,path=None,wavefil=None,standard=None,nmel=None,ncc=None,zero=None,lmax=None,maxi=None,nbins=None,\
                 method=None,scnd=None,nstep=None):

@@ -16,7 +16,9 @@
 import sys,re,os
 import pandas as pd
 import numpy as np
+import music21 as m21
 
+from ..musicntwrk import PCSet
 from ..utils.communications import *
 from ..utils.load_balancing import *
 
@@ -32,7 +34,7 @@ except:
     size = 1
     para = False
 
-def pcsNetwork(dictionary,thup,thdw,distance,prob,write,TET):
+def pcsNetwork(dictionary,thup,thdw,distance,prob,write,pcslabel,TET):
     
     '''
     •	generate the network of pcs based on distances between interval vectors
@@ -50,8 +52,20 @@ def pcsNetwork(dictionary,thup,thdw,distance,prob,write,TET):
     dim = np.asarray(list(map(int,re.findall('\d+',df[0,col])))).shape[0]
     
     # write csv for nodes
-    dnodes = pd.DataFrame(df[:,0],columns=['Label'])
+    if pcslabel:
+        dnodes = pd.DataFrame(None,columns=['Label'])
+        for n in range(len(df)):
+            p = PCSet(np.asarray(list(map(int,re.findall('\d+',df[n,1])))))
+            if p.pcs.shape[0] == 1:
+                nn = ''.join(m21.chord.Chord(p.pcs.tolist()).pitchNames)
+            else:
+                nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
+            nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
+            dnodes = dnodes.append(nameseq)
+    else:
+        dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     if write: dnodes.to_csv('nodes.csv',index=False)
+
     if para: comm.Barrier()
     
     # find edges according to a metric

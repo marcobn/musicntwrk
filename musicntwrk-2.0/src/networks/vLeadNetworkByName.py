@@ -17,11 +17,13 @@ import time,re
 import numpy as np
 import itertools as iter
 import pandas as pd
+import music21 as m21
 
+from ..musicntwrk import PCSet
 from ..utils.minimalDistance import minimalDistance
 from ..utils.opsCheckByName import opsCheckByName
 
-def vLeadNetworkByName(dictionary,name,distance,prob,write,TET):
+def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
     
     '''
     •	generation of the network of all minimal voice leadings in a generalized musical space of TET pitches – based on the minimal distance operators - selects edges by operator name
@@ -37,9 +39,19 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,TET):
     df = np.asarray(dictionary)
 
     # write csv for nodes
-    dnodes = pd.DataFrame(df[:,0],columns=['Label'])
+    if pcslabel:
+        dnodes = pd.DataFrame(None,columns=['Label'])
+        for n in range(len(df)):
+            p = PCSet(np.asarray(list(map(int,re.findall('\d+',df[n,1])))))
+            if p.pcs.shape[0] == 1:
+                nn = ''.join(m21.chord.Chord(p.pcs.tolist()).pitchNames)
+            else:
+                nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
+            nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
+            dnodes = dnodes.append(nameseq)
+    else:
+        dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     if write: dnodes.to_csv('nodes.csv',index=False)
-    #dnodes.to_json('nodes.json')
     
     # find edges according to a metric - allows for non-bijective voice leading
     N = df[:,1].shape[0]
