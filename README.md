@@ -65,11 +65,11 @@ or
 
 Documentation for the individual modules:
 
-- [pcsPy](./DOCS/pcsPy.md)
-- [rhythmPy](./DOCS/rhythmPy.md)
-- [timbrePy](./DOCS/timbrePy.md)
-- [sonifiPy](./DOCS/sonifiPy.md)
-- [examples](https://github.com/marcobn/musicntwrk/blob/master/TESTS/Examples.ipynb)
+- [pcsPy](https://github.com/marcobn/musicntwrk/blob/master/DOCS/pcsPy.md)
+- [rhythmPy](https://github.com/marcobn/musicntwrk/blob/master/DOCS/)
+- [timbrePy](https://github.com/marcobn/musicntwrk/blob/master/DOCS/timbrePy.md)
+- [sonifiPy](https://github.com/marcobn/musicntwrk/blob/master/DOCS/sonifiPy.md)
+- [examples](https://github.com/marcobn/musicntwrk/blob/master/musicntwrk-2.0/examples/Examples-basic.ipynb)
 
 The most computationally intensive parts of the modules can be run on parallel processors using the MPI (Message Passing Interface) protocol. Communications are handled by two additional modules: `communications` and `load_balancing`. Since the user will never have to interact with these modules, we omit here a detailed description of their functions.
 
