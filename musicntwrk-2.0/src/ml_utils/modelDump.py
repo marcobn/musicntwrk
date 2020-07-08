@@ -13,12 +13,12 @@
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
 
-import os, pickle
+import os, pickle, time
 import numpy as np
 import joblib as jlib
 
 def modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res,train):
-    filename = str(hex(int(time.time())))+'_'+str(res.round(3))
+    filename = str(hex(int(time.time())))+'_'+str(round(res,3))
     model.save(filename+'.h5')
     np.save(filename+'.test',x_test)
     np.save(filename+'.name_test',y_test)
@@ -34,4 +34,5 @@ def modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res,train):
     os.system('rm '+filename+'.scaler')
     os.system('rm '+filename+'.normal')
     os.system('rm '+filename+'*.dict')
+    print('model saved in ',filename)
     

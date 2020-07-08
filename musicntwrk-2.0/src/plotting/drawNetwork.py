@@ -18,13 +18,17 @@ import networkx as nx
 import community as cm
 import matplotlib.pyplot as plt
 
-def drawNetwork(dnodes,dedges,forceiter=100,grphtype='undirected',dx=10,dy=10,colormap='jet',scale=1.0):
+def drawNetwork(dnodes,dedges,forceiter=100,grphtype='undirected',dx=10,dy=10,colormap='jet',scale=1.0,drawlabels=True,giant=False):
 
     if grphtype == 'directed':
         Gx = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight'],create_using=nx.DiGraph())
         Gxu = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight'])
+        if giant: 
+            print('not implemented')
     else:
         Gx = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight'])
+        if giant:
+            Gx = list(Gx.subgraph(c) for c in nx.connected_components(Gx))[0]
     pos = nx.spring_layout(Gx,iterations=forceiter)
     df = np.array(dnodes)
     nodelabel = dict(zip(np.linspace(0,len(df[:,0])-1,len(df[:,0]),dtype=int),df[:,0]))
@@ -40,6 +44,7 @@ def drawNetwork(dnodes,dedges,forceiter=100,grphtype='undirected',dx=10,dy=10,co
     d = nx.degree(Gx)
     dsize = [(d[v]+1)*100*scale for v in Gx.nodes()]
     plt.figure(figsize=(dx, dy))
-    nx.draw_networkx(Gx,pos=pos,labels=labels,with_labels=True,cmap=plt.get_cmap(colormap),node_color=values,
+    nx.draw_networkx(Gx,pos=pos,labels=labels,with_labels=drawlabels,cmap=plt.get_cmap(colormap),node_color=values,
                     node_size=dsize)
     plt.show()
+

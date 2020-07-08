@@ -47,7 +47,7 @@ def timbralNetwork(waves,vector,thup,thdw):
     for n in range(len(waves)):
         nameseq = pd.DataFrame([waves[n].split('/')[-1].split('.')[0]],columns=['Label'])
         dnodes = dnodes.append(nameseq)
-    df = np.asarray(dnodes)
+    df = np.array(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
     dff,idx = np.unique(df,return_inverse=True)
     for n in range(dff.shape[0]):

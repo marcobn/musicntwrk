@@ -70,7 +70,7 @@ def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,nu
         res = model.evaluate(x_test, y_test, verbose=0)
         print('loss ',res[0],'accuracy ',res[1])
         if res[1] >= thr and w == True:
-            print('found good match ',res[1].round(3))
+            print('found good match ',round(res[1],3))
             modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)
 #    sess.close()
     return(model,x_train,y_train,x_test,y_test,scaler,normal,res[1],train)

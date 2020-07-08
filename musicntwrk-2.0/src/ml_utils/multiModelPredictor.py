@@ -18,24 +18,25 @@ import numpy as np
 from .scaleDataSet import scaleDataSet
 
 def multiModelPredictor(xnew,models,scalers,normals):
-    ynew = []
+   
     try: 
+        ynew = []
         for m in range(len(models)):
             temp = scaleDataSet(xnew,scalers[str(m)],normals[str(m)])
             try:
-                ynew.append(models[str(m)].predict_proba(temp)[0])
+                ynew.append(models[str(m)].predict(temp)[0])
             except:
                 temp = np.reshape(temp,(temp.shape[0],xnew.shape[1],xnew.shape[2],1),order='C')
-                ynew.append(models[str(m)].predict_proba(temp)[0])
+                ynew.append(models[str(m)].predict(temp)[0])
         idx = np.argmax(np.sum(np.array(ynew),axis=0))
-        ynew = np.sum(np.array(ynew),axis=0)/len(models)
+        prob = np.sum(np.array(ynew),axis=0)/len(models)
     except:
         temp = scaleDataSet(xnew,scalers,normals)
         try:
-            ynew.append(models.predict_proba(temp)[0])
+            prob = models.predict(temp)[0]
         except:
             temp = np.reshape(temp,(1,xnew.shape[1],xnew.shape[2],1),order='C')
-            ynew.append(models.predict_proba(temp)[0])
-        idx = np.argmax(np.array(ynew))
-    return(idx,ynew)
+            prob = models.predict(temp)[0]
+        idx = np.argmax(np.array(prob))
+    return(idx,prob)
                                                 

@@ -898,6 +898,11 @@ class musicntwrk:
             waves, cepstrum0, lmax = computeStandardizedMFCC(path,wavefil,nmel,ncc,lmax,maxi,nbins)
             return(waves, cepstrum0, lmax)
             
+        if descriptor == 'MFPS' and standard:
+            from .timbre.computeStandardizedMFPS import computeStandardizedMFPS
+            waves, cepstrum0, lmax = computeStandardizedMFPS(path,wavefil,nmel,lmax,maxi,nbins)
+            return(waves, cepstrum0, lmax)
+            
         if descriptor == 'ASCBW' and standard != True:
             from .timbre.computeASCBW import computeASCBW
             waves, ascbw = computeASCBW(path,wavefil)
