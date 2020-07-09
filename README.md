@@ -37,7 +37,7 @@ or
 - pip install .
 
 ## - [Examples and support files can be downloaded here](https://github.com/marcobn/musicntwrk/tree/master/musicntwrk-2.0/examples)
-There are three example notebooks: basic, advanced harmony, advanced timbre. See the ipntb files for a full description.
+There are three example notebooks: basic, advanced harmony, advanced timbre. See the ipynb files for a full description.
 
 ## What's included
 **musicntwrk** is a project written for python 3 and comprised of a main module, `musicntwrk`, and many additional helper packages included in the distribution:
