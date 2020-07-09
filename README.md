@@ -26,50 +26,37 @@ A python library for pitch class set and rhythmic sequences classification and m
 
 ## Quick start
 
-Get started with **musicntwrk**:
-
-# NEW!!! version 2.1 now on PyPi
-
 ## pip install musicntwrk
 or
 ## pip install musicntwrk[with_MPI]
 (if there is a pre-existing installation of MPI, pip will automatically install the mpi4pi wrapper)
 
-- [OR download the latest release and the Example notebook and support files](https://github.com/marcobn/musicntwrk/)
-
+- [OR download the latest release from GitHub](https://github.com/marcobn/musicntwrk/)
 - Clone the repo: `git clone https://github.com/marcobn/musicntwrk.git`
 - cd musicntwrk-2.0
 - pip install .
 
-# The following documentation is for the old release
-# NEW DOCUMENTATION COMING SOON
-
-## In the meantime, the old documentation is still usable (main routines are still the same)
+## - [Examples and support files can be downloaded here](https://github.com/marcobn/musicntwrk/tree/master/musicntwrk-2.0/examples)
+There are three example notebooks: basic, advanced harmony, advanced timbre. See the ipntb files for a full description.
 
 ## What's included
-**musicntwrk** is a software written for python 3 and comprises of four modules, `pcsPy`, `rhythmPy`, `timbrePy` and `sonifiPy`:
-- `pcsPy` - a module for pitch class set classification and manipulation in any arbitrary temperament; the construction of generalized pitch class set networks using distances between common descriptors (interval vectors, voice leadings); the analysis of scores and the generation of compositional frameworks.
-- `rhythmPy` - a module for rhythmic sequence classification and manipulation; and the construction of rhythmic sequence networks using various definitions of rhythmic distance.
-- `timbrePy` - comprises of two sections: the first deals with orchestration color and it is the natural extension of the score analyzer in `pscPy`; the second deals with analysis and characterization of timbre from a (psycho-)acoustical point of view. In particular, it provides: the characterization of sound using, among others, Mel Frequency or Power Spectrum Cepstrum Coefficients (MFCC or PSCC); the construction of timbral networks using descriptors based on MF- or PS-CCs; and machine learning models for timbre recognition through the TensorFlow Keras framework.
-- `sonifiPy` - a module for the sonification of arbitrary data structures, including automatic score (musicxml) and MIDI generation.
-- A jupyter notebook with selected examples is provided in the TESTS directory.
+**musicntwrk** is a project written for python 3 and comprised of a main module, `musicntwrk`, and many additional helper packages included in the distribution:
+- `musicntwrk` - is the main module and contains helper clasess for pitch class set classification and manipulation in any arbitrary temperament (PCSet, PCSetR and PCSrow), and the main class musicntwrk that allows the construction of generalized musical space networks using distances between common descriptors (interval vectors, voice leadings, rhythm distance, etc.); the analysis of scores, the sonification of data and the generation of compositional frameworks. `musicntwrk` acts as a wrapper for the various functions organized in the following sub projects:
+  - `networks` - contains all the modules to construct dictionaries and networks of pitch class set spaces including voice leading, rhythmic spaces, timbral spaces and score network and orchestarion analysis 
+  - `data` - sonification of arbitrary data structures, including automatic score (musicxml) and MIDI generation
+  - `timbre` - analysis and characterization of timbre from a (psycho-)acoustical point of view. In particular, it provides: the characterization of sound using, among others, Mel Frequency or Power Spectrum Cepstrum Coefficients (MFCC or PSCC); the construction of timbral networks using descriptors based on MF- or PS-CCs
+  - `ml_utils` - machine learning models for timbre recognition through the TensorFlow Keras framework
+  - `plotting` - plotting function including a module for automated network drawing
+  - `utils` - utility functions used by other modules
 
 ## Documentation
-**musicntwrk** requires the installation of the following modules via the “pip install” (or equivalent, depending on individual environments) command:
-1.	System modules: `sys`, `re`, `time`, `os`,`urllib`,`wget`,`bs4`,`warnings`
-2.	Math modules: `numpy`, `scipy`, `itertools`, `fractions`, `gcd`, `functools`
-3.	Data modules: `pandas`, `sklearn`, `networkx`, `community`,`tensorflow`,`powerlaw`
-4.	Music modules: `music21`,`librosa`,`pyo`
-5.  Visualization modules: `matplotlib`, `vpython`
-6.	Parallel processing: `mpi4py`
 
-Documentation for the individual modules:
-
-- [pcsPy](https://github.com/marcobn/musicntwrk/blob/master/DOCS/pcsPy.md)
-- [rhythmPy](https://github.com/marcobn/musicntwrk/blob/master/DOCS/)
-- [timbrePy](https://github.com/marcobn/musicntwrk/blob/master/DOCS/timbrePy.md)
-- [sonifiPy](https://github.com/marcobn/musicntwrk/blob/master/DOCS/sonifiPy.md)
-- [examples](https://github.com/marcobn/musicntwrk/blob/master/musicntwrk-2.0/examples/Examples-basic.ipynb)
+- [musicntwrk](https://github.com/marcobn/musicntwrk/blob/master/DOCS/musicntwrk.md)
+- [networks](https://github.com/marcobn/musicntwrk/blob/master/DOCS/networks.md)
+- [data](https://github.com/marcobn/musicntwrk/blob/master/DOCS/data.md)
+- [timbre](https://github.com/marcobn/musicntwrk/blob/master/DOCS/timbre.md)
+- [ml_utils](https://github.com/marcobn/musicntwrk/blob/master/DOCS/ml_utils.md)
+- [plotting](https://github.com/marcobn/musicntwrk/blob/master/DOCS/plotting.md)
 
 The most computationally intensive parts of the modules can be run on parallel processors using the MPI (Message Passing Interface) protocol. Communications are handled by two additional modules: `communications` and `load_balancing`. Since the user will never have to interact with these modules, we omit here a detailed description of their functions.
 
@@ -111,7 +98,7 @@ You should have received a copy of the GNU General Public License along with thi
 </p>
 <p></p>
 <p align="center">
-Copyright (C) 2019 Marco Buongiorno Nardelli  <br>
+Copyright (C) 2018-2020 Marco Buongiorno Nardelli  <br>
 <a href="https://www.materialssoundmusic.com"> www.materialssoundmusic.com <br>
 <a href="https://www.musicntwrk.com"> www.musicntwrk.com <br>
 <a href="mailto:mbn@unt.edu"> mbn@unt.edu <br>

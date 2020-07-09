@@ -84,16 +84,16 @@ class PCSet:
         
     def M(self,t=1):
         '''
-        •	Transposition by t (int) units (modulo TET)
+        •	Multiplication by t (int) units (modulo TET)
         '''
         return(np.unique((self.pcs*t)%self.TET//1).astype(int))
         
-    def multiplyBoulez(self,b,TET=12):
+    def multiplyBoulez(self,b):
         # Boulez pitch class multiplication of a x b
         ivec = self.LISVector()
         m = []
         for i in range(ivec.shape[0]-1):
-            mm = (b+ivec[i])%TET
+            mm = (b+ivec[i])%self.TET
             m.append(mm.tolist())
         return(PCSet(Remove(flatten(m+b)),TET).normalOrder())
     
@@ -767,7 +767,7 @@ class musicntwrk:
         
     def dictionary(self,space=None,N=None,Nc=None,order=None,row=None,a=None,prob=None,REF=None,scorefil=None,music21=None,show=None):
         '''
-        define dictionary in the musical space specified in 'space': pcs, rhythm, rhythmP, score
+        define dictionary in the musical space specified in 'space': pcs, rhythm, rhythmP, score, orch
         '''
         if space == 'pcs':
             from .networks.pcsDictionary import pcsDictionary
