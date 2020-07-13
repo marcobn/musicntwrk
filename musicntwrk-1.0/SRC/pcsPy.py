@@ -163,7 +163,7 @@ class PCSet:
                 else:
                     itv[n] = np.abs(self.pcs[i]-self.pcs[j])
                 n += 1
-        bins = np.linspace(1,self.TET/2+1,self.TET/2+1,dtype=int)
+        bins = np.linspace(1,int(self.TET/2)+1,int(self.TET/2)+1,dtype=int)
         return(np.histogram(itv,bins)[0])
 
     def operator(self,name):
@@ -479,7 +479,7 @@ class PCSetR:
                 else:
                     itv[n] = np.abs(self.pcs[i]-self.pcs[j])
                 n += 1
-        bins = np.linspace(1,self.TET/2+1,self.TET/2+1,dtype=int)
+        bins = np.linspace(1,int(self.TET/2)+1,int(self.TET/2)+1,dtype=int)
         return(np.histogram(itv,bins)[0])
 
     def operator(self,name):

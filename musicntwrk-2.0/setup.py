@@ -37,3 +37,4 @@ setup(name='musicntwrk',
 					  'matplotlib','tensorflow','powerlaw','vpython','wget','PySimpleGUI','pydub','ruptures'],
 	extras_require=extras
 	)
+
