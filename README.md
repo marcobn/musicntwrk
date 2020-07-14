@@ -55,6 +55,7 @@ There are three example notebooks: basic, advanced harmony, advanced timbre. See
 - [networks](https://github.com/marcobn/musicntwrk/blob/master/DOCS/networks.md)
 - [data](https://github.com/marcobn/musicntwrk/blob/master/DOCS/data.md)
 - [timbre](https://github.com/marcobn/musicntwrk/blob/master/DOCS/timbre.md)
+- [harmony](https://github.com/marcobn/musicntwrk/blob/master/DOCS/harmony.md)
 - [ml_utils](https://github.com/marcobn/musicntwrk/blob/master/DOCS/ml_utils.md)
 - [plotting](https://github.com/marcobn/musicntwrk/blob/master/DOCS/plotting.md)
 
