@@ -45,6 +45,7 @@ There are three example notebooks: basic, advanced harmony, advanced timbre. See
   - `networks` - contains all the modules to construct dictionaries and networks of pitch class set spaces including voice leading, rhythmic spaces, timbral spaces and score network and orchestarion analysis 
   - `data` - sonification of arbitrary data structures, including automatic score (musicxml) and MIDI generation
   - `timbre` - analysis and characterization of timbre from a (psycho-)acoustical point of view. In particular, it provides: the characterization of sound using, among others, Mel Frequency or Power Spectrum Cepstrum Coefficients (MFCC or PSCC); the construction of timbral networks using descriptors based on MF- or PS-CCs
+  - `harmony` - helper functions for harmonic analysis, design and autonomous scoring
   - `ml_utils` - machine learning models for timbre recognition through the TensorFlow Keras framework
   - `plotting` - plotting function including a module for automated network drawing
   - `utils` - utility functions used by other modules
