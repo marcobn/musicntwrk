@@ -39,7 +39,7 @@ def tonalHarmonyCalculator():
     func_dict = {'lookup':lookupWrapper,'applyOp':applyOps,'findOp':generalizedOpsName,'findRN':showRN,'pitches':showPitches,'CLEAR':clearOutput}
     # Layout the design of the GUI
     layout = [[sg.Text('Tonal Harmony Calculator', auto_size_text=True, font='Helvetica 24', background_color='#F68E01')],
-              [sg.Text('Progression lookup / Apply operator / Operators / Roman numerals / Pitches', auto_size_text=True, font='Helvetica 18', background_color='#F68E01')],
+              [sg.Text('Progression lookup / Apply operator / Operators / Roman numerals / Pitches', auto_size_text=True, font='Helvetica 18', background_color='#F68E01'),sg.Button('HELP')],
               [sg.Text('tonal model', size=(12, 1),auto_size_text=True, font='Helvetica 18', background_color='#F68E01'), sg.Input(size=(50, 1)), sg.FileBrowse(), sg.Submit()],
               [sg.Text('operator', auto_size_text=True, font='Helvetica 18', background_color='#F68E01'),sg.InputText(key='ops',size=(16, 1)),
                 sg.Text('initial chord', auto_size_text=True, font='Helvetica 18', background_color='#F68E01'),sg.InputText(key='ch1',size=(16, 1)),
@@ -56,6 +56,35 @@ def tonalHarmonyCalculator():
     while True:
         # Read the Window
         event, value = window.Read()
+        if event in('HELP'):
+            print('Usage of the "harmony calculator" app')
+            print('')
+            print('tonal model - is the table that stores the operators that connect every chord of a chosen tonal model')
+            print('(in roman numeral form).')
+            print('The chords that are included in the model can be chosen in tonalHarmonyModels that produces the final')
+            print('table. it is read by clicking on "Submit".')
+            print('A minimal model can be downloaded from')
+            print('https://github.com/marcobn/musicntwrk/tree/master/musicntwrk-2.0/examples')
+            print('')
+            print('The next set of enties depend on the action that is requested by the user. They can be filled with:')
+            print('')
+            print('operator - voice leading operator as O(i,j,k,...) ')
+            print('')
+            print('initial chord - chord in roman numeral or pcs as list of integers')
+            print('')
+            print('final chord - chord in roman numeral or pcs as list of integers or key as letter (A,a,C#, Bb etc.)')
+            print('')
+            print('Actions:')
+            print('')
+            print('lookup - given an operator produces the list of all the chords that are connected by it')
+            print('')
+            print('applyOp - given an operator and a pcs as list of integers, produces the resulting pcs')
+            print('')
+            print('findOp - given an initial pcs and a final pcs, finds the operator that connects them')
+            print('')
+            print('findRN - given a pcs in "initial chord" and a key in "final chord" uses music21 to produce the corresponding roman numeral')
+            print('')
+            print('pitches - given a roman numeral in "initial chord" and a key in "final chord" uses music21 to produce the corresponding pcs  ')
         if event in('Submit'):
             try:
                 f = open(value[0],'rb')
