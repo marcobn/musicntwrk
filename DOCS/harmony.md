@@ -10,7 +10,8 @@ Harmonic analysis functions:
 - `def changePoint(value,model='rbf',penalty=1.0,brakepts=None,plot=False):` -
 	run a change point detection algorithm to isolate sections
 
-- `def scoreAnalysis(seq,moduldict,keydict,first=None,keychange=None,altrn=None,table='',verbose=False):`
+- `def scoreAnalysis(seq,moduldict,keydict,first=None,keychange=None,altrn=None,table='',verbose=False):` -
+	obsolete.
 
 - `def scoreFilter(seq,chords,thr=0,plot=False):` - 
 	filter out low recurring chords to facilitate change point detection and score partitioning in regions

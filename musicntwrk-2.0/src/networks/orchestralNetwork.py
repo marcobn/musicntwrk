@@ -64,5 +64,5 @@ def orchestralNetwork(seq,distance,TET):
         avg += node[1]
     avgdeg = avg/float(nnodes)
         
-    return(dnodes,dedges,avgdeg,modul,part)
+    return(dnodes,dedges,avgdeg,modul,part,gbch,gbch_u)
 
