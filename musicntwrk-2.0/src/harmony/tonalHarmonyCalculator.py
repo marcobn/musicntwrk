@@ -18,10 +18,12 @@ import pickle,re
 import PySimpleGUI as sg
 import numpy as np
 import music21 as m21
+from music21.figuredBass import realizerScale
 
 from .applyOps import applyOps
 from .lookupWrapper import lookupWrapper
 from ..utils.generalizedOpsName import generalizedOpsName
+from ..utils.Remove import Remove
 
 def tonalHarmonyCalculator():
   
@@ -30,13 +32,17 @@ def tonalHarmonyCalculator():
 
     def showPitches():
         return
+
+    def figBass():
+      return
       
     def showRN():
         return
 
 
     # Lookup dictionary that maps button to function to call
-    func_dict = {'lookup':lookupWrapper,'applyOp':applyOps,'findOp':generalizedOpsName,'findRN':showRN,'pitches':showPitches,'CLEAR':clearOutput}
+    func_dict = {'lookup':lookupWrapper,'applyOp':applyOps,'findOp':generalizedOpsName,'findRN':showRN,'pitches':showPitches,
+    'figBass':figBass,'CLEAR':clearOutput}
     # Layout the design of the GUI
     layout = [[sg.Text('Tonal Harmony Calculator', auto_size_text=True, font='Helvetica 24', background_color='#F68E01')],
               [sg.Text('Progression lookup / Apply operator / Operators / Roman numerals / Pitches', auto_size_text=True, font='Helvetica 18', background_color='#F68E01'),sg.Button('HELP')],
@@ -44,7 +50,8 @@ def tonalHarmonyCalculator():
               [sg.Text('operator', auto_size_text=True, font='Helvetica 18', background_color='#F68E01'),sg.InputText(key='ops',size=(16, 1)),
                 sg.Text('initial chord', auto_size_text=True, font='Helvetica 18', background_color='#F68E01'),sg.InputText(key='ch1',size=(16, 1)),
                 sg.Text('final chord', auto_size_text=True, font='Helvetica 18', background_color='#F68E01'),sg.InputText(key='ch2',size=(16, 1))],
-              [sg.Button('lookup'),sg.Button('applyOp'),sg.Button('findOp'),sg.Button('findRN'),sg.Button('pitches'),sg.Button('CLEAR'),sg.Quit()],
+              [sg.Button('lookup'),sg.Button('applyOp'),sg.Button('findOp'),sg.Button('findRN'),sg.Button('pitches'),sg.Button('figBass'),
+              sg.Button('CLEAR'),sg.Quit()],
               [sg.Output(size=(76, 20),key='_output_')],
               [sg.Text('Marco Buongiorno Nardelli - www.musicntwrk.com (2020)', auto_size_text=True, font='Helvetica 12', background_color='#3364FF')]]
       
@@ -85,6 +92,8 @@ def tonalHarmonyCalculator():
             print('findRN - given a pcs in "initial chord" and a key in "final chord" uses music21 to produce the corresponding roman numeral')
             print('')
             print('pitches - given a roman numeral in "initial chord" and a key in "final chord" uses music21 to produce the corresponding pcs  ')
+            print('')
+            print('FigBass - given a pitch and a qualifier (major, minor) in "operator", the bass note (letter) in "initial chord" and the figure in "final chord" produces the pithes of the figured bass')
         if event in('Submit'):
             try:
                 f = open(value[0],'rb')
@@ -117,6 +126,13 @@ def tonalHarmonyCalculator():
                 chd = m21.roman.RomanNumeral(value['ch1'],value['ch2'])
                 pcs = chd.pitchClasses
                 print(pcs)
+            elif func_to_call.__name__ == 'figBass':
+                a = value['ops']
+                fbScale = realizerScale.FiguredBassScale(value['ops'].split()[0],value['ops'].split()[1])
+                pc = []
+                for p in fbScale.getPitches(value['ch1'],value['ch2']):
+                    pc.append(m21.pitch.Pitch(p).pitchClass)
+                print(value['ch1'],value['ch2'],Remove(pc))
             elif func_to_call.__name__ == 'showRN':
                 a = []
                 for num in value['ch1'].replace('[','').replace(']','').split(','):
