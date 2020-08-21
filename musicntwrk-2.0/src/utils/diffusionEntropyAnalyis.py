@@ -171,8 +171,9 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
     # The numbers st and stp set the interval of the DEA over which to perform the fitting to get the scaling
 
     if rank == 0:
-        DEfitInterval = DE[int(np.round(len(DE)*st))-1:int(np.round(len(DE)*stp))]
-        defitInterval = de[int(np.round(len(de)*st))-1:int(np.round(len(de)*stp))]
+        defitInterval = de[np.where(np.logical_and(de>=st, de<=stp))]
+        DEfitInterval = DE[np.where(np.logical_and(de>=st, de<=stp))]
+        
 
         slope, intercept, r_value, p_value, std_err = stats.linregress(defitInterval, DEfitInterval)
 
