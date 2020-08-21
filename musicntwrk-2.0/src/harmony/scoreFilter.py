@@ -30,10 +30,10 @@ def scoreFilter(seq,chords,thr=0,plot=False):
     ind = np.asarray(ind)
     labeltot = dict(zip(su,ind))
     indextot = dict(zip(ind,su))
+    value = []
+    for i in range(len(seq)):
+        value.append(int(labeltot[str(seq[i])]))
     if plot:
-        value = []
-        for i in range(len(seq)):
-            value.append(int(labeltot[str(seq[i])]))
         plt.plot(value,'o')
         plt.show()
         print('total number of chords = ',len(seq))
