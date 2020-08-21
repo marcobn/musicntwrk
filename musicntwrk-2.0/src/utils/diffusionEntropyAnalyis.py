@@ -101,7 +101,7 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
         counts = np.array(counts[counts != 0])
 
         P = counts/sum(counts)
-        DE = -sum(P*np.log(P))  # This is the integral for Shannon Entropy S
+        DE = -np.sum(P*np.log(P))  # This is the integral for Shannon Entropy S
 
         return DE
             
@@ -161,8 +161,6 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
         
         # This is where the x-axis gets the log scale from. Don't do a semilog plot or you're logging twice.
         de = np.log(Delh)
-#        for t in range(len(Delh)):
-#            de[t] = np.log(Delh[t])        
 
         return (de, DE)
             
