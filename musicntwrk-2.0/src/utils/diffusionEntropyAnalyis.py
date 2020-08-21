@@ -138,9 +138,7 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
         l = np.floor(np.log(Tau[-2])/np.log(base))
 
         # Makes the window lengths and windows
-        Delh = np.zeros(int(l))
-        for i in range(int(l)):
-            Delh[i] = base**(i+1)
+        Delh = base**np.linspace(1,int(l),int(l))
         
         DE = np.zeros(len(Delh))
 
