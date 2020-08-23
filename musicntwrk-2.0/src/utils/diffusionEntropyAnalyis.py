@@ -152,7 +152,11 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
         
         # Call the DEA function to execute on the data
         for q in range(nsize):
-            dex[q] = DEAfunction(delhx[q], Tau)
+            try:
+                dex[q] = DEAfunction(delhx[q], Tau)
+            except:
+                dex[q] = dex[q-1]
+
 
         gather_array(DE,dex)
         if para: comm.bcast(DE)
