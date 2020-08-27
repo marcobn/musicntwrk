@@ -120,8 +120,6 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
         else:
             StripeSize = 1
 
-        N = len(Data)
-
         # Rounding. 
         RoundedData = Data.copy()
         RoundedData = np.where(RoundedData > 0, np.floor(RoundedData/StripeSize), RoundedData)
@@ -205,6 +203,7 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
                 plt.plot([], [], ' ', label= mu_1_label)
                 plt.plot([], [], ' ', label= mu_2_label)
             plt.plot([], [], ' ', label="std err ="+str(round(std_err,3)))
+            plt.plot([], [], ' ', label="# stripes ="+str(NumberofStripes))
             plt.legend()
             plt.show()
         
