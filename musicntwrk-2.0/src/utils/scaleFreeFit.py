@@ -30,7 +30,7 @@ def scaleFreeFit(Gx,indeg=True,imin=0,undir=False,lfit='powerlaw',plot=True):
         xdata_log = np.log10(xdata)
         ydata_log = np.log10(ydata)
         if lfit == 'powerlaw':
-            linlaw = lambda x,a,b,L: a+x*b
+            linlaw = lambda x,a,b: a+x*b
         elif lfit == 'truncatedpowerlaw':
             linlaw = lambda x,a,b,L: a+x*b+L*np.exp(x)
         else:

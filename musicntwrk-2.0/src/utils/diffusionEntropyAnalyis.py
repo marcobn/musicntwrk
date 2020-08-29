@@ -15,6 +15,7 @@
 #
 import numpy as np
 from scipy import stats
+from scipy.optimize import curve_fit
 import itertools
 import matplotlib.pyplot as plt
 plt.style.use('ggplot') 
@@ -61,7 +62,7 @@ References:
  - To choose which calculation is correct, if $\mu = 1 + 1/\eta$ gives a $\mu > 3$ then use $\mu = 1 + \eta$. The program automatically checks this and indicates the recommended $\mu$ with an arrow in the figure legend. If you already have an expectation for what range $\mu$ should be in, e.g. from theoretical arguments, use that. 
 '''
 
-def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
+def DEA(Data,NumberofStripes=0,base=1.025,plots=False,lfit='powerlaw',st=0,stp=None):
 
     """Computes the scaling.
     Calls the DEAwithStripes to perform DEA, and outputs plots. 
@@ -163,6 +164,32 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
         de = np.log(Delh)
 
         return (de, DE)
+
+    def curve_fit_log(xdata, ydata,lfit=lfit) :
+        xdata = np.array(xdata)
+        ydata = np.array(ydata)
+        ind = xdata > 0
+        ydata = ydata[ind]
+        xdata = xdata[ind]
+        # Fit data to a power law in loglog scale (linear)
+        xdata_log = np.log10(xdata)
+        ydata_log = np.log10(ydata)
+        if lfit == 'powerlaw':
+            linlaw = lambda x,a,b: a+x*b
+        elif lfit == 'truncatedpowerlaw':
+            linlaw = lambda x,a,b,L: a+x*b+L*np.exp(x)
+        else:
+            print('lfit not defined')
+        popt_log, pcov_log = curve_fit(linlaw, xdata_log, ydata_log)
+        ydatafit_log = np.power(10, linlaw(xdata_log, *popt_log))
+        kstest = stats.ks_2samp(ydata,ydatafit_log)
+        return (xdata,ydata,popt_log, pcov_log, ydatafit_log,kstest)
+
+    def best_xmax(de,DE,xmax,lfit,st=st):
+        x = np.exp(de[np.logical_and(de>=st, de<=xmax)])
+        y = np.exp(DE[np.logical_and(de>=st, de<=xmax)])
+        _,_,_,_,_,kstest = curve_fit_log(x,y,lfit=lfit)
+        return(xmax,kstest[0])
             
     # Main body
     
@@ -171,17 +198,46 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
     # The numbers st and stp set the interval of the DEA over which to perform the fitting to get the scaling
 
     if rank == 0:
-        defitInterval = de[np.where(np.logical_and(de>=st, de<=stp))]
-        DEfitInterval = DE[np.where(np.logical_and(de>=st, de<=stp))]
+#        defitInterval = de[np.where(np.logical_and(de>=st, de<=stp))]
+#        DEfitInterval = DE[np.where(np.logical_and(de>=st, de<=stp))]
+#        
+#
+#        slope, intercept, r_value, p_value, std_err = stats.linregress(defitInterval, DEfitInterval)
         
+        # Find optimal xmin xmax for powerlaw fit (Kolmogorov-Smirnov test)
 
-        slope, intercept, r_value, p_value, std_err = stats.linregress(defitInterval, DEfitInterval)
+        if stp == None:
+            xstop = []
+            xstart = []
+            kst = []
+            for s in np.linspace(st,de[-1],30):
+                try:
+                    xmx = []
+                    kmn = []
+                    for n in np.linspace(s+1,de[-1],100):
+                        xm,km = best_xmax(de,DE,n,lfit,st=s)
+                        xmx.append(xm)
+                        kmn.append(km)
+                    xstop.append(xmx[np.argmin(kmn)])
+                    xstart.append(s)
+                    kst.append(np.min(kmn))
+                except:
+                    pass
+            xmin = xstart[np.argmin(kst)]
+            xmax = xstop[np.argmin(kst)]
+        else:
+            xmin = st
+            xmax = stp
+                
+        x = np.exp(de[np.logical_and(de>=xmin, de<=xmax)])
+        y = np.exp(DE[np.logical_and(de>=xmin, de<=xmax)])
+        xfit,_,popt,_,fit,kstest = curve_fit_log(x,y,lfit=lfit)
 
-        eta = slope  # This parameter is the scaling
+        eta = popt[1]  # This parameter is the scaling
         mu_1 = 1 + 1/eta  # Applies when 2 < mu < 3
-        mu_1_label = '$\\mu=1+1/\\eta=$'+ str(round(mu_1,3))
+        mu_1_label = '$\\mu=1+1/\\delta=$'+ str(round(mu_1,3))
         mu_2 = 1 + eta  # Applies when 1 < mu < 2
-        mu_2_label = '$\\mu=1+\\eta=$'+ str(round(mu_2,3))
+        mu_2_label = '$\\mu=1+\\delta=$'+ str(round(mu_2,3))
 
         if mu_1 <= 3:
             mu_1_label =  '\u2192 '+ mu_1_label
@@ -195,22 +251,24 @@ def DEA(Data,NumberofStripes=0,base=1.025,plots=False,st=0,stp=1):
                 plt.title('DEA with stripes')
             else:
                 plt.title('Ordinary DEA')
-            plt.plot(de[:-1],DE[:-1],'.', label = 'DEA')
-            plt.plot(defitInterval, intercept + slope*defitInterval, label='$\eta=$'+str(round(slope,3)))
+            plt.plot(de,DE,'.', label = 'DEA')
+            plt.plot(np.log(xfit),np.log(fit), label='$\delta=$'+str(round(eta,3)))
             plt.xlabel('ln(l)')
             plt.ylabel('S(l)')
             if NumberofStripes > 0:
                 plt.plot([], [], ' ', label= mu_1_label)
                 plt.plot([], [], ' ', label= mu_2_label)
-            plt.plot([], [], ' ', label="std err ="+str(round(std_err,3)))
-            plt.plot([], [], ' ', label="# stripes ="+str(NumberofStripes))
+            plt.plot([], [], ' ', label="# stripes = "+str(NumberofStripes))
+            plt.plot([], [], ' ', label="xmin,xmax = "+str(round(xmin,3))+','+str(round(xmax,3)))
+            plt.plot([], [], ' ', label="KS test = "+str(round(kstest[0],3)))
             plt.legend()
             plt.show()
         
-        return(de, DE, eta)
+        return(de, DE, fit, eta)
         
     else:
         de = 1
         DE = 1
+        fit = 1
         eta = 1
-        return(de, DE, eta)
+        return(de, DE, fit, eta)
