@@ -32,5 +32,5 @@ def changePoint(value,model='rbf',penalty=1.0,brakepts=None,plot=False):
     sections.insert(0,0)
     # check last point
     sections[-1] -= 1
-    print('model = ',model,' - sections = ',sections)
+    if plot: print('model = ',model,' - sections = ',sections)
     return(sections)
