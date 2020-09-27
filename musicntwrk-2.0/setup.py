@@ -22,7 +22,7 @@ extras = {
 
 
 setup(name='musicntwrk',
-	version='2.1.12',
+	version='2.1.13',
 	description='music as data, data as music',
 #	long_description=long_description,
 #	long_description_content_type='text/markdown',

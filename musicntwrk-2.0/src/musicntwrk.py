@@ -869,7 +869,7 @@ class musicntwrk:
         
         if space == 'orch':
             from .networks.orchestralNetwork import orchestralNetwork
-            nodes,edges,deg,modul,part = orchestralNetwork(seq,distance,TET=self.TET)
+            nodes,edges,deg,modul,part,_,_ = orchestralNetwork(seq,distance,TET=self.TET)
             return(nodes,edges,deg,modul,part)
         
             

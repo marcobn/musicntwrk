@@ -19,9 +19,10 @@ from ..utils.Remove import Remove
 
 def scoreFilter(seq,chords,thr=0,plot=False):
     # score sequence and unique pcs count
-    mea = []
-    for c in chords.recurse().getElementsByClass('Chord'):
-        mea.append(str(c.measureNumber))
+    if chord != None:
+        mea = []
+        for c in chords.recurse().getElementsByClass('Chord'):
+            mea.append(str(c.measureNumber))
     su = [str(f) for f in Remove(seq)]
     ind = []
     for n in range(len(su)):
@@ -43,11 +44,11 @@ def scoreFilter(seq,chords,thr=0,plot=False):
         plt.show()
     # filtering pcs with occurrences lower than threshold = thr
     filtered = []
-    fmeasure = []
+    if chord != None: fmeasure = []
     for i in range(len(seq)):
         if hh[int(labeltot[str(seq[i])])] > thr:
             filtered.append(seq[i])
-            fmeasure.append(mea[i])
+            if chord != None: fmeasure.append(mea[i])
     su = [str(f) for f in Remove(filtered)]
     ind = []
     for n in range(len(su)):
@@ -63,4 +64,7 @@ def scoreFilter(seq,chords,thr=0,plot=False):
         plt.plot(valuef,'or')
         plt.show()
         print('total number of filtered chords = ',len(filtered))
-    return(value,valuef,filtered,fmeasure)
+    if chord != None:
+        return(value,valuef,filtered,fmeasure)
+    else:
+        return(value,valuef,filtered)

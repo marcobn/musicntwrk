@@ -13,7 +13,6 @@
 # in the root directory of the present distribution,
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
-import sys
 import numpy as np
 from scipy import stats
 from scipy.optimize import curve_fit
@@ -23,8 +22,6 @@ plt.style.use('ggplot')
 
 from .communications import *
 from .load_balancing import *
-
-from ..harmony.changePoint import changePoint
 
 try:
     from mpi4py import MPI
@@ -74,7 +71,7 @@ def DEAfunction(dell,Tau):
     fact = Tau+dell
     fact[fact>np.max(Tau)] = 0
     fact = (fact > 0).astype(int)
-    for n in range(1,int(0.25*len(Tau))):
+    for n in range(1,len(Tau)):
         diff[n-1,:] = np.roll(Tau,-n) - Tau
         diff[n-1,:][diff[n-1,:] <= 0] = dell+1
         diff[n-1,:] = (diff[n-1,:] <= dell).astype(int)
@@ -93,7 +90,7 @@ def DEAfunction(dell,Tau):
 
     return DE
         
-def DEAwithStripes(Data,NumberofStripes,base,eventDetection,pen):
+def DEAwithStripes(Data,NumberofStripes,base):
     """
     Applies stripes
     Applies the stripes to the passed Data, then calls DEAfunction to perform DEA on that. 
@@ -114,26 +111,13 @@ def DEAwithStripes(Data,NumberofStripes,base,eventDetection,pen):
     RoundedData = np.where(RoundedData < 0, np.ceil(RoundedData/StripeSize), RoundedData)
     
     # Finds the events
-    if eventDetection == 0:
-        # Old definition
-        Taut = [(len(list(y))) for x, y in itertools.groupby(RoundedData)]
-    elif eventDetection == 1:
-        # New definition
-        Taut = (RoundedData[:-1]!=RoundedData[1:]).astype(int)
-    elif eventDetection == 2:
-        # change poimt detection with ruptures - requires NumberOfStripes = 0
-        if NumberofStripes != 0:
-            print('NumberofStripes must be zero')
-            sys.exit()
-        sections = changePoint(RoundedData,penalty=pen,plot=False)
-        Taut = np.zeros(len(RoundedData))
-        Taut[sections]=1
+    if NumberofStripes > 0:
+        Tau = [(len(list(y))) for x, y in itertools.groupby(RoundedData)]
     else:
-        print('case not specified')
-        sys.exit()
+        Tau = [(len(list(y))) for x, y in itertools.groupby(np.sign(RoundedData))]
 
     # Sums the Taus (distance between consecutive events) and defines the number of windows
-    Tau = np.cumsum(Taut)
+    Tau = np.cumsum(Tau)
     l = np.floor(np.log(Tau[-2])/np.log(base))
 
     # Makes the window lengths and windows
@@ -163,7 +147,7 @@ def DEAwithStripes(Data,NumberofStripes,base,eventDetection,pen):
     # This is where the x-axis gets the log scale from. Don't do a semilog plot or you're logging twice.
     de = np.log(Delh)
 
-    return (de, DE, Taut)
+    return (de, DE)
 
 def curve_fit_log(xdata, ydata,lfit='powerlaw') :
     xdata = np.array(xdata)
@@ -177,7 +161,7 @@ def curve_fit_log(xdata, ydata,lfit='powerlaw') :
     if lfit == 'powerlaw':
         linlaw = lambda x,a,b: a+x*b
     elif lfit == 'truncatedpowerlaw':
-        linlaw = lambda x,a,b,c: a+x*b+c*np.exp(x)
+        linlaw = lambda x,a,b,L: a+x*b+L*np.exp(x)
     else:
         print('lfit not defined')
     popt_log, pcov_log = curve_fit(linlaw, xdata_log, ydata_log)
@@ -191,7 +175,7 @@ def best_xmax(de,DE,xmax,lfit='powerlaw',st=0):
     _,_,_,_,_,kstest = curve_fit_log(x,y,lfit='powerlaw')
     return(xmax,kstest[0])
 
-def DEA(Data,NumberofStripes=0,base=1.025,save=True,lfit='powerlaw',st=0,stp=None,eventDetection=0,pen=1):
+def DEA(Data,NumberofStripes=0,base=1.025,plots=False,save=True,lfit='powerlaw',st=0,stp=None):
 
     """Computes the scaling.
     Calls the DEAwithStripes to perform DEA, and outputs plots. 
@@ -207,11 +191,16 @@ def DEA(Data,NumberofStripes=0,base=1.025,save=True,lfit='powerlaw',st=0,stp=Non
         if plots == True - the plot showing the DEA and fit line.
     """
                 
-    de, DE, Tau = DEAwithStripes(Data,NumberofStripes,base,eventDetection,pen)
+    de, DE = DEAwithStripes(Data,NumberofStripes,base)
 
     # The numbers st and stp set the interval of the DEA over which to perform the fitting to get the scaling
 
     if rank == 0:
+#        defitInterval = de[np.where(np.logical_and(de>=st, de<=stp))]
+#        DEfitInterval = DE[np.where(np.logical_and(de>=st, de<=stp))]
+#        
+#
+#        slope, intercept, r_value, p_value, std_err = stats.linregress(defitInterval, DEfitInterval)
         
         # Find optimal xmin xmax for powerlaw fit (Kolmogorov-Smirnov test)
 
@@ -242,12 +231,12 @@ def DEA(Data,NumberofStripes=0,base=1.025,save=True,lfit='powerlaw',st=0,stp=Non
         y = np.exp(DE[np.logical_and(de>=xmin, de<=xmax)])
         xfit,_,popt,_,fit,kstest = curve_fit_log(x,y,lfit=lfit)
         
-        return(de,DE,xfit,fit,popt,xmin,xmax,kstest,NumberofStripes,Tau)
+        return(de,DE,xfit,fit,popt,xmin,xmax,kstest,NumberofStripes)
 
     else:
         
-        de=DE=xfit=fit=popt=xmin=xmax=kstest=NumberofStripes,Tau = 1
-        return(de,DE,xfit,fit,popt,xmin,xmax,kstest,NumberofStripes,Tau)
+        de=DE=xfit=fit=popt=xmin=xmax=ktest=NumberofStripes = 1
+        return(de,DE,xfit,fit,popt,xmin,xmax,kstest,NumberofStripes)
         
 def plotDEA(de,DE,xfit,fit,popt,xmin,xmax,kstest,NumberofStripes,save=False,figname=None):
     
@@ -281,14 +270,11 @@ def plotDEA(de,DE,xfit,fit,popt,xmin,xmax,kstest,NumberofStripes,save=False,fign
         if NumberofStripes > 0:
             plt.plot([], [], ' ', label= mu_1_label)
             plt.plot([], [], ' ', label= mu_2_label)
-        plt.plot([], [], ' ', label="# data points = "+str(len(de)))
         plt.plot([], [], ' ', label="# stripes = "+str(NumberofStripes))
         plt.plot([], [], ' ', label="xmin,xmax = "+str(round(xmin,3))+','+str(round(xmax,3)))
         plt.plot([], [], ' ', label="KS test = "+str(round(kstest[0],3)))
         plt.legend()
         if save:
             plt.savefig(figname)
-            plt.close()
         else:
             plt.show()
-        
