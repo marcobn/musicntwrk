@@ -19,7 +19,7 @@ from scipy import stats
 from scipy.optimize import curve_fit
 import itertools
 import matplotlib.pyplot as plt
-plt.style.use('ggplot') 
+#plt.style.use('ggplot') 
 
 from .communications import *
 from .load_balancing import *
@@ -109,6 +109,7 @@ def plotDEA(s,L,L_slice,fit,stripes,ks,xmin,xmax,save=False,figname=None):
     plt.xscale('log')
     plt.xlabel('$ln(L)$')
     plt.ylabel('$S(L)$')
+    plt.grid()
     plt.legend(loc=0)
     if save:
         plt.savefig(figname)
