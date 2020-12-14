@@ -19,8 +19,6 @@ import music21 as m21
 
 from ..musicntwrk import RHYTHMSeq
 from ..harmony.chinese_postman import chinese_postman
-from ..data.WRITEscoreOps import WRITEscoreOps
-from ..plotting.drawNetwork import drawNetwork
 from ..utils.floatize import floatize
 
 

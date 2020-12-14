@@ -19,7 +19,7 @@ import community as cm
 import matplotlib.pyplot as plt
 
 def drawNetwork(Gx=None,Gxu=None,nodes=None,edges=None,forceiter=100,grphtype='undirected',dx=10,dy=10,colormap='jet',scale=1.0,
-    layout='force',drawlabels=True,giant=False,equi=False,res=0.5):
+    layout='force',drawlabels=True,giant=False,equi=False,res=0.5,edge_labels=False,font=12):
 
     if grphtype == 'directed':
         if Gx == None and Gxu == None:
@@ -57,6 +57,9 @@ def drawNetwork(Gx=None,Gxu=None,nodes=None,edges=None,forceiter=100,grphtype='u
     d = nx.degree(Gx)
     dsize = [(d[v]+1)*100*scale for v in Gx.nodes()]
     plt.figure(figsize=(dx, dy))
+    if edge_labels:
+        edge_labels = nx.get_edge_attributes(Gx, 'Label')
+        nx.draw_networkx_edge_labels(Gx, pos, edge_labels, font_size=font)
     nx.draw_networkx(Gx,pos=pos,labels=labels,with_labels=drawlabels,cmap=plt.get_cmap(colormap),node_color=values,
                     node_size=dsize)
     plt.show()
