@@ -18,19 +18,32 @@ import networkx as nx
 import community as cm
 import matplotlib.pyplot as plt
 
-def drawNetwork(dnodes,dedges,forceiter=100,grphtype='undirected',dx=10,dy=10,colormap='jet',scale=1.0,drawlabels=True,giant=False):
+def drawNetwork(Gx=None,Gxu=None,nodes=None,edges=None,forceiter=100,grphtype='undirected',dx=10,dy=10,colormap='jet',scale=1.0,
+    layout='force',drawlabels=True,giant=False,equi=False,res=0.5):
 
     if grphtype == 'directed':
-        Gx = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight'],create_using=nx.DiGraph())
-        Gxu = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight'])
+        if Gx == None and Gxu == None:
+            Gx = nx.from_pandas_edgelist(edges,'Source','Target',['Weight'],create_using=nx.DiGraph())
+            Gxu = nx.from_pandas_edgelist(edges,'Source','Target',['Weight'])
         if giant: 
             print('not implemented')
     else:
-        Gx = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight'])
-        if giant:
-            Gx = list(Gx.subgraph(c) for c in nx.connected_components(Gx))[0]
-    pos = nx.spring_layout(Gx,iterations=forceiter)
-    df = np.array(dnodes)
+        if Gx == None:
+            Gx = nx.from_pandas_edgelist(edges,'Source','Target',['Weight'])
+        if giant and not nx.is_connected(Gx):
+            S = [Gx.subgraph(c).copy() for c in nx.connected_components(Gx)]
+            size = []
+            for s in S:
+                size.append(len(s))
+            idsz = np.argsort(size)
+            print('found ',np.array(size)[idsz],' connected components')
+            index = int(input('enter index '))
+            Gx = S[idsz[index]]
+    if layout == 'force' or layout==None:
+        pos = nx.spring_layout(Gx,iterations=forceiter)
+    elif layout == 'spiral':
+        pos = nx.spiral_layout(Gx,equidistant=equi,resolution=res)
+    df = np.array(nodes)
     nodelabel = dict(zip(np.linspace(0,len(df[:,0])-1,len(df[:,0]),dtype=int),df[:,0]))
     labels = {}
     for idx, node in enumerate(Gx.nodes()):
@@ -48,3 +61,4 @@ def drawNetwork(dnodes,dedges,forceiter=100,grphtype='undirected',dx=10,dy=10,co
                     node_size=dsize)
     plt.show()
 
+    

@@ -517,6 +517,147 @@ class PCSetR:
         Fname = m21.chord.Chord(self.primeForm().pcs.tolist()).forteClass
         return(Fname)
 
+class PCmidiR:
+    
+    def __init__(self,midi,UNI=False,ORD=False,TET=12):
+        '''
+        •	midi (int)– pitch class set in MIDI or string(name+octave) ('C4') as list or numpy array
+        •	UNI (logical) – if True, eliminate duplicate pitches (default)
+        •   ORD (logical) - if True, sorts the pcs in ascending order
+        '''
+        
+        try:
+            midi = midi.tolist()
+        except:
+            pass
+            
+        if isinstance(midi[0],str):
+            names = midi.copy()
+            for m in range(len(midi)):
+                midi[m] = m21.pitch.Pitch(midi[m]).ps
+            self.pitches = names 
+            
+        if UNI == True:
+            self.midi = np.unique(midi)
+        if ORD == True:
+            self.midi = np.sort(midi)
+        else:
+            self.midi = np.asarray(midi)
+            
+        self.pcs = np.mod(midi,TET)
+        
+        if isinstance(midi[0],int) or isinstance(midi[0],float):
+            pitches = []
+            for m in range(len(midi)):
+                pitches.append(str(m21.pitch.Pitch(midi[m])))
+            self.pitches = np.asarray(pitches)
+            
+        self.TET = TET
+        
+    def T(self,t=0):
+        '''
+        •	Transposition by t (int) units
+        '''
+        return(PCmidiR(self.midi+t))
+    
+    def zeroOrder(self):
+        '''
+        •	transposed so that the first pitch is 60 (middle C)
+        '''
+        return(PCmidiR(self.midi-self.midi[0])+60)
+    
+    def normalOrder(self):
+        '''
+        •	Order the pcs according to the most compact ascending scale in pitch-class space that spans 
+            less than an octave by cycling permutations.
+        '''
+        
+        self.pcs = np.sort(self.pcs)
+        
+        # trivial sets
+        if len(self.pcs) == 1:
+            return(self.pcs-self.pcs[0])
+        if len(self.pcs) == 2:
+            return(self.pcs)
+        
+        # 1. cycle to find the most compact ascending order
+        nroll = np.linspace(0,len(self.pcs)-1,len(self.pcs),dtype=int)
+        dist = np.zeros((len(self.pcs)),dtype=int)
+        for i in range(len(self.pcs)):
+            dist[i] = (np.roll(self.pcs,i)[len(self.pcs)-1] - np.roll(self.pcs,i)[0])%self.TET
+            
+        # 2. check for multiple compact orders
+        for l in range(1,len(self.pcs)):
+            if np.array(np.where(dist == dist.min())).shape[1] != 1:
+                indx = np.array(np.where(dist == dist.min()))[0]
+                nroll = nroll[indx]
+                dist = np.zeros((len(nroll)),dtype=int)
+                i = 0
+                for n in nroll:
+                    dist[i] = (np.roll(self.pcs,n)[len(self.pcs)-(1+l)] - np.roll(self.pcs,n)[0])%self.TET
+                    i += 1
+            else:
+                indx = np.array(np.where(dist == dist.min()))[0]
+                nroll = nroll[int(indx[0])]
+                pcs_norm = np.roll(self.pcs,nroll)
+                break
+        if np.array(np.where(dist == dist.min())).shape[1] != 1: pcs_norm = self.pcs
+        return(PCmidiR(pcs_norm+60))
+    
+    
+    def I(self,pivot=60):
+        '''
+        •	I operation
+        '''
+        return(PCmidiR((pivot-self.midi)+pivot))
+    
+    def VLOp(self,name):
+        # operate on the pcs with a normal-ordered relational operator R({x})
+        op = []
+        for num in re.findall("[-\d]+", name):
+            op.append(int(num))
+        op = np.asarray(op)
+        selfto = np.unique((self.midi+op),axis=0)
+        return(PCmidiR(selfto))
+    
+    def opsNameVL(self,b):
+        # given two vectors returns the name of the normal-ordered voice-leading operator R that connects them
+        a = self.midi
+        b = b.midi  
+        diff = b-a
+        return('R('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
+    
+    def intervals(self):
+        '''
+        •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
+        •	also known as step-interval vector (see Cohn, Neo-Riemannian Operations, 
+            Parsimonious Trichords, and Their "Tonnetz" Representations,
+            Journal of Music Theory, Vol. 41, No. 1 (Spring, 1997), pp. 1-66)
+        '''
+        return((np.roll(self.midi,-1)-self.midi))
+    
+    def displayNotes(self,show=True,xml=False,chord=False):
+        '''
+        •	Display pcs in score in musicxml format. If chord is True 
+            displays the note cluster
+        '''
+        fac = self.TET/12
+        if  not chord:
+            s = m21.stream.Stream()
+            for i in range(self.midi.shape[0]):
+                s.append(m21.note.Note(self.midi[i]/fac))
+            if show: s.show()
+            if xml: s.show('musicxml')
+            return(s)
+        else:
+            ch = []
+            for i in range(self.midi.shape[0]):
+                ch.append(m21.note.Note(self.midi[i]/fac))
+            c = m21.chord.Chord(ch)
+            if show: c.show()
+            if xml: c.show('musicxml')
+            return(c)
+
 class PCSrow:
 #     Helper class for 12-tone rows operations (T,I,R,M,Q)
     def __init__(self,pcs,TET=12):
