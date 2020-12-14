@@ -26,6 +26,17 @@ from functools import reduce
 from ..musicntwrk import PCmidiR
 
 def spiralChordSpace(chord,scale,octaves=3,TET=12,distance='euclidean',thdw=0.01,thup=12):
+
+#     Translate note names in midi
+    if isinstance(chord[0],str):
+        chord = PCmidiR(chord).midi
+        scale = PCmidiR(scale).midi
+    elif chord.all() >= 20:
+        pass
+    else:
+        print('enter chord and scale as note+octave or midi numbers (C4 = 60)')
+        print('enter accidentals as -`~# or increments of 0.5 (quarter tones)')
+        sys.exit()
     
 #     Identify the interval sequence of the chord in the scale
     idx = []
@@ -74,7 +85,7 @@ def spiralChordSpace(chord,scale,octaves=3,TET=12,distance='euclidean',thdw=0.01
     totalP = []
     comb = np.array(comb)*TET
     for i in range(len(scale)):
-        chP = np.unique(list(iter.permutations(scale[(idx+i)%len(scale)]+60)),axis=0)
+        chP = np.unique(list(iter.permutations(scale[(idx+i)%len(scale)])),axis=0)
         for ch in chP:
             for n in comb:
                 totalP.append(ch+n)
