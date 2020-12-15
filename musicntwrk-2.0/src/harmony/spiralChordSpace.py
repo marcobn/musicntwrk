@@ -27,6 +27,9 @@ from ..musicntwrk import PCmidiR
 
 def spiralChordSpace(chord,scale,octaves=3,TET=12,distance='euclidean',thdw=0.01,thup=12):
 
+#     chord and scale are string where notes are separated by commas
+#     or midi numbers
+    
 #     Translate note names in midi
     if isinstance(chord[0],str):
         chord = PCmidiR(chord).midi
@@ -94,7 +97,7 @@ def spiralChordSpace(chord,scale,octaves=3,TET=12,distance='euclidean',thdw=0.01
 #     create dictionary of chords
     reference = []
     for t in totalP:
-        entry = [PCmidiR(t).pitches,PCmidiR(t).midi,]
+        entry = [PCmidiR(t).pitches,PCmidiR(t).midi]
         reference.append(entry)
 
     dictionary = pd.DataFrame(reference,columns=['pitches','midi'])
@@ -106,7 +109,7 @@ def spiralChordSpace(chord,scale,octaves=3,TET=12,distance='euclidean',thdw=0.01
     dnodes = pd.DataFrame(None,columns=['Label'])
     for n in range(len(df)):
         s = ','
-        p = s.join(df[n,0].tolist())
+        p = s.join(df[n,0])
         dnodes = dnodes.append(pd.DataFrame([[str(p)]],columns=['Label']))
 
 #     edges according to a metric

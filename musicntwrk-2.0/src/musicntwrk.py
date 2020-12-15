@@ -521,7 +521,7 @@ class PCmidiR:
     
     def __init__(self,midi,UNI=False,ORD=False,TET=12):
         '''
-        •	midi (int)– pitch class set in MIDI or string(name+octave) ('C4') as list or numpy array
+        •	midi –  MIDI number list or string(name+octave) separated by commas ('C4,D4,...')
         •	UNI (logical) – if True, eliminate duplicate pitches (default)
         •   ORD (logical) - if True, sorts the pcs in ascending order
         '''
@@ -529,9 +529,18 @@ class PCmidiR:
         try:
             midi = midi.tolist()
         except:
-            pass
+            if not isinstance(midi,list):
+                midi = [midi]
+            else:
+                pass
             
-        if isinstance(midi[0],str):
+        if isinstance(midi[0],str) and len(midi) > 1:
+            names = midi.copy()
+            for m in range(len(midi)):
+                midi[m] = m21.pitch.Pitch(midi[m]).ps
+            self.pitches = names 
+        elif isinstance(midi[0],str) and len(midi) == 1:
+            midi = midi[0].split(',')
             names = midi.copy()
             for m in range(len(midi)):
                 midi[m] = m21.pitch.Pitch(midi[m]).ps
@@ -550,7 +559,7 @@ class PCmidiR:
             pitches = []
             for m in range(len(midi)):
                 pitches.append(str(m21.pitch.Pitch(midi[m])))
-            self.pitches = np.asarray(pitches)
+            self.pitches = pitches
             
         self.TET = TET
         
