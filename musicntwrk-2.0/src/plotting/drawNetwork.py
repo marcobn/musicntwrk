@@ -44,6 +44,8 @@ def drawNetwork(Gx=None,Gxu=None,nodes=None,edges=None,forceiter=100,grphtype='u
     elif layout == 'spiral':
         pos = nx.spiral_layout(Gx,equidistant=equi,resolution=res)
     df = np.array(nodes)
+    if len(df.shape) == 1:
+        df = np.reshape(df,(len(df),1))
     nodelabel = dict(zip(np.linspace(0,len(df[:,0])-1,len(df[:,0]),dtype=int),df[:,0]))
     labels = {}
     for idx, node in enumerate(Gx.nodes()):

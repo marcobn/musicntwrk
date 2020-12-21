@@ -43,8 +43,8 @@ class PCSet:
         # trivial sets
         if len(self.pcs) == 1:
             return(self.pcs-self.pcs[0])
-        if len(self.pcs) == 2:
-            return(self.pcs)
+#        if len(self.pcs) == 2:
+#            return(self.pcs)
 
         # 1. cycle to find the most compact ascending order
         nroll = np.linspace(0,len(self.pcs)-1,len(self.pcs),dtype=int)
@@ -279,9 +279,9 @@ class PCSetR:
         
         # trivial sets
         if len(self.pcs) == 1:
-            return(self.pcs-self.pcs[0])
-        if len(self.pcs) == 2:
-            return(self.pcs)
+            return(PCSetR(self.pcs-self.pcs[0],TET=self.TET))
+#        if len(self.pcs) == 2:
+#            return(PCSetR(self.pcs,TET=self.TET))
 
         # 1. cycle to find the most compact ascending order
         nroll = np.linspace(0,len(self.pcs)-1,len(self.pcs),dtype=int)

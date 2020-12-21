@@ -64,7 +64,7 @@ def pcsDictionary(Nc,row,a,order,prob,TET):
     saux = np.zeros((nsize,Nc),dtype=int)
     if para: comm.Barrier()
     for i in range(nsize):
-        p = PCSet(aux[i,:],TET)
+        p = PCSet(aux[i,:],TET=TET)
         if order == 0:
             saux[i,:] = p.primeForm()[:]
         elif order == 1:
