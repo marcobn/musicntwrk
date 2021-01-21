@@ -107,7 +107,7 @@ def scoreNetwork(seq,ntx,general,distance,TET):
         # average degree
         nnodes=gbch.number_of_nodes()
         avg = 0
-        for node in gbch.in_degree():
+        for node in gbch.degree():
             avg += node[1]
         avgdeg = avg/float(nnodes)
         return(dnodes,dedges,dcounts,avgdeg,modul,gbch,gbch_u)

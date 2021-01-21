@@ -15,16 +15,27 @@
 import networkx as nx
 import numpy as np
 import music21 as m21
+import community as cm
 
 from ..harmony.chinese_postman import chinese_postman
 from ..data.WRITEscoreOps import WRITEscoreOps
 from ..plotting.drawNetwork import drawNetwork
 
 
-def harmonicDesign(mk,nnodes,nedges,refnodes,refedges,nstart=None,seed=None,reverse=None,
-                   display=None,write=None):
+def harmonicDesign(mk,nnodes,refnodes,refedges,nedges=2,dualedge=3,nstart=None,scfree='barabasialbert',seed=None,prob=None,reverse=None,
+                   display=None,write=None,verbose=False):
     # network generator (see documentation on networkx)
-    scfree = nx.barabasi_albert_graph(nnodes,nedges,seed)
+    if scfree == 'barabasialbert':
+        if verbose: print('Barabasi-Albert')
+        scfree = nx.barabasi_albert_graph(nnodes,nedges,seed)
+    elif scfree == 'dual':
+        if verbose: print('dual Barabasi-Albert')
+        scfree = nx.dual_barabasi_albert_graph(nnodes,nedges,dualedge,prob,seed)
+    elif scfree == 'erdosrenyi':
+        if verbose: print('Erdos-Renyi')
+        scfree = nx.erdos_renyi_graph(nnodes,prob)
+    else:
+        scfree = scfree
     # node degree distribution
     node = np.zeros((nnodes),dtype=int)
     weight = np.zeros((nnodes),dtype=int)
@@ -34,8 +45,19 @@ def harmonicDesign(mk,nnodes,nedges,refnodes,refedges,nstart=None,seed=None,reve
     idx = np.argsort(weight)[::-1]
     if nstart == None:
         nstart = idx[0]
-    euler_circuit = chinese_postman(scfree,nstart)
-    print('Length of Eulerian circuit: {}'.format(len(euler_circuit)))
+    euler_circuit = chinese_postman(scfree,starting_node=nstart)
+    if verbose: print('Length of Eulerian circuit: {}'.format(len(euler_circuit)))
+    # modularity 
+    if not scfree.is_directed():
+        part = cm.best_partition(scfree)
+        modul = cm.modularity(part,scfree)
+    # average degree
+    ntot=scfree.number_of_nodes()
+    avg = 0
+    for n in scfree.degree():
+        avg += n[1]
+    avgdeg = avg/float(ntot)
+    if verbose: print('Average degree: ', avgdeg, ' modularity = ',modul)
     # reference node degree distribution
     try:
         bnet = nx.from_pandas_edgelist(refedges,'Source','Target',['Weight','Label'])
@@ -80,4 +102,7 @@ def harmonicDesign(mk,nnodes,nedges,refnodes,refedges,nstart=None,seed=None,reve
     if write:
         WRITEscoreOps(eulerseq,w=write)
     
-    return(eulerseq)
+    if not scfree.is_directed():
+        return(eulerseq,avgdeg,modul)
+    else:
+        return(eulerseq,avgdeg,None)

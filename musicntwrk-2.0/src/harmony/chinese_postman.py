@@ -16,7 +16,7 @@
 import networkx as nx
 import itertools
 
-def chinese_postman(graph,starting_node,verbose=False):
+def chinese_postman(graph,starting_node=None,verbose=False):
         
     def get_shortest_distance(graph, pairs, edge_weight_name):
         return {pair : nx.dijkstra_path_length(graph, pair[0], pair[1], edge_weight_name) for pair in pairs}
@@ -41,7 +41,7 @@ def chinese_postman(graph,starting_node,verbose=False):
             g.add_edge(edge[0],edge[1],attr_dict=edge[2:])
         return g
 
-    def create_eulerian_circuit(graph, starting_node=None):
+    def create_eulerian_circuit(graph, starting_node=starting_node):
         return list(nx.eulerian_circuit(graph,source=starting_node))
     
     odd_degree_nodes = [node for node, degree in dict(nx.degree(graph)).items() if degree%2 == 1]

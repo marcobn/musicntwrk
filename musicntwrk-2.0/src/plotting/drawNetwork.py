@@ -19,7 +19,7 @@ import community as cm
 import matplotlib.pyplot as plt
 
 def drawNetwork(Gx=None,Gxu=None,nodes=None,edges=None,forceiter=100,grphtype='undirected',dx=10,dy=10,colormap='jet',scale=1.0,
-    layout='force',drawlabels=True,giant=False,equi=False,res=0.5,edge_labels=False,font=12):
+    layout='force',drawlabels=True,giant=False,equi=False,res=0.5,k=None,edge_labels=False,font=12):
 
     if grphtype == 'directed':
         if Gx == None and Gxu == None:
@@ -40,7 +40,7 @@ def drawNetwork(Gx=None,Gxu=None,nodes=None,edges=None,forceiter=100,grphtype='u
             index = int(input('enter index '))
             Gx = S[idsz[index]]
     if layout == 'force' or layout==None:
-        pos = nx.spring_layout(Gx,iterations=forceiter)
+        pos = nx.spring_layout(Gx,k=1,iterations=forceiter)
     elif layout == 'spiral':
         pos = nx.spiral_layout(Gx,equidistant=equi,resolution=res)
     df = np.array(nodes)

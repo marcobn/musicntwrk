@@ -21,14 +21,14 @@ import pandas as pd
 from ..utils.opsDistance import opsDistance
 from ..utils.generalizedOpsName import generalizedOpsName
 
-def tonalAnalysis(chords,sections,key,enharm=[['C','C']],write=None):
+def tonalAnalysis(chords,sections,key,fmeasure,enharm=[['C','C']],write=None):
     chs = []
     for c in chords.recurse().getElementsByClass('Chord'):
         chs.append(c)
     regionKey = []
     for n in range(len(sections)-1):
-        ini = int(sections[n])
-        end = int(sections[n+1])
+        ini = int(np.asarray(fmeasure)[sections[n]])
+        end = int(np.asarray(fmeasure)[sections[n+1]])
         for i in range(ini,end,1):
             for enh in enharm:
                 if key[n] == enh[0]:
@@ -39,17 +39,19 @@ def tonalAnalysis(chords,sections,key,enharm=[['C','C']],write=None):
     reference = []
     rnum = []
     oper = []
+    reference = []
+    rnum = []
+    oper = []
     for n in range(len(chs)):
-        rn = m21.roman.romanNumeralFromChord(chs[n],m21.key.Key(regionKey[n])).figure
-    #     fig = m21.roman.postFigureFromChordAndKey(chs[n], m21.key.Key(regionKey[int(chs[n].measureNumber)]))
-        fig = ''
+        rn = m21.roman.romanNumeralFromChord(chs[n],m21.key.Key(regionKey[int(chs[n].measureNumber)])).romanNumeralAlone
+        fig = m21.roman.postFigureFromChordAndKey(chs[n], m21.key.Key(regionKey[int(chs[n].measureNumber)]))
         rnum.append(rn+fig)
         try:
-            _,ops = generalizedOpsName(chs[n].normalOrder,chs[n+1].normalOrder,TET=12,distance='euclidean')
+            _,ops = generalizedOpsName(chs[n].pitchClasses,chs[n+1].pitchClasses)
         except:
             ops = ''
         oper.append(ops)
-        entry = [chs[n].pitchClasses,chs[n].pitchNames,rn+fig,ops,regionKey[n]]
+        entry = [chs[n].pitchClasses,chs[n].pitchNames,rn+fig,ops,regionKey[int(chs[n].measureNumber)]]
         reference.append(entry)
 
     # Set dictionary as pandas dataframe
