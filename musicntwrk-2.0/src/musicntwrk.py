@@ -412,14 +412,18 @@ class PCSetR:
             outset = None
         return(PCSetR(Remove(outset),TET=self.TET))
         
-    def VLOp(self,name):
-        # operate on the pcs with a normal-ordered relational operator R({x})
+    def VLOp(self,name,norm=True):
+        # operate on the pcs with a (normal-ordered )relational operator R({x})
         op = []
         for num in re.findall("[-\d]+", name):
             op.append(int(num))
         op = np.asarray(op)
-        selfto = np.unique((self.normalOrder().pcs+op)%self.TET,axis=0)
-        return(PCSetR(selfto,TET=self.TET).normalOrder())
+        if norm:
+            selfto = np.unique((self.normalOrder().pcs+op)%self.TET,axis=0)
+            return(PCSetR(selfto,TET=self.TET).normalOrder())
+        else:
+            selfto = np.unique((self.pcs+op)%self.TET,axis=0)
+            return(PCSetR(selfto,TET=self.TET))
     
     def NROp(self,ops=None):
         # operate on the triad with a Neo-Rienmannian Operator
@@ -435,10 +439,14 @@ class PCSetR:
         elif ops == 'R':
             return(PCSetR((2*x+y-self.pcs)%self.TET,TET=self.TET))
 
-    def opsNameVL(self,b):
-        # given two vectors returns the name of the normal-ordered voice-leading operator R that connects them
-        a = self.normalOrder().pcs
-        b = b.normalOrder().pcs  
+    def opsNameVL(self,b,norm=True):
+        # given two vectors returns the name of the (normal-ordered) voice-leading operator R that connects them
+        if norm:
+            a = self.normalOrder().pcs
+            b = b.normalOrder().pcs  
+        else:
+            a = self.pcs
+            b = b.pcs 
         d = np.zeros((b.shape[0]),dtype=int) 
         for n in range(b.shape[0]):
             c = np.roll(b,n)
