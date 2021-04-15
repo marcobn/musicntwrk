@@ -653,6 +653,23 @@ class PCmidiR:
         '''
         return((np.roll(self.midi,-1)-self.midi))
     
+    def sequence(self,Tr,Pr,L):
+        ''' construct repeating contrapuntal patterns or larger-unit sequences from a            voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", chapter 4 (private communication)
+        '''
+        seq = [self.midi.tolist()]
+        sm = [self]
+        for n in range(L):
+            seq.append(PCmidiR((sm[n].midi+Tr)[Pr]).midi.tolist())
+            sm.append(PCmidiR((sm[n].midi+Tr)[Pr]))
+#        for n in range(L+1):
+#            if int(seq[n][0]/self.TET) < 4:
+#                fac = 5 - int(seq[n][0]/self.TET)
+#                seq[n] = (np.array(seq[n])+self.TET*fac).tolist()
+#            elif int(seq[n][0]/self.TET) > 5:
+#                fac = int(seq[n][0]/self.TET) - 5
+#                seq[n] = (np.array(seq[n])-self.TET*fac).tolist()
+        return(seq)
+    
     def displayNotes(self,show=True,xml=False,chord=False):
         '''
         •	Display pcs in score in musicxml format. If chord is True 
@@ -1088,20 +1105,42 @@ class musicntwrk:
             from .harmony.tonalHarmonyModels import tonalHarmonyModels
             tonalHarmonyModels(mode)
         
-    def sonify(self,descriptor=None,data=None,length=None,midi=None,scalemap=None,ini=None,fin=None,fac=None,dur=None,transp=None,
-               col=None,write=None,vnorm=None,plot=None,crm=None,tms=None,xml=None):
+    def sonify(self,descriptor=None,engine='pyo',data=None,length=None,midi=None,scalemap=None,ini=None,fin=None,
+               fac=None,dur=None,transp=None,col=None,write=None,vnorm=None,plot=None,crm=None,tms=None,xml=None,
+               sigpath=None,sigfil=None,firpath=None,firsig=None):
         '''
         sonification strategies - simple sound (spectral) or score (melodic progression)
         '''
+        from .data.r_1Ddata import r_1Ddata
+        from .data.i_spectral_pyo import i_spectral_pyo
+        from .data.i_spectral import i_spectral
+        from .data.i_spectral2 import i_spectral2
+        from .data.i_spectral_pure import i_spectral_pure
+        
         if descriptor == 'spectrum':
-            from .data.r_1Ddata import r_1Ddata
-            from .data.i_spectral_pyo import i_spectral_pyo
-            x, y = r_1Ddata(data)
-            s,a = i_spectral_pyo(x,y[0])
-            s.start()
-            time.sleep(length)
-            s.stop()
-            s.shutdown()
+            if engine == engine == 'pyo':
+                x, y = r_1Ddata(data)
+                s,a = i_spectral_pyo(x,y[0])
+                s.start()
+                time.sleep(length)
+                s.stop()
+                s.shutdown()
+            elif engine == 'csound':
+                # Full csound
+                x, y = r_1Ddata(data)
+                i_spectral(x,y[0],itime=length)
+            elif engine == 'csound+scipy':
+                # csound + scipy for FIR
+                x, y = r_1Ddata(data)
+                i_spectral2(x,y[0],itime=length)
+            elif engine == 'scipy':
+                # Full scipy
+                x, y = r_1Ddata(data)
+                s = i_spectral_pure(sigpath,sigfil,firpath,firsig)
+                return(s)
+            else:
+                print('no engine specified for sound')
+                sts.exit()
             
         if descriptor == 'melody':
             from .data.r_1Ddata import r_1Ddata

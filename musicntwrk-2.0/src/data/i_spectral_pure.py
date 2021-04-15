@@ -19,6 +19,8 @@ from scipy.signal import convolve
 import scipy.fftpack as FFT
 import librosa
 
+from ..data.r_1Ddata import r_1Ddata
+
 def i_spectral_pure(sigpath,sigfil,firpath,firsig):
 	
 	# As i_spectral2 but does not need audio engine - requires a signal file (wav) to filter
@@ -26,7 +28,7 @@ def i_spectral_pure(sigpath,sigfil,firpath,firsig):
 	# read signal
 	sf, sr = librosa.load(sigpath+sigfil)
 	# read function for convolution
-	xv, y = r_1Ddata(firpath,firsig)
+	xv, y = r_1Ddata(firpath+firsig)
 	yv = y[0]
 	nlines = xv.shape[0]
 

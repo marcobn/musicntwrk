@@ -124,7 +124,7 @@ def i_spectral2(xv,yv,itime,path='./',instr='noise'):
 	</CsInstruments>
 
 	<CsScore>
-	i 99 0 '''+itime+'''
+	i 99 0 '''+str(itime)+'''
 	e
 	</CsScore>
 
