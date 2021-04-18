@@ -653,22 +653,64 @@ class PCmidiR:
         '''
         return((np.roll(self.midi,-1)-self.midi))
     
-    def sequence(self,Tr,Pr,L):
-        ''' construct repeating contrapuntal patterns or larger-unit sequences from a            voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", chapter 4 (private communication)
+    def sequence(self,Tr,Pr,L,scale,key=['C'],order='up'):
+        ''' construct repeating contrapuntal patterns or larger-unit sequences from a
+            voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", chapter 4 (private communication)
         '''
-        seq = [self.midi.tolist()]
-        sm = [self]
-        for n in range(L):
-            seq.append(PCmidiR((sm[n].midi+Tr)[Pr]).midi.tolist())
-            sm.append(PCmidiR((sm[n].midi+Tr)[Pr]))
-#        for n in range(L+1):
-#            if int(seq[n][0]/self.TET) < 4:
-#                fac = 5 - int(seq[n][0]/self.TET)
-#                seq[n] = (np.array(seq[n])+self.TET*fac).tolist()
-#            elif int(seq[n][0]/self.TET) > 5:
-#                fac = int(seq[n][0]/self.TET) - 5
-#                seq[n] = (np.array(seq[n])-self.TET*fac).tolist()
-        return(seq)
+        scala = []
+        for i,s in enumerate(scale):
+            if isinstance(scale[0],list):
+                sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+            elif isinstance(scale[0],str) and key != None:
+                if s == 'Chromatic':
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.ChromaticScale(key[i]).pitches])).pitches
+                    sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                elif s == "Major":
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.MajorScale(key[i]).pitches])).pitches
+                    sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                elif s == "MelodicMinor":
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.MelodicMinorScale(key[i]).pitches])).pitches
+                    sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                elif s == "HarmonicMinor":
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.HarmonicMinorScale(key[i]).pitches])).pitches
+                    sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                elif s == "Minor":
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.MinorScale(key[i]).pitches])).pitches
+                    sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                elif s == "Octatonic":
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.OctatonicScale(key[i]).pitches])).pitches
+                    sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                else:
+                    print('scale'+s+' not coded, edit method to add from music21 list)')
+                    return
+            if order=='up':
+                scala.append(np.array([str(p) for p in sc.getPitches('C1', 'C9')]))
+            else:
+                scala.append(np.array([str(p) for p in sc.getPitches('C1', 'C9')]))
+    
+        if len(scala) == 1:
+            scala = scala[0]
+    
+            idx = []
+            for p in self.pitches:
+                try:
+                    idx.append(np.argwhere(scala==p)[0][0])
+                except:
+                    print('one or more of the selected pitches are not present in the scale')
+                    print(scala)
+                    return
+            idx = np.array(idx)
+    
+            seq = [PCmidiR(scala[idx]).midi.tolist()]
+            for n in range(L):
+                idx += Tr
+                seq.append(PCmidiR(scala[idx[Pr]]).midi.tolist())
+                idx = idx[Pr]
+            return(seq)
+        else:
+            print('not yet implemented')
+            return
+    
     
     def displayNotes(self,show=True,xml=False,chord=False):
         '''
