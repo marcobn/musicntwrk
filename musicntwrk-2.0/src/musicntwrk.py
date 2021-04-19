@@ -653,7 +653,7 @@ class PCmidiR:
         '''
         return((np.roll(self.midi,-1)-self.midi))
     
-    def sequence(self,Tr,Pr,L,scale,key=['C'],order='up'):
+    def sequence(self,Tr,Pr,L,scale,key=['C'],order='up',mode=0):
         ''' construct repeating contrapuntal patterns or larger-unit sequences from a
             voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", chapter 4 (private communication)
         '''
@@ -708,9 +708,37 @@ class PCmidiR:
                 idx = idx[Pr]
             return(seq)
         else:
-            print('not yet implemented')
-            return
+            if len(scala) != len(self.pitches):
+                print('number of scales must be equal to number of voices')
+                return
+            idx = []
+            for i,p in enumerate(self.pitches):
+                try:
+                    idx.append(np.argwhere(scala[i]==p)[0][0])
+                except:
+                    print('one or more of the selected pitches are not present in the scale')
+                    print(scala)
+                    return
+            idx = np.array(idx)
     
+            pitches = []
+            for l in range(len(scala)):
+                pitches.append(PCmidiR([scala[l][idx[l]]]).midi[0])
+            seq = [pitches]
+            for n in range(L):
+                idx += Tr
+                pitches = []
+                for l in range(len(scala)):
+                    if mode == 0:
+                        pitches.append(PCmidiR([scala[l][idx[Pr][l]]]).midi[0])
+                    elif mode == 1:
+                        pitches.append(PCmidiR([scala[Pr[l]][idx[Pr][l]]]).midi[0])
+                    else:
+                        print('mode not known')
+                        return
+                seq.append(pitches)
+                idx = idx[Pr]
+            return(seq)
     
     def displayNotes(self,show=True,xml=False,chord=False):
         '''
