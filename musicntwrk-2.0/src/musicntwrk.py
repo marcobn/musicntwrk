@@ -702,11 +702,14 @@ class PCmidiR:
             idx = np.array(idx)
     
             seq = [PCmidiR(scala[idx]).midi.tolist()]
+            idxl = [idx]
             for n in range(L):
                 idx += Tr
                 seq.append(PCmidiR(scala[idx[Pr]]).midi.tolist())
                 idx = idx[Pr]
-            return(seq)
+                idxl.append(idx)
+            idxl[-1] += Tr
+            return(seq,idxl)
         else:
             if len(scala) != len(self.pitches):
                 print('number of scales must be equal to number of voices')

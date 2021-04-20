@@ -20,7 +20,7 @@ from ..utils.generalizedOpsName import generalizedOpsName
 from ..utils.opsName import opsName
 from ..musicntwrk import PCmidiR
 
-def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',keysig=None,opers=True,abs=False,TET=12,distance='euclidean'):
+def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',keysig=None,opers=True,normal=False,abs=False,scale=False,idx=None,TET=12,distance='euclidean'):
     try:
         ntot = nseq.shape[0]
     except:
@@ -41,8 +41,9 @@ def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',
         n = m21.chord.Chord(ch.tolist())
         if opers:
             if i < ntot-1: 
-                n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1],TET,distance)[1])
-                if abs:
+                if normal:
+                    n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1],TET,distance)[1])
+                elif abs:
                     if len(nseq[i]) == len(nseq[i+1]):
     #                    n.addLyric(str(i)+' '+opsName(nseq[i],nseq[i+1],TET))
                         n.addLyric(str(i)+' '+PCmidiR(nseq[i],TET).opsNameVL(PCmidiR(nseq[i+1])))
@@ -52,6 +53,15 @@ def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',
                             n.addLyric(str(i)+' '+opsName(nseq[i],r,TET))
                         else:
                             n.addLyric(str(i)+' '+opsName(r,nseq[i+1],TET))
+                elif scale:
+                    if idx == None:
+                        print('need scale degree index for L operators')
+                        return
+                    diff = idx[i+1]-idx[i]
+                    n.addLyric(str(i)+' '+'L('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
+                    if i == 0: print('magnitude^2 of sequence operator = ',diff.dot(diff))
+                else:
+                    print('no operator mode specified')
         if keysig != None:
             rn = m21.roman.romanNumeralFromChord(n, m21.key.Key(keysig))
             n.addLyric(str(rn.figure))
