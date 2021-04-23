@@ -570,18 +570,18 @@ class PCmidiR:
             self.pitches = pitches
             
         self.TET = TET
-        
-    def T(self,t=0):
+    
+    def sort(self):
         '''
-        •	Transposition by t (int) units
+        sort piches
         '''
-        return(PCmidiR(self.midi+t))
+        return(PCmidiR(np.sort(self.midi)))
     
     def zeroOrder(self):
         '''
         •	transposed so that the first pitch is 60 (middle C)
         '''
-        return(PCmidiR(self.midi-self.midi[0])+60)
+        return(PCmidiR(self.midi-self.midi[0]+60))
     
     def normalOrder(self):
         '''
@@ -593,9 +593,9 @@ class PCmidiR:
         
         # trivial sets
         if len(self.pcs) == 1:
-            return(self.pcs-self.pcs[0])
+            return(PCmidiR(self.pcs-self.pcs[0]))
         if len(self.pcs) == 2:
-            return(self.pcs)
+            return(PCmidiR(self.pcs))
         
         # 1. cycle to find the most compact ascending order
         nroll = np.linspace(0,len(self.pcs)-1,len(self.pcs),dtype=int)
@@ -620,13 +620,26 @@ class PCmidiR:
                 break
         if np.array(np.where(dist == dist.min())).shape[1] != 1: pcs_norm = self.pcs
         return(PCmidiR(pcs_norm+60))
-    
-    
-    def I(self,pivot=60):
+
+    def T(self,t=0):
         '''
-        •	I operation
+        •	Transposition by t (int or list of int) units
         '''
-        return(PCmidiR((pivot-self.midi)+pivot))
+        return(PCmidiR(self.midi+t))
+    
+    def I(self,p=60):
+        '''
+        •	I operation, including contestual inversion (after Dmitri Tymozcko)
+        '''
+        if not isinstance(p,list):
+            return(PCmidiR(p-self.midi+p))
+        else:
+            # fixed pitches are given as indeces of the chord
+            if len(p) > 2:
+                print('only two pitches can be fixed')
+                return(self)
+            else:
+                return(PCmidiR(self.midi[p[0]]+self.midi[p[1]]-self.midi))
     
     def VLOp(self,name):
         # operate on the pcs with a normal-ordered relational operator R({x})
@@ -651,7 +664,7 @@ class PCmidiR:
             Parsimonious Trichords, and Their "Tonnetz" Representations,
             Journal of Music Theory, Vol. 41, No. 1 (Spring, 1997), pp. 1-66)
         '''
-        return((np.roll(self.midi,-1)-self.midi))
+        return((np.roll(self.midi,-1)-self.midi)%self.TET)
     
     def sequence(self,Tr,Pr,L,scale,key=['C'],order='up',mode=0):
         ''' construct repeating contrapuntal patterns or larger-unit sequences from a
@@ -1013,7 +1026,8 @@ class musicntwrk:
     def __init__(self,TET=12):
         self.TET = TET
         
-    def dictionary(self,space=None,N=None,Nc=None,order=None,row=None,a=None,prob=None,REF=None,scorefil=None,music21=None,show=None):
+    def dictionary(self,space=None,N=None,Nc=None,order=None,row=None,a=None,prob=None,REF=None,scorefil=None,music21=None,
+        midi=None,show=None):
         '''
         define dictionary in the musical space specified in 'space': pcs, rhythm, rhythmP, score, orch
         '''
@@ -1035,8 +1049,12 @@ class musicntwrk:
         if space == 'score':
             from .networks.scoreDictionary import scoreDictionary
             from .networks.readScore import readScore
-            seq,chords = readScore(scorefil,music21,show,TET=self.TET)
-            dictionary = scoreDictionary(seq,TET=self.TET)
+            seq,chords = readScore(scorefil,music21,show,midi,TET=self.TET)
+            if midi == None:
+                dictionary = scoreDictionary(seq,TET=self.TET)
+            else:
+                from .networks.scoreMIDIDictionary import scoreMIDIDictionary
+                dictionary = scoreMIDIDictionary(seq)
             return(seq,chords,dictionary)
             
         if space == 'orch':

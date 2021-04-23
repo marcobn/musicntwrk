@@ -17,7 +17,7 @@ import re,sys
 import numpy as np
 import music21 as m21
 
-def readScore(input_xml,music21,show,TET):
+def readScore(input_xml,music21,show,midi,TET):
     '''
     •	read a score in musicxml format
     •	returns the sequence of chords
@@ -33,10 +33,19 @@ def readScore(input_xml,music21,show,TET):
             score = m21.converter.parse(input_xml)
         chords = score.chordify()
         if show: chords.show()
-        seq = []
-        for c in chords.recurse().getElementsByClass('Chord'):
-            seq.append(c.normalOrder)
-        return(seq,chords)
+        if midi:
+            seq = []
+            for c in chords.recurse().getElementsByClass('Chord'):
+                m = []
+                for p in c.pitches:
+                    m.append(p.midi)
+                seq.append(m)
+            return(seq,chords)
+        else:
+            seq = []
+            for c in chords.recurse().getElementsByClass('Chord'):
+                seq.append(c.normalOrder)
+            return(seq,chords)
     elif TET == 24:
         dict24 = {'C':0,'C~':1,'C#':2,'D-':2,'D`':3,'D':4,'D~':5,'D#':6,'E-':6,'E`':7,'E':8,
                             'E~':9,'F`':9,'F':10,'F~':11,'F#':12,'G-':12,'G`':13,'G':14,'G~':15,'G#':16,
