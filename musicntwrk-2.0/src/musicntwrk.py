@@ -659,15 +659,16 @@ class PCmidiR:
     
     def intervals(self):
         '''
-        •	Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
-        •	also known as step-interval vector (see Cohn, Neo-Riemannian Operations, 
+            Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
+            also known as step-interval vector (see Cohn, Neo-Riemannian Operations, 
             Parsimonious Trichords, and Their "Tonnetz" Representations,
             Journal of Music Theory, Vol. 41, No. 1 (Spring, 1997), pp. 1-66)
         '''
         return((np.roll(self.midi,-1)-self.midi)%self.TET)
     
     def sequence(self,Tr,Pr,L,scale,key=['C'],order='up',mode=0):
-        ''' construct repeating contrapuntal patterns or larger-unit sequences from a
+        ''' 
+            Construct repeating contrapuntal patterns or larger-unit sequences from a
             voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", chapter 4 (private communication)
         '''
         scala = []
