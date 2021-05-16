@@ -32,7 +32,7 @@ def applyOps(name,chord,prt=True):
     if len(op) == len(pcs):
         selfto = (PCSet(pcs).normalOrder()+op)%12
         if prt: print(PCSet(selfto).normalOrder().tolist())
-        return([str(PCSet(selfto).normalOrder().tolist())])
+        return([str(PCSet(selfto,UNI=True).normalOrder().tolist())])
     elif len(op) - len(pcs) == 1:
         # duplicate pitches
         c = np.zeros(len(op),dtype=int)
@@ -42,7 +42,7 @@ def applyOps(name,chord,prt=True):
         for i in range(len(op)-1):
             c[len(op)-1] = pitch[i]
             selfto = (PCSet(c,UNI=False,ORD=False).normalOrder()+op)%12
-            add.append(str(PCSet(selfto).normalOrder().tolist()))
+            add.append(str(PCSet(selfto,UNI=True).normalOrder().tolist()))
         if prt: print(Remove(add))
         return(Remove(add))
     elif len(pcs) - len(op) == 1:
@@ -51,7 +51,7 @@ def applyOps(name,chord,prt=True):
         for i in range(pcs.shape[0]): 
             c = np.insert(op,i,0)
             selfto = (PCSet(pcs).normalOrder()+c)%12
-            add.append(str(PCSet(selfto).normalOrder().tolist()))
+            add.append(str(PCSet(selfto,UNI=True).normalOrder().tolist()))
         if prt: print(Remove(add))
         return(Remove(add))
     else:

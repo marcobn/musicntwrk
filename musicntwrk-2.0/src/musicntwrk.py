@@ -26,12 +26,12 @@ class PCSet:
         •	UNI (logical) – if True, eliminate duplicate pitches (default)
         •   ORD (logical) - if True, sorts the pcs in ascending order
         '''
+        self.pcs = np.asarray(pcs)%TET
         if UNI == True:
-            self.pcs = np.unique(pcs)%TET
+            self.pcs = np.unique(self.pcs)%TET
         if ORD == True:
-            self.pcs = np.sort(pcs)%TET
-        else:
-            self.pcs = np.asarray(pcs)%TET
+            self.pcs = np.sort(self.pcs)%TET
+            
         self.TET = TET
 
     def normalOrder(self):
@@ -144,6 +144,7 @@ class PCSet:
 
     def Op(self,name):
         # operate on the pcs with a generic distance operator
+        from .utils.Remove import Remove
         
         def plusAndMinusPermutations(items):
             for p in iter.permutations(items):
@@ -254,7 +255,7 @@ class PCSet:
 
 class PCSetR:
 
-    def __init__(self,pcs,TET=12,UNI=False,ORD=False):
+    def __init__(self,pcs,TET=12,UNI=True,ORD=True):
         '''
         •	pcs (int)– pitch class set as list or numpy array
         •	TET (int)- number of allowed pitches in the totality of the musical space (temperament).
@@ -262,12 +263,11 @@ class PCSetR:
         •	UNI (logical) – if True, eliminate duplicate pitches (default)
         •   ORD (logical) - if True, sorts the pcs in ascending order
         '''
+        self.pcs = np.asarray(pcs)%TET
         if UNI == True:
-            self.pcs = np.unique(pcs)
+            self.pcs = np.unique(self.pcs)%TET
         if ORD == True:
-            self.pcs = np.sort(pcs)
-        else:
-            self.pcs = np.asarray(pcs)
+            self.pcs = np.sort(self.pcs)%TET
         self.TET = TET
 
     def normalOrder(self):
