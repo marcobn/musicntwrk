@@ -16,8 +16,7 @@ extras = {
 }
 
 # read the contents of your README file including images
-this_directory = '../'
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+with open(path.join('README.md'), encoding='utf-8') as f:
 	long_description = f.read()
 
 
@@ -33,7 +32,7 @@ setup(name='musicntwrk',
 	packages=['musicntwrk', 'musicntwrk.data','musicntwrk.harmony','musicntwrk.ml_utils','musicntwrk.networks','musicntwrk.plotting',
 		'musicntwrk.timbre','musicntwrk.utils'],
 	package_dir={'musicntwrk':'src'},
-	install_requires=['numpy','scipy','pandas','python-louvain','networkx','music21','librosa','numba==0.48','pyo',
+	install_requires=['numpy','scipy','pandas','python-louvain','networkx','music21','librosa','numba','pyo',
 		'matplotlib','tensorflow','powerlaw','vpython','wget','PySimpleGUI','pydub','ruptures'],
 	extras_require=extras
 )
