@@ -33,7 +33,6 @@ or
 
 - [OR download the latest release from GitHub](https://github.com/marcobn/musicntwrk/)
 - Clone the repo: `git clone https://github.com/marcobn/musicntwrk.git`
-- cd musicntwrk-2.0
 - pip install .
 
 ## - [Examples and support files can be downloaded here](https://github.com/marcobn/musicntwrk/tree/master/musicntwrk-2.0/examples)
