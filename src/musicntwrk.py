@@ -1205,8 +1205,11 @@ class musicntwrk:
         '''
         from .data.r_1Ddata import r_1Ddata
         from .data.i_spectral_pyo import i_spectral_pyo
-        from .data.i_spectral import i_spectral
-        from .data.i_spectral2 import i_spectral2
+        try:
+            from .data.i_spectral import i_spectral
+            from .data.i_spectral2 import i_spectral2
+        except:
+            pass
         from .data.i_spectral_pure import i_spectral_pure
         
         if descriptor == 'spectrum':
