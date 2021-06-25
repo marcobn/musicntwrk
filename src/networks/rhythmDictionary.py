@@ -22,6 +22,7 @@ from ..musicntwrk import RHYTHMSeq
 
 from ..utils.communications import *
 from ..utils.load_balancing import *
+from mpi4py import MPI
 
 # initialize parallel execution
 comm=MPI.COMM_WORLD
