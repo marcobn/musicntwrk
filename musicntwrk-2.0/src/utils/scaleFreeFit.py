@@ -16,6 +16,7 @@
 import collections
 import numpy as np
 from scipy.optimize import curve_fit
+import matplotlib.pyplot as plt
 
 
 def scaleFreeFit(Gx,indeg=True,imin=0,undir=False,lfit='powerlaw',plot=True):
