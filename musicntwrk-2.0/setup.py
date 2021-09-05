@@ -22,7 +22,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 
 setup(name='musicntwrk',
-	version='2.1.25',
+	version='2.1.27',
 	description='music as data, data as music',
 	long_description=long_description,
 	long_description_content_type='text/markdown',
@@ -33,7 +33,7 @@ setup(name='musicntwrk',
 	packages=['musicntwrk', 'musicntwrk.data','musicntwrk.harmony','musicntwrk.ml_utils','musicntwrk.networks','musicntwrk.plotting',
 		'musicntwrk.timbre','musicntwrk.utils'],
 	package_dir={'musicntwrk':'src'},
-	install_requires=['numpy','scipy','pandas','python-louvain','networkx','music21','librosa','numba==0.48','pyo',
+	install_requires=['numpy','scipy','pandas','python-louvain','networkx','music21','librosa','numba','pyo',
 		'matplotlib','tensorflow','powerlaw','vpython','wget','PySimpleGUI','pydub','ruptures'],
 	extras_require=extras
 )

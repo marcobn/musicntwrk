@@ -666,11 +666,12 @@ class PCmidiR:
         '''
         return((np.roll(self.midi,-1)-self.midi)%self.TET)
     
-    def sequence(self,Tr,Pr,L,scale,key=['C'],order='up',mode=0):
+    def sequence(self,double_transposition=None,Tr=None,Pr=None,L=None,scale=None,key=['C'],order='up',mode=0,verbose=False):
         ''' 
             Construct repeating contrapuntal patterns or larger-unit sequences from a
             voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", chapter 4 (private communication)
         '''
+            
         scala = []
         for i,s in enumerate(scale):
             if isinstance(scale[0],list):
@@ -695,13 +696,32 @@ class PCmidiR:
                     s = PCmidiR(np.array([str(p) for p in m21.scale.OctatonicScale(key[i]).pitches])).pitches
                     sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
                 else:
-                    print('scale'+s+' not coded, edit method to add from music21 list)')
+                    print('scale '+s+' not coded, edit method to add from music21 list)')
                     return
             if order=='up':
                 scala.append(np.array([str(p) for p in sc.getPitches('C1', 'C9')]))
             else:
-                scala.append(np.array([str(p) for p in sc.getPitches('C1', 'C9')]))
-    
+                scala.append(np.array([str(p) for p in sc.getPitches('C9', 'C1')]))
+        
+        if isinstance(scale[0],list):
+            if (double_transposition == None and Tr == None and Pr == None):
+                print('operation not defined')
+            elif isinstance(double_transposition,tuple):
+                length = len(self.midi)
+                Tr = np.array([double_transposition[0]]*length)
+                if double_transposition[1] == 0:
+                    pass
+                elif double_transposition[1] < 0:
+                    Tr[double_transposition[1]:] -= len(scale[0])
+                else:
+                    Tr[:double_transposition[1]] += len(scale[0])
+                Tr = Tr.tolist()
+                Pr = np.roll(np.linspace(0,length-1,length),-(length+double_transposition[1]))\
+                    .astype(int).tolist()
+                if verbose: print('Tr = ',Tr,'  Pr = ',Pr)
+            else:
+                pass
+
         if len(scala) == 1:
             scala = scala[0]
     
@@ -778,6 +798,264 @@ class PCmidiR:
             if show: c.show()
             if xml: c.show('musicxml')
             return(c)
+
+class MIDIset:
+    
+    def __init__(self,midi,UNI=False,ORD=False,TET=12):
+        '''
+        •	midi –  MIDI number list or string(name+octave) separated by commas ('C4,D4,...')
+        •	UNI (logical) – if True, eliminate duplicate pitches (default)
+        •   ORD (logical) - if True, sorts the pcs in ascending order
+        '''
+        
+        try:
+            midi = midi.tolist()
+        except:
+            if not isinstance(midi,list):
+                midi = [midi]
+            else:
+                pass
+            
+        if isinstance(midi[0],str) and len(midi) > 1:
+            names = midi.copy()
+            for m in range(len(midi)):
+                midi[m] = m21.pitch.Pitch(midi[m]).ps
+        elif isinstance(midi[0],str) and len(midi) == 1:
+            midi = midi[0].split(',')
+            names = midi.copy()
+            for m in range(len(midi)):
+                midi[m] = m21.pitch.Pitch(midi[m]).ps
+            
+        if UNI == True:
+            self.midi = np.unique(midi)
+        if ORD == True:
+            self.midi = np.sort(midi)
+        else:
+            self.midi = np.asarray(midi)
+            
+        self.TET = TET
+
+    def pitches(self):
+        if isinstance(self.midi,list):
+            self.midi = np.array(self.midi)
+        if isinstance(self.midi[0].tolist(),int) or isinstance(self.midi[0].tolist(),float):
+            pitches = []
+            for m in range(len(self.midi)):
+                pitches.append(str(m21.pitch.Pitch(self.midi[m])))
+            return(pitches)
+    
+    def pcs(self):
+        return(self.midi%12)
+    
+    def T(self,t=0):
+        '''
+        •	Transposition by t (int or list of int) units
+        '''
+        self.midi = self.midi+t
+    
+    def I(self,p=60):
+        '''
+        •	I operation, including contestual inversion (after Dmitri Tymozcko)
+        '''
+        if not isinstance(p,list):
+            self.midi = p-self.midi+p
+        else:
+            # fixed pitches are given as indeces of the chord
+            if len(p) > 2:
+                print('only two pitches can be fixed')
+                return(self)
+            else:
+                self.midi = self.midi[p[0]]+self.midi[p[1]]-self.midi
+    
+    def VLOp(self,name):
+        # operate on the pcs with a normal-ordered relational operator R({x})
+        op = []
+        for num in re.findall("[-\d]+", name):
+            op.append(int(num))
+        op = np.asarray(op)
+        self.midi = self.midi+op
+        
+    def sort(self):
+        '''
+            • sort piches
+        '''
+        self.midi = np.sort(self.midi)
+    
+    def zeroOrder(self):
+        '''
+            • transposed so that the first pitch is 60 (middle C)
+        '''
+        self.midi = self.midi-self.midi[0]+60
+    
+    def normalOrder(self):
+        '''
+            • Order the pcs according to the most compact ascending scale in pitch-class space that spans 
+            less than an octave by cycling permutations.
+        '''
+        
+        pcs = np.sort(self.midi%self.TET)
+        
+        # trivial sets
+        if len(pcs) == 1:
+            self.midi = pcs-pcs[0]+60
+        if len(pcs) == 2:
+            self.midi = pcs+60
+        
+        # 1. cycle to find the most compact ascending order
+        nroll = np.linspace(0,len(pcs)-1,len(pcs),dtype=int)
+        dist = np.zeros((len(pcs)),dtype=int)
+        for i in range(len(pcs)):
+            dist[i] = (np.roll(pcs,i)[len(pcs)-1] - np.roll(pcs,i)[0])%self.TET
+            
+        # 2. check for multiple compact orders
+        for l in range(1,len(pcs)):
+            if np.array(np.where(dist == dist.min())).shape[1] != 1:
+                indx = np.array(np.where(dist == dist.min()))[0]
+                nroll = nroll[indx]
+                dist = np.zeros((len(nroll)),dtype=int)
+                i = 0
+                for n in nroll:
+                    dist[i] = (np.roll(pcs,n)[len(pcs)-(1+l)] - np.roll(pcs,n)[0])%self.TET
+                    i += 1
+            else:
+                indx = np.array(np.where(dist == dist.min()))[0]
+                nroll = nroll[int(indx[0])]
+                pcs_norm = np.roll(pcs,nroll)
+                break
+        if np.array(np.where(dist == dist.min())).shape[1] != 1: pcs_norm = pcs
+        self.midi = pcs_norm+60
+
+    def intervals(self):
+        '''
+            Linear Interval Sequence Vector: sequence of intervals in an ordered pcs
+            also known as step-interval vector (see Cohn, Neo-Riemannian Operations, 
+            Parsimonious Trichords, and Their "Tonnetz" Representations,
+            Journal of Music Theory, Vol. 41, No. 1 (Spring, 1997), pp. 1-66)
+        '''
+        return((np.roll(self.midi,-1)-self.midi)%self.TET)
+    
+    def sequence(self,double_transposition=None,Tr=None,Pr=None,scale=None,key=['C'],
+                 order='up',mode=0,verbose=False):
+        ''' 
+            Construct repeating contrapuntal patterns or larger-unit sequences from a
+            voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", chapter 4 (private communication)
+        '''
+            
+        scala = []
+        for i,s in enumerate(scale):
+            if isinstance(scale[0],list):
+                sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+            elif isinstance(scale[0],str) and key != None:
+                if s == 'Chromatic':
+                    s = MIDIset(np.array([str(p) for p in m21.scale.ChromaticScale(key[i]).pitches])).pitches()
+                    sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                elif s == "Major":
+                    s = MIDIset(np.array([str(p) for p in m21.scale.MajorScale(key[i]).pitches])).pitches()
+                    sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                elif s == "MelodicMinor":
+                    s = MIDIset(np.array([str(p) for p in m21.scale.MelodicMinorScale(key[i]).pitches])).pitches()
+                    sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                elif s == "HarmonicMinor":
+                    s = MIDIset(np.array([str(p) for p in m21.scale.HarmonicMinorScale(key[i]).pitches])).pitches()
+                    sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                elif s == "Minor":
+                    s = MIDIset(np.array([str(p) for p in m21.scale.MinorScale(key[i]).pitches])).pitches()
+                    sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                elif s == "Octatonic":
+                    s = MIDIset(np.array([str(p) for p in m21.scale.OctatonicScale(key[i]).pitches])).pitches()
+                    sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                else:
+                    print('scale '+s+' not coded, edit method to add from music21 list)')
+                    return
+            if order=='up':
+                scala.append(np.array([str(p) for p in sc.getPitches('C1', 'C9')]))
+            else:
+                scala.append(np.array([str(p) for p in sc.getPitches('C9', 'C1')]))
+        
+        if isinstance(scale[0],list):
+            if (double_transposition == None and Tr == None and Pr == None):
+                print('operation not defined')
+            elif isinstance(double_transposition,tuple):
+                length = len(self.midi)
+                Tr = np.array([double_transposition[0]]*length)
+                if double_transposition[1] == 0:
+                    pass
+                elif double_transposition[1] < 0:
+                    Tr[double_transposition[1]:] -= len(scale[0])
+                else:
+                    Tr[:double_transposition[1]] += len(scale[0])
+                Tr = Tr.tolist()
+                Pr = np.roll(np.linspace(0,length-1,length),-(length+double_transposition[1]))\
+                    .astype(int).tolist()
+                if verbose: print('Tr = ',Tr,'  Pr = ',Pr,' length of scale = ',len(scale[0]))
+            else:
+                pass
+
+        if len(scala) == 1:
+            scala = scala[0]
+    
+            idx = []
+            for p in self.pitches():
+                try:
+                    idx.append(np.argwhere(scala==p)[0][0])
+                except:
+                    print('one or more of the selected pitches are not present in the scale')
+                    print(scala)
+                    return
+            idx = np.array(idx) + Tr
+            self.midi = MIDIset(scala[idx[Pr]]).midi
+
+        else:
+            if len(scala) != len(pitches()):
+                print('number of scales must be equal to number of voices')
+                return
+            idx = []
+            for i,p in enumerate(pitches()):
+                try:
+                    idx.append(np.argwhere(scala[i]==p)[0][0])
+                except:
+                    print('one or more of the selected pitches are not present in the scale')
+                    print(scala)
+                    return
+            idx = np.array(idx) + Tr
+    
+            pitches = []
+            for l in range(len(scala)):
+                pitches.append(MIDIset([scala[l][idx[l]]]).midi[0])
+
+            pitches = []
+            for l in range(len(scala)):
+                if mode == 0:
+                    pitches.append(MIDIset([scala[l][idx[Pr][l]]]).midi[0])
+                elif mode == 1:
+                    pitches.append(MIDIset([scala[Pr[l]][idx[Pr][l]]]).midi[0])
+                else:
+                    print('mode not known')
+                    return
+            self.midi = MIDIset(pitches).midi
+    
+    def displayNotes(self,show=True,xml=False,chord=False):
+        '''
+        •	Display pcs in score in musicxml format. If chord is True 
+            displays the note cluster
+        '''
+        fac = self.TET/12
+        if  not chord:
+            s = m21.stream.Stream()
+            for i in range(self.midi.shape[0]):
+                s.append(m21.note.Note(self.midi[i]/fac))
+            if show: s.show()
+            if xml: s.show('musicxml')
+            return(s)
+        else:
+            ch = []
+            for i in range(self.midi.shape[0]):
+                ch.append(m21.note.Note(self.midi[i]/fac))
+            c = m21.chord.Chord(ch)
+            if show: c.show()
+            if xml: c.show('musicxml')
+            return(c)
+
 
 class PCSrow:
 #     Helper class for 12-tone rows operations (T,I,R,M,Q)

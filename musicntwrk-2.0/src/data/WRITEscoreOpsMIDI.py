@@ -67,8 +67,10 @@ def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',
             n.addLyric(str(rn.figure))
         m.append(n)
     if w == True:
+        m.show()
+    elif w == 'musicxml':
         m.show('musicxml')
     elif w == 'MIDI':
         m.write('midi',outmidi+'.mid')
     else:
-        m.show()
+        pass
