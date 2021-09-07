@@ -17,12 +17,13 @@ extras = {
 
 # read the contents of your README file including images
 this_directory = './'
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+#with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+with open(path.join(this_directory, 'README.md')) as f:
 	long_description = f.read()
 
 
 setup(name='musicntwrk',
-	version='2.1.27',
+	version='2.1.28',
 	description='music as data, data as music',
 	long_description=long_description,
 	long_description_content_type='text/markdown',

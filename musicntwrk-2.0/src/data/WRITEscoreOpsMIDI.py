@@ -57,9 +57,12 @@ def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',
                     if idx == None:
                         print('need scale degree index for L operators')
                         return
-                    diff = idx[i+1]-idx[i]
-                    n.addLyric(str(i)+' '+'L('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
-                    if i == 0: print('magnitude^2 of sequence operator = ',diff.dot(diff))
+                    try:
+                        diff = idx[i+1]-idx[i]
+                        n.addLyric(str(i)+' '+'L('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
+                        if i == 0: print('magnitude^2 of sequence operator = ',diff.dot(diff))
+                    except:
+                        pass
                 else:
                     print('no operator mode specified')
         if keysig != None:

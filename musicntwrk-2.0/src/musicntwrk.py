@@ -832,7 +832,10 @@ class MIDIset:
             self.midi = np.sort(midi)
         else:
             self.midi = np.asarray(midi)
-            
+        
+        # initialize index for sequences
+        self.idx = None
+        
         self.TET = TET
 
     def pitches(self):
@@ -1004,7 +1007,7 @@ class MIDIset:
                     return
             idx = np.array(idx) + Tr
             self.midi = MIDIset(scala[idx[Pr]]).midi
-
+            self.idx = idx
         else:
             if len(scala) != len(pitches()):
                 print('number of scales must be equal to number of voices')
@@ -1033,6 +1036,7 @@ class MIDIset:
                     print('mode not known')
                     return
             self.midi = MIDIset(pitches).midi
+            self.idx = idx
     
     def displayNotes(self,show=True,xml=False,chord=False):
         '''
