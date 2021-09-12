@@ -103,6 +103,12 @@ class PCSet:
         '''
         return((self.pcs-self.pcs[0])%self.TET)
 
+    def I(self,pivot=0):
+        '''
+        •	I operation: (-pcs modulo TET)
+        '''
+        return((pivot-self.pcs)%self.TET)
+
     def I(self):
         '''
         •	inverse operation: (-pcs modulo TET)
@@ -629,7 +635,7 @@ class PCmidiR:
     
     def I(self,p=60):
         '''
-        •	I operation, including contestual inversion (after Dmitri Tymozcko)
+        •	I operation, including voice-leading preserving contextual inversion
         '''
         if not isinstance(p,list):
             return(PCmidiR(p-self.midi+p))
@@ -639,7 +645,13 @@ class PCmidiR:
                 print('only two pitches can be fixed')
                 return(self)
             else:
-                return(PCmidiR(self.midi[p[0]]+self.midi[p[1]]-self.midi))
+                N = len(self.midi)
+                R = np.eye(N)[::-1]
+                octave = np.array([divmod(c,12)[0] for c in self.midi])
+                inv = np.roll(R,sum(p)%N-N+1,axis=1).dot(np.mod(self.pcs[p[0]]+self.pcs[p[1]]-self.pcs,self.TET)).astype(int)
+                octave += np.sign(self.pcs-inv)
+                midi = inv + octave*12
+                return(PCmidiR(midi))
     
     def VLOp(self,name):
         # operate on the pcs with a normal-ordered relational operator R({x})
@@ -858,7 +870,7 @@ class MIDIset:
     
     def I(self,p=60):
         '''
-        •	I operation, including contestual inversion (after Dmitri Tymozcko)
+        •	I operation, including contestual inversion
         '''
         if not isinstance(p,list):
             self.midi = p-self.midi+p
