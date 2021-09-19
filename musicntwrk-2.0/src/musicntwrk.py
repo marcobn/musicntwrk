@@ -1229,20 +1229,23 @@ class RHYTHMSeq:
         '''
         •	reduce the series of fractions to Greatest Common Divisor
         '''
-        def lcm(a, b):
-            return int(a * b / gcd(a, b))
-        def lcms(numbers): 
-            return(reduce(lcm, numbers))
+        def reduction_fraction(A):    
+            deno = []
+            # get all the denominators
+            for fraction in A:
+                deno.append(fraction.denominator)
+            
+            result = []
+            # put all the fraction on the least common multiple of the denominators
+            for fraction in A:
+                result.append(fraction.numerator * np.lcm.reduce(deno) / fraction.denominator)
         
-        reduceGCD = []
-        den = []
-        for n in range(len(self.rseq)):
-            den.append(self.rseq[n].denominator)
-        commonden = reduce(lcm, den)
-        for n in range(len(self.rseq)):
-            reduceGCD.append(fr.Fraction(int(self.rseq[n].numerator*commonden/self.rseq[n].denominator),commonden))
-        reduceGCD = np.sort(reduceGCD)    
-        return(reduceGCD)
+            # add the least common multiple of the denominators at the end
+            result.append(np.lcm.reduce(deno))
+
+            return result
+        
+        return(reduction_fraction(self.rseq))
     
     def primeForm(self):
         '''
@@ -1289,6 +1292,66 @@ class RHYTHMSeq:
 
         return(np.histogram(durv,bins)[0],str(bins[:(bins.shape[0]-1)]).replace('Fraction','').replace(', ','/')\
                             .replace('(','').replace(')','').replace('\n','').replace('[','').replace(']',''))
+        
+    def binrep(self):
+        bincoding = []
+        for n in self.reduce2GCD()[:-1]:
+            for i in range(int(n)):
+                if i == 0:
+                    bincoding.append(1)
+                else:
+                    bincoding.append(0)
+        return(bincoding)
+    
+    def rhythm_canon(self,pattern=None):
+        # Finds the minimal length sequence of a rhythmic pattern and its augmentations that 
+        # produces a homogeneous pulse of beats (from ANDRANIK TANGIAN, Perspective of New Music, 2003)
+        
+        # seed pattern
+        if pattern == None:
+            pttrn = [np.array(self.binrep(),dtype=int)]
+        else:
+            pttrn = [np.array(pattern,dtype=int)]
+        # augmented seed pattern 
+        for n in range(1,5):
+            tmp = []
+            for i in range(len(pttrn[n-1])):
+                tmp.append(pttrn[n-1][i])
+                tmp.append(0)
+            pttrn.append(np.array(tmp))
+    
+        # first insert point
+        insert = [np.argwhere(pttrn[0]==0)[0][0]][0]
+        PN = [1]
+    
+        # start iteration
+        comp = pttrn[0]
+        comp0 = comp.copy()
+        eoc = False
+        for iter in range(100):
+            for i in range(len(pttrn)):
+                tmp1 = np.insert(pttrn[i],0,np.zeros(insert)).astype(int)
+                if len(tmp1)-len(comp0) >= 0:
+                    tmp0 = np.append(comp0,np.zeros(len(tmp1)-len(comp0))).astype(int)
+                else:
+                    tmp1 = np.append(tmp1,np.zeros(len(comp0)-len(tmp1))).astype(int)
+                    tmp0 = np.append(comp0,np.zeros(len(tmp1)-len(comp0))).astype(int)
+                comp = tmp0 + tmp1
+                if np.any(comp > 1) : 
+                    pass
+                elif np.all( comp == 1):
+                    PN.append(i+1)
+                    print(int('0b'+''.join([str(i) for i in pttrn[0].tolist()]),base=2),'\t',
+                            'pattern ',pttrn[0],'sequence ',PN)
+                    eoc = True
+                    break
+                else:
+                    PN.append(i+1)
+                    insert = np.argwhere(comp == 0)[0][0]
+                    break
+            comp0 = comp.copy()
+            if eoc:
+                break
     
     def displayRhythm(self,note=None,xml=False,prime=False):
         '''
