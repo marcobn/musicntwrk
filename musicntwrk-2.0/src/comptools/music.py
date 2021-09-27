@@ -1,6 +1,6 @@
 import collections
 import copy
-from .notation import *
+from .notation import parse_note, parse_notes
 
 
 class MusiclibError(Exception):
@@ -33,7 +33,7 @@ class Rest(object):
 class Note(object):
     def __init__(self, value=0, octave=5, dur=0.25, volume=100):
         if isinstance(value, str):
-            self.value, self.octave, self.dur, self.volume = notation.parse_note(value)
+            self.value, self.octave, self.dur, self.volume = parse_note(value)
         else:
             offset, val = divmod(value, 12)
             self.value = val
@@ -127,9 +127,9 @@ class NoteSeq(collections.MutableSequence):
         if isinstance(args, str):
             if args.startswith("file://"):
                 filename = args.replace("file://", "")
-                note_lists = notation.parse_notes(self._parse_score(filename))
+                note_lists = parse_notes(self._parse_score(filename))
             else:
-                note_lists = notation.parse_notes(args.split())
+                note_lists = parse_notes(args.split())
             self.items = [self._make_note_or_rest(x) for x in note_lists]
         elif isinstance(args, collections.Iterable):
             if self._is_note_or_rest(args):
