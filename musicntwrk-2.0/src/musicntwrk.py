@@ -689,24 +689,31 @@ class PCmidiR:
             if isinstance(scale[0],list):
                 sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
             elif isinstance(scale[0],str) and key != None:
+                scale = []
                 if s == 'Chromatic':
-                    s = PCmidiR(np.array([str(p) for p in m21.scale.ChromaticScale(key[i]).pitches])).pitches
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.ChromaticScale(key[i]).pitches])).pitches[:-1]
                     sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                    scale.append(s.copy())
                 elif s == "Major":
-                    s = PCmidiR(np.array([str(p) for p in m21.scale.MajorScale(key[i]).pitches])).pitches
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.MajorScale(key[i]).pitches])).pitches[:-1]
                     sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                    scale.append(s.copy())
                 elif s == "MelodicMinor":
-                    s = PCmidiR(np.array([str(p) for p in m21.scale.MelodicMinorScale(key[i]).pitches])).pitches
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.MelodicMinorScale(key[i]).pitches])).pitches[:-1]
                     sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                    scale.append(s.copy())
                 elif s == "HarmonicMinor":
-                    s = PCmidiR(np.array([str(p) for p in m21.scale.HarmonicMinorScale(key[i]).pitches])).pitches
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.HarmonicMinorScale(key[i]).pitches])).pitches[:-1]
                     sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                    scale.append(s.copy())
                 elif s == "Minor":
-                    s = PCmidiR(np.array([str(p) for p in m21.scale.MinorScale(key[i]).pitches])).pitches
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.MinorScale(key[i]).pitches])).pitches[:-1]
                     sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                    scale.append(s.copy())
                 elif s == "Octatonic":
-                    s = PCmidiR(np.array([str(p) for p in m21.scale.OctatonicScale(key[i]).pitches])).pitches
+                    s = PCmidiR(np.array([str(p) for p in m21.scale.OctatonicScale(key[i]).pitches])).pitches[:-1]
                     sc = m21.scale.ConcreteScale(pitches=PCmidiR(s).pitches)
+                    scale.append(s.copy())
                 else:
                     print('scale '+s+' not coded, edit method to add from music21 list)')
                     return
@@ -714,6 +721,7 @@ class PCmidiR:
                 scala.append(np.array([str(p) for p in sc.getPitches('C1', 'C9')]))
             else:
                 scala.append(np.array([str(p) for p in sc.getPitches('C9', 'C1')]))
+            if verbose: print('scale = ', scale)
         
         if isinstance(scale[0],list):
             if (double_transposition == None and Tr == None and Pr == None):
@@ -961,24 +969,31 @@ class MIDIset:
             if isinstance(scale[0],list):
                 sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
             elif isinstance(scale[0],str) and key != None:
+                scale = []
                 if s == 'Chromatic':
-                    s = MIDIset(np.array([str(p) for p in m21.scale.ChromaticScale(key[i]).pitches])).pitches()
+                    s = MIDIset(np.array([str(p) for p in m21.scale.ChromaticScale(key[i]).pitches])).pitches()[:-1]
                     sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                    scale.append(s.copy())
                 elif s == "Major":
-                    s = MIDIset(np.array([str(p) for p in m21.scale.MajorScale(key[i]).pitches])).pitches()
-                    sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                    s = MIDIset(np.array([str(p) for p in m21.scale.MajorScale(key[i]).pitches])).pitches()[:-1]
+                    sc = m21.scale.ConcreteScale(pitches=s)
+                    scale.append(s.copy())
                 elif s == "MelodicMinor":
-                    s = MIDIset(np.array([str(p) for p in m21.scale.MelodicMinorScale(key[i]).pitches])).pitches()
+                    s = MIDIset(np.array([str(p) for p in m21.scale.MelodicMinorScale(key[i]).pitches])).pitches()[:-1]
                     sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                    scale.append(s.copy())
                 elif s == "HarmonicMinor":
-                    s = MIDIset(np.array([str(p) for p in m21.scale.HarmonicMinorScale(key[i]).pitches])).pitches()
+                    s = MIDIset(np.array([str(p) for p in m21.scale.HarmonicMinorScale(key[i]).pitches])).pitches()[:-1]
                     sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                    scale.append(s.copy())
                 elif s == "Minor":
-                    s = MIDIset(np.array([str(p) for p in m21.scale.MinorScale(key[i]).pitches])).pitches()
+                    s = MIDIset(np.array([str(p) for p in m21.scale.MinorScale(key[i]).pitches])).pitches()[:-1]
                     sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                    scale.append(s.copy())
                 elif s == "Octatonic":
-                    s = MIDIset(np.array([str(p) for p in m21.scale.OctatonicScale(key[i]).pitches])).pitches()
+                    s = MIDIset(np.array([str(p) for p in m21.scale.OctatonicScale(key[i]).pitches])).pitches()[:-1]
                     sc = m21.scale.ConcreteScale(pitches=MIDIset(s).pitches())
+                    scale.append(s.copy())
                 else:
                     print('scale '+s+' not coded, edit method to add from music21 list)')
                     return
@@ -986,6 +1001,7 @@ class MIDIset:
                 scala.append(np.array([str(p) for p in sc.getPitches('C1', 'C9')]))
             else:
                 scala.append(np.array([str(p) for p in sc.getPitches('C9', 'C1')]))
+            if verbose: print('scale = ', scale)
         
         if isinstance(scale[0],list):
             if (double_transposition == None and Tr == None and Pr == None):
@@ -1033,7 +1049,7 @@ class MIDIset:
                     print(scala)
                     return
             idx = np.array(idx) + Tr
-    
+            
             pitches = []
             for l in range(len(scala)):
                 pitches.append(MIDIset([scala[l][idx[l]]]).midi[0])
@@ -1049,7 +1065,8 @@ class MIDIset:
                     return
             self.midi = MIDIset(pitches).midi
             self.idx = idx
-    
+            
+            
     def displayNotes(self,show=True,xml=False,chord=False):
         '''
         •	Display pcs in score in musicxml format. If chord is True 
