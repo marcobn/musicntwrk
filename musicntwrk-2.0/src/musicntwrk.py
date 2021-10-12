@@ -1037,11 +1037,11 @@ class MIDIset:
             self.midi = MIDIset(scala[idx[Pr]]).midi
             self.idx = idx
         else:
-            if len(scala) != len(pitches()):
+            if len(scala) != len(self.pitches()):
                 print('number of scales must be equal to number of voices')
                 return
             idx = []
-            for i,p in enumerate(pitches()):
+            for i,p in enumerate(self.pitches()):
                 try:
                     idx.append(np.argwhere(scala[i]==p)[0][0])
                 except:
