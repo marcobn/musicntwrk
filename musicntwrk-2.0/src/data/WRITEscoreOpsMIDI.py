@@ -20,7 +20,8 @@ from ..utils.generalizedOpsName import generalizedOpsName
 from ..utils.opsName import opsName
 from ..musicntwrk import PCmidiR
 
-def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',keysig=None,opers=True,normal=False,abs=False,scale=False,idx=None,TET=12,distance='euclidean'):
+def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',tempo=80,keysig=None,opers=True,
+                      normal=False,abs=False,scale=False,idx=None,TET=12,distance='euclidean'):
     try:
         ntot = nseq.shape[0]
     except:
@@ -31,6 +32,7 @@ def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',
                 if nseq[n][i]%1 == 0.0: 
                     nseq[n][i] = int(nseq[n][i])
     m = m21.stream.Stream()
+    m.append(m21.tempo.MetronomeMark(tempo))
     m.append(m21.meter.TimeSignature('4/4'))
     for i in range(ntot):
         ch = np.copy(nseq[i])
@@ -74,6 +76,8 @@ def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',
     elif w == 'musicxml':
         m.show('musicxml')
     elif w == 'MIDI':
+        m.show()
+        m.show('midi')
         m.write('midi',outmidi+'.mid')
     else:
         pass
