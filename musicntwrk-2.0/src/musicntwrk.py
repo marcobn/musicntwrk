@@ -957,11 +957,16 @@ class MIDIset:
         '''
         return((np.roll(self.midi,-1)-self.midi)%self.TET)
     
+    def exchange(self,voices=[0,1],mode=[1,-1]):
+        tmp = np.sort(self.midi.tolist())
+        tmp[voices] += np.array(mode)*self.TET
+        return(tmp.tolist())
+    
     def sequence(self,double_transposition=None,Tr=None,Pr=None,scale=None,key=['C'],
                  order='up',mode=0,verbose=False):
         ''' 
-            Construct repeating contrapuntal patterns or larger-unit sequences from a
-            voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", chapter 4 (private communication)
+            Construct spiral diagrams and repeating contrapuntal patterns or larger-unit sequences from a
+            voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", (private communication)
         '''
             
         scala = []
