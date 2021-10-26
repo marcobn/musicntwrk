@@ -60,7 +60,7 @@ def WRITEscoreOpsMIDI(nseq,midi=False,w=None,outxml='./music',outmidi='./music',
                         print('need scale degree index for L operators')
                         return
                     try:
-                        diff = idx[i+1]-idx[i]
+                        diff = np.sort(idx[i+1])-np.sort(idx[i])
                         n.addLyric(str(i)+' '+'L('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
                         if i == 0: print('magnitude^2 of sequence operator = ',diff.dot(diff))
                     except:
