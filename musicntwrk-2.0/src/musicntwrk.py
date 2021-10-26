@@ -647,12 +647,16 @@ class PCmidiR:
             else:
                 N = len(self.midi)
                 R = np.eye(N)[::-1]
-                octave = np.array([divmod(c,12)[0] for c in self.midi])
+                octave = np.array([divmod(c,self.TET)[0] for c in self.midi])
                 inv = np.roll(R,sum(p)%N-N+1,axis=1).dot(np.mod(self.pcs[p[0]]+self.pcs[p[1]]-self.pcs,self.TET)).astype(int)
-                octave += np.sign(self.pcs-inv)
-                midi = inv + octave*12
-                return(PCmidiR(midi))
-    
+                tmp = inv + octave*12
+                if np.all(tmp[:-1] <= tmp[1:]):
+                    tmp = inv + octave*12
+                else:
+                    octave += np.sign(self.pcs-inv)
+                    tmp = inv + octave*12
+                return(PCmidiR(tmp))
+
     def VLOp(self,name):
         # operate on the pcs with a normal-ordered relational operator R({x})
         op = []
@@ -853,6 +857,8 @@ class MIDIset:
         else:
             self.midi = np.asarray(midi)
         
+        self.pcs = np.mod(self.midi,TET)
+
         # initialize index for sequences
         self.idx = None
         
@@ -867,9 +873,6 @@ class MIDIset:
                 pitches.append(str(m21.pitch.Pitch(self.midi[m])))
             return(pitches)
     
-    def pcs(self):
-        return(self.midi%12)
-    
     def T(self,t=0):
         '''
         •	Transposition by t (int or list of int) units
@@ -878,7 +881,7 @@ class MIDIset:
     
     def I(self,p=60):
         '''
-        •	I operation, including contestual inversion
+        •	I operation, including voice-leading preserving contextual inversion
         '''
         if not isinstance(p,list):
             self.midi = p-self.midi+p
@@ -888,8 +891,17 @@ class MIDIset:
                 print('only two pitches can be fixed')
                 return(self)
             else:
-                self.midi = self.midi[p[0]]+self.midi[p[1]]-self.midi
-    
+                N = len(self.midi)
+                R = np.eye(N)[::-1]
+                octave = np.array([divmod(c,self.TET)[0] for c in self.midi])
+                inv = np.roll(R,sum(p)%N-N+1,axis=1).dot(np.mod(self.pcs[p[0]]+self.pcs[p[1]]-self.pcs,self.TET)).astype(int)
+                tmp = inv + octave*12
+                if np.all(tmp[:-1] <= tmp[1:]):
+                    self.midi = inv + octave*12
+                else:
+                    octave += np.sign(self.pcs-inv)
+                    self.midi = inv + octave*12
+                
     def VLOp(self,name):
         # operate on the pcs with a normal-ordered relational operator R({x})
         op = []
@@ -963,7 +975,7 @@ class MIDIset:
         return(tmp.tolist())
     
     def sequence(self,double_transposition=None,Tr=None,Pr=None,scale=None,key=['C'],
-                 order='up',mode=0,verbose=False):
+                 order='up',mode=0,sort=False,verbose=False):
         ''' 
             Construct spiral diagrams and repeating contrapuntal patterns or larger-unit sequences from a
             voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", (private communication)
@@ -1039,7 +1051,10 @@ class MIDIset:
                     print(scala)
                     return
             idx = np.array(idx) + Tr
-            self.midi = MIDIset(scala[idx[Pr]]).midi
+            if sort:
+                self.midi = np.sort(MIDIset(scala[idx[Pr]]).midi)
+            else:
+                self.midi = MIDIset(scala[idx[Pr]]).midi
             self.idx = idx
         else:
             if len(scala) != len(self.pitches()):
@@ -1068,7 +1083,11 @@ class MIDIset:
                 else:
                     print('mode not known')
                     return
-            self.midi = MIDIset(pitches).midi
+            if sort: 
+                self.midi = np.sort(MIDIset(pitches).midi)
+                print(self.midi)
+            else:
+                self.midi = MIDIset(pitches).midi
             self.idx = idx
             
             
