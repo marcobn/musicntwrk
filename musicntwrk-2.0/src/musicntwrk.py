@@ -1025,7 +1025,7 @@ class MIDIset:
             if (double_transposition == None and Tr == None and Pr == None):
                 print('operation not defined')
             if isinstance(double_transposition,int):
-                m = int(len(scale[0])/length)
+                m = int(np.ceil(len(scale[0])/length))
                 smallt = int(np.abs(double_transposition)/m)%m
                 double_transposition = (double_transposition,-np.sign(double_transposition)*smallt)
             Tr = np.array([double_transposition[0]]*length)
