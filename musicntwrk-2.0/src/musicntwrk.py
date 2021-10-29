@@ -1027,9 +1027,9 @@ class MIDIset:
             if isinstance(double_transposition,int):
                 # given the number of slides (transposition along the scale) on the spiral diagram 
                 # calulates the corresponding radial motion (transposition along the chordd)
-                double_transposition = int(np.sign(double_transposition)*(np.abs(double_transposition)%len(scale[0]))) # takes care of the identity cycle
-                m = int(np.ceil(len(scale[0])/length))
-                smallt = int(np.ceil(np.abs(double_transposition)/m)%m)
+                double_transposition = int(np.sign(double_transposition)*
+                                           np.mod(np.abs(double_transposition),len(scale[0])))
+                smallt = int(np.mod(1/len(scale[0])*np.abs(double_transposition)*length,length))
                 double_transposition = (double_transposition,-np.sign(double_transposition)*smallt)
             Tr = np.array([double_transposition[0]]*length)
             if double_transposition[1] == 0:
