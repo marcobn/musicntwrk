@@ -975,7 +975,7 @@ class MIDIset:
         return(tmp.tolist())
     
     def sequence(self,double_transposition=None,Tr=None,Pr=None,scale=None,key=['C'],
-                 order='up',mode=0,sort=False,verbose=False):
+                 order='up',mode=0,sort=True,verbose=False):
         ''' 
             Construct spiral diagrams and repeating contrapuntal patterns or larger-unit sequences from a
             voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", (private communication)
@@ -1021,21 +1021,24 @@ class MIDIset:
             if verbose: print('scale = ', scale)
         
         if isinstance(scale[0],list):
+            length = len(self.midi)
             if (double_transposition == None and Tr == None and Pr == None):
                 print('operation not defined')
-            elif isinstance(double_transposition,tuple):
-                length = len(self.midi)
-                Tr = np.array([double_transposition[0]]*length)
-                if double_transposition[1] == 0:
-                    pass
-                elif double_transposition[1] < 0:
-                    Tr[double_transposition[1]:] -= len(scale[0])
-                else:
-                    Tr[:double_transposition[1]] += len(scale[0])
-                Tr = Tr.tolist()
-                Pr = np.roll(np.linspace(0,length-1,length),-(length+double_transposition[1]))\
-                    .astype(int).tolist()
-                if verbose: print('Tr = ',Tr,'  Pr = ',Pr,' length of scale = ',len(scale[0]))
+            if isinstance(double_transposition,int):
+                m = int(len(scale[0])/length)
+                smallt = int(np.abs(double_transposition)/m)%m
+                double_transposition = (double_transposition,-np.sign(double_transposition)*smallt)
+            Tr = np.array([double_transposition[0]]*length)
+            if double_transposition[1] == 0:
+                pass
+            elif double_transposition[1] < 0:
+                Tr[double_transposition[1]:] -= len(scale[0])
+            else:
+                Tr[:double_transposition[1]] += len(scale[0])
+            Tr = Tr.tolist()
+            Pr = np.roll(np.linspace(0,length-1,length),-(length+double_transposition[1]))\
+                .astype(int).tolist()
+            if verbose: print('Tr = ',Tr,'  Pr = ',Pr,' length of scale = ',len(scale[0]))
             else:
                 pass
 
@@ -1070,9 +1073,9 @@ class MIDIset:
                     return
             idx = np.array(idx) + Tr
             
-            pitches = []
-            for l in range(len(scala)):
-                pitches.append(MIDIset([scala[l][idx[l]]]).midi[0])
+            # pitches = []
+            # for l in range(len(scala)):
+            #     pitches.append(MIDIset([scala[l][idx[l]]]).midi[0])
 
             pitches = []
             for l in range(len(scala)):
