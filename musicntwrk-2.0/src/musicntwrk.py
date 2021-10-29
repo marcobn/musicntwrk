@@ -1073,10 +1073,6 @@ class MIDIset:
                     print(scala)
                     return
             idx = np.array(idx) + Tr
-            
-            # pitches = []
-            # for l in range(len(scala)):
-            #     pitches.append(MIDIset([scala[l][idx[l]]]).midi[0])
 
             pitches = []
             for l in range(len(scala)):
