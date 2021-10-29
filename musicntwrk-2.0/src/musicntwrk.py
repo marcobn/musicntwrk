@@ -1038,9 +1038,7 @@ class MIDIset:
             Tr = Tr.tolist()
             Pr = np.roll(np.linspace(0,length-1,length),-(length+double_transposition[1]))\
                 .astype(int).tolist()
-            if verbose: print('Txty = 'double_transposition,'Tr = ',Tr,'  Pr = ',Pr,' length of scale = ',len(scale[0]))
-            else:
-                pass
+            if verbose: print('Txty = ',double_transposition,'Tr = ',Tr,'  Pr = ',Pr,' length of scale = ',len(scale[0]))
 
         if len(scala) == 1:
             scala = scala[0]
