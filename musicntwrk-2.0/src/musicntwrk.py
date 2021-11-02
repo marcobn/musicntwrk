@@ -975,12 +975,31 @@ class MIDIset:
         return(tmp.tolist())
     
     def sequence(self,double_transposition=None,Tr=None,Pr=None,scale=None,key=['C'],
-                 order='up',mode=0,sort=True,verbose=False):
+                 direction='shortest',order='up',mode=0,sort=True,verbose=False):
         ''' 
             Construct spiral diagrams and repeating contrapuntal patterns or larger-unit sequences from a
             voice leading. From Dmitry Tymoczko, "Tonality, an owners manual", (private communication)
         '''
-            
+        # bring all pitches whithin the central octave and save the indeces for later
+        if np.max(self.midi) - np.min(self.midi) < 12:
+            pc = self.midi
+            offset = 0
+            oshift = 0
+        else:
+            if Tr == None and Pr == None:
+                offset = np.min(self.midi).copy() - 60
+                pcs = self.midi-offset # center to middle octave
+                octave = np.array([divmod(c,12)[0] for c in pcs])
+                pc = np.array([divmod(c,12)[1] for c in pcs])
+                odx = np.argsort(pc)
+                oshift = octave[odx]-np.min(octave)
+                pc = pc[odx]+self.TET*np.min(octave) + offset
+                # print(pc,oshift)
+            else:
+                pc = self.midi
+                offset = 0
+                oshift = 0
+        # define scale
         scala = []
         for i,s in enumerate(scale):
             if isinstance(scale[0],list):
@@ -1024,30 +1043,36 @@ class MIDIset:
             length = len(self.midi)
             if (double_transposition == None and Tr == None and Pr == None):
                 print('operation not defined')
-            if isinstance(double_transposition,int):
-                # given the number of slides (transposition along the scale) on the spiral diagram 
-                # calculates the corresponding radial motion (transposition along the chordd)
-                double_transposition = int(np.sign(double_transposition)*
-                                           np.mod(np.abs(double_transposition),len(scale[0])))
-                smallt = int(np.mod(1/len(scale[0])*np.abs(double_transposition)*length,length))
-                double_transposition = (double_transposition,-np.sign(double_transposition)*smallt)
-            Tr = np.array([double_transposition[0]]*length)
-            if double_transposition[1] == 0:
-                pass
-            elif double_transposition[1] < 0:
-                Tr[double_transposition[1]:] -= len(scale[0])
+            if Tr != None and Pr != None:
+                if verbose: print('Txty = ',double_transposition,'Tr = ',Tr,'  Pr = ',Pr,' length of scale = ',len(scale[0]))
             else:
-                Tr[:double_transposition[1]] += len(scale[0])
-            Tr = Tr.tolist()
-            Pr = np.roll(np.linspace(0,length-1,length),-(length+double_transposition[1]))\
-                .astype(int).tolist()
-            if verbose: print('Txty = ',double_transposition,'Tr = ',Tr,'  Pr = ',Pr,' length of scale = ',len(scale[0]))
+                if isinstance(double_transposition,int):
+                    # given the number of slides (transposition along the scale) on the spiral diagram 
+                    # calculates the corresponding radial motion (transposition along the chordd)
+                    double_transposition = int(np.sign(double_transposition)*
+                                            np.mod(np.abs(double_transposition),len(scale[0])))
+                    if direction == 'shortest':
+                        smallt = int(np.mod(1/len(scale[0])*np.abs(double_transposition)*length,length))
+                    elif direction == 'up' or direction == 'down':
+                        smallt = int(np.mod(1/len(scale[0])*np.abs(double_transposition)*length,length)) - 1
+                    double_transposition = (double_transposition,-np.sign(double_transposition)*smallt)
+                Tr = np.array([double_transposition[0]]*length)
+                if double_transposition[1] == 0:
+                    pass
+                elif double_transposition[1] < 0:
+                    Tr[double_transposition[1]:] -= len(scale[0])
+                else:
+                    Tr[:double_transposition[1]] += len(scale[0])
+                Tr = Tr.tolist()
+                Pr = np.roll(np.linspace(0,length-1,length),-(length+double_transposition[1]))\
+                    .astype(int).tolist()
+                if verbose: print('Txty = ',double_transposition,'Tr = ',Tr,'  Pr = ',Pr,' length of scale = ',len(scale[0]))
 
         if len(scala) == 1:
             scala = scala[0]
     
             idx = []
-            for p in self.pitches():
+            for p in MIDIset(pc).pitches():
                 try:
                     idx.append(np.argwhere(scala==p)[0][0])
                 except:
@@ -1056,16 +1081,16 @@ class MIDIset:
                     return
             idx = np.array(idx) + Tr
             if sort:
-                self.midi = np.sort(MIDIset(scala[idx[Pr]]).midi)
+                self.midi = np.sort(MIDIset(scala[idx[Pr]]).midi) + self.TET*oshift
             else:
-                self.midi = MIDIset(scala[idx[Pr]]).midi
+                self.midi = MIDIset(scala[idx[Pr]]).midi + self.TET*oshift
             self.idx = idx
         else:
             if len(scala) != len(self.pitches()):
                 print('number of scales must be equal to number of voices')
                 return
             idx = []
-            for i,p in enumerate(self.pitches()):
+            for i,p in enumerate(MIDIset(pc).pitches()):
                 try:
                     idx.append(np.argwhere(scala[i]==p)[0][0])
                 except:
@@ -1077,9 +1102,9 @@ class MIDIset:
             pitches = []
             for l in range(len(scala)):
                 if mode == 0:
-                    pitches.append(MIDIset([scala[l][idx[Pr][l]]]).midi[0])
+                    pitches.append(MIDIset([scala[l][idx[Pr][l]]]).midi[0] + self.TET*oshift)
                 elif mode == 1:
-                    pitches.append(MIDIset([scala[Pr[l]][idx[Pr][l]]]).midi[0])
+                    pitches.append(MIDIset([scala[Pr[l]][idx[Pr][l]]]).midi[0] + self.TET*oshift)
                 else:
                     print('mode not known')
                     return
