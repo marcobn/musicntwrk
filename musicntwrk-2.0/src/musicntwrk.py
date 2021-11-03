@@ -1081,7 +1081,7 @@ class MIDIset:
                     return
             idx = np.array(idx) + Tr
             if sort:
-                self.midi = np.sort(MIDIset(scala[idx[Pr]]).midi) + self.TET*oshift
+                self.midi = np.sort(MIDIset(scala[idx[Pr]]).midi + self.TET*oshift)
             else:
                 self.midi = MIDIset(scala[idx[Pr]]).midi + self.TET*oshift
             self.idx = idx
