@@ -52,10 +52,17 @@ def pcsDictionary(Nc,row,a,order,prob,TET):
     # generate all possible combinations of n integers or of the row in argument
     if row:
         a = np.asarray(list(iter.combinations(a,Nc)))
+        if order == 3:
+            tmp = a.tolist()
+            for n in a:
+                p = list(iter.permutations(n))
+                for c in p:
+                    tmp.append(c)
+            a = np.asarray(tmp)
     else:
         a = np.asarray(list(iter.combinations(range(TET),Nc)))
 
-    # put all pcs in prime/normal order form
+    # put all pcs in prime/normal order form if needed
     s = np.zeros((a.shape[0],Nc),dtype=int)
     ini,end = load_balancing(size, rank, a.shape[0])
     nsize = end-ini
@@ -71,6 +78,9 @@ def pcsDictionary(Nc,row,a,order,prob,TET):
             saux[i,:] = p.normalOrder()[:]
         elif order == 2:
             saux[i,:] = p.normal0Order()[:]
+        elif order == 3:
+            p = PCSet(aux[i,:],TET=TET,ORD=False,UNI=False)
+            saux[i,:] = p.pcs
         else:
             if rank == 0: print('no ordering specified')
     if para:

@@ -64,7 +64,7 @@ def vLeadNetworkByNameVec(dictionary,name,distance,prob,write,pcslabel,TET):
     for i in range(N):
         dis += np.diag(disx[i,:(N-i)],k=i)
         pair += np.diag(pairx[i,:(N-i)],k=i)
-        
+    print(len(name))    
     ix,iy = np.nonzero(dis)
     for n in range(ix.shape[0]):
         if pair[ix[n],iy[n]]:

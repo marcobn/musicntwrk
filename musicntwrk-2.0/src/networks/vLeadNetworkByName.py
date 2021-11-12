@@ -54,6 +54,9 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
     if write: dnodes.to_csv('nodes.csv',index=False)
     
     # find edges according to a metric - allows for non-bijective voice leading
+
+    if not isinstance(name,list):
+        name = [name]
     N = df[:,1].shape[0]
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
     np.random.seed(int(time.process_time()*10000))
@@ -63,7 +66,8 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
             vector_j  = np.asarray(list(map(int,re.findall('\d+',df[j,1]))))
             if vector_i.shape[0] == vector_j.shape[0]:
                 dis,_ = minimalDistance(vector_i,vector_j,TET,distance)
-                pair = opsCheckByName(vector_i,vector_j,name,TET)
+                pair = np.array([opsCheckByName(vector_i,vector_j,nam,TET) for nam in name])
+                # pair = opsCheckByName(vector_i,vector_j,name,TET)
             else:
                 if vector_i.shape[0] > vector_j.shape[0]:
                     a = vector_i 
@@ -81,9 +85,9 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
                 for l in range(r.shape[0]):
                     dist[l],_=minimalDistance(a,r[l])
                 imin = np.argmin(dist)
-                pair = opsCheckByName(a,r[imin],name,TET)
+                pair = np.array([opsCheckByName(a,r[imin],nam,TET) for nam in name])
                 dis = min(dist)
-            if pair:
+            if pair.any() == True:
                 if prob == 1:
                     tmp = pd.DataFrame([[str(i),str(j),str(1/dis)]],columns=['Source','Target','Weight'])
                     dedges = dedges.append(tmp)

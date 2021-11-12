@@ -14,11 +14,14 @@
 #
 
 import numpy as np
+from ..musicntwrk import PCSetR
 
-def opsName(a,b,TET):
+def opsName(b,a,TET=12):
     # given two vectors returns the name of the minimal distance operator that connects them
-    a = np.sort(a)
-    b = np.sort(b)   
+    # a = np.sort(a)
+    # b = np.sort(b)
+    a = PCSetR(a).normalOrder().pcs
+    b = PCSetR(b).normalOrder().pcs
     d = np.zeros((b.shape[0]),dtype=int) 
     for n in range(b.shape[0]):
         c = np.roll(b,n)
@@ -32,7 +35,7 @@ def opsName(a,b,TET):
         d[n] = diff.dot(diff)
     nmin = np.argmin(d)
     b = np.roll(b,nmin)
-    diff = a-b
+    diff = b-a
     for i in range(diff.shape[0]):
         if diff[i] >= int(TET/2):
             diff[i] -= TET
