@@ -1048,7 +1048,7 @@ class MIDIset:
             else:
                 if isinstance(double_transposition,int):
                     # given the number of slides (transposition along the scale) on the spiral diagram 
-                    # calculates the corresponding radial motion (transposition along the chordd)
+                    # calculates the corresponding radial motion (transposition along the chord)
                     double_transposition = int(np.sign(double_transposition)*
                                             np.mod(np.abs(double_transposition),len(scale[0])))
                     if direction == 'shortest':
