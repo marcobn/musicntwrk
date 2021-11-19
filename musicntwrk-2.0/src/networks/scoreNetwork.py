@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from ..musicntwrk import PCSet
 from ..utils.minimalDistance import minimalDistance
 from ..utils.minimalNoBijDistance import minimalNoBijDistance
-from ..utils.generalizedOpsName import generalizedOpsName
+from ..utils.generalizedOpsName import generalizedOpsName, generalizedOpsNameAbs
 
 def scoreNetwork(seq,ntx,general,distance,TET):
     
@@ -79,7 +79,7 @@ def scoreNetwork(seq,ntx,general,distance,TET):
                 pair,r = minimalNoBijDistance(a,b,TET,distance)
         if pair != 0:
             if general == False:
-                tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),opsName(a,r,TET)]],
+                tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),generalizedOpsNameAbs(a,r,TET,distance)[1]]],
                                     columns=['Source','Target','Weight','Label'])
             else:
                 tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),generalizedOpsName(a,r,TET,distance)[1]]],

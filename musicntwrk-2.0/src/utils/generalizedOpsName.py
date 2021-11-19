@@ -13,7 +13,8 @@
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
 
-from .opsNameFull import opsNameFull
+from .opsNameFull import opsNameFull, opsNameAbs
+from .opsName import opsName
 from .minimalNoBijDistance import minimalNoBijDistance
 
 def generalizedOpsName(a,b,TET,distance):
@@ -27,3 +28,15 @@ def generalizedOpsName(a,b,TET,distance):
         else:
             pair,r = minimalNoBijDistance(b,a,TET,distance)
             return(r,opsNameFull(r,b,TET))
+
+def generalizedOpsNameAbs(a,b,TET,distance):
+# generalizes the operator name function for no-bijective chord progression
+    if len(a) == len(b):
+        return(a,opsNameAbs(a,b,TET))
+    else:
+        if len(a) > len(b):
+            pair,r = minimalNoBijDistance(a,b,TET,distance)
+            return(r,opsNameAbs(a,r,TET))
+        else:
+            pair,r = minimalNoBijDistance(b,a,TET,distance)
+            return(r,opsNameAbs(r,b,TET))

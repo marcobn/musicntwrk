@@ -40,4 +40,31 @@ def opsNameFull(a,b,TET):
         if diff[i] < -int(TET/2):
             diff[i] += TET
 
+    return('R('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
+
+def opsNameAbs(a,b,TET):
+    # given two vectors returns the name of the normal ordered distance operator (R) that connects them
+    a = PCSet(a,UNI=False).normalOrder()
+    b = PCSet(b,UNI=False).normalOrder()   
+    d = np.zeros((b.shape[0]),dtype=int) 
+    for n in range(b.shape[0]):
+        c = np.roll(b,n)
+        diff = a-c
+        for i in range(diff.shape[0]):
+            if diff[i] >= int(TET/2):
+                diff[i] -= TET
+            if diff[i] < -int(TET/2):
+                diff[i] += TET
+        diff = np.abs(diff)
+        d[n] = diff.dot(diff)
+    nmin = np.argmin(d)
+    b = np.roll(b,nmin)
+    diff = b-a
+    for i in range(diff.shape[0]):
+        if diff[i] >= int(TET/2):
+            diff[i] -= TET
+        if diff[i] < -int(TET/2):
+            diff[i] += TET
+    diff = np.trim_zeros(np.sort(np.abs(diff)))
+
     return('O('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')

@@ -14,10 +14,19 @@
 #
 
 from .opsName import opsName
+from .opsNameFull import opsNameAbs
 
 def opsCheckByName(a,b,name,TET):
     # given two vectors returns check if the connecting operator is the one sought for
     opname = opsName(a,b,TET)
+    if opname != name:
+        return(False)
+    else:
+        return(True)
+
+def opsCheckByNameAbs(a,b,name,TET):
+    # given two vectors returns check if the connecting operator is the one sought for
+    opname = opsNameAbs(a,b,TET)
     if opname != name:
         return(False)
     else:

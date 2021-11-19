@@ -21,7 +21,8 @@ import music21 as m21
 
 from ..musicntwrk import PCSet
 from ..utils.minimalDistance import minimalDistance
-from ..utils.opsCheckByName import opsCheckByName
+from ..utils.minimalNoBijDistance import minimalNoBijDistance
+from ..utils.opsCheckByName import opsCheckByName, opsCheckByNameAbs
 
 def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
     
@@ -83,9 +84,9 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
                     r[l,b.shape[0]:] = c[l]
                 dist = np.zeros(r.shape[0])
                 for l in range(r.shape[0]):
-                    dist[l],_=minimalDistance(a,r[l])
+                    dist[l],_= minimalNoBijDistance(a,r[l],TET,distance)
                 imin = np.argmin(dist)
-                pair = np.array([opsCheckByName(a,r[imin],nam,TET) for nam in name])
+                pair = np.array([opsCheckByNameAbs(a,r[imin],nam,TET) for nam in name])
                 dis = min(dist)
             if pair.any() == True:
                 if prob == 1:
