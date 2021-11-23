@@ -16,7 +16,7 @@
 import numpy as np
 from graphviz import Digraph
 
-def drawNetworkViz(nodes,edges,view=True,seed=None,engine='circo',format='svg',size='20,20',ratio='0.9',colorlist=None):
+def drawNetworkViz(nodes,edges,view=True,seed=None,engine='circo',format='svg',strict=True,size='20,20',ratio='0.9',colorlist=None):
 
     if colorlist == None:
         colorlist=['black','red','blue','green','cyan','magenta']
@@ -26,10 +26,10 @@ def drawNetworkViz(nodes,edges,view=True,seed=None,engine='circo',format='svg',s
 
     # Generate graph using GraphViz
 
-    G = Digraph(engine=engine,format=format,strict=True)
+    G = Digraph(engine=engine,format=format,strict=strict)
 
     G.attr(rankdir='LR',model='subset',ratio=ratio,size=size,pad='0.2',splines='ortho',
-           overlap='false',mode='KK')
+           overlap='false',concentrate='false',mode='KK')
     G.attr('graph',label='',fontname='Helvetica Neue',fontsize='32',labelloc='t',nodesep='0.01')
     G.attr('node', shape='rectangle',fontname='Helvetica Neue',fontsize='16')
     G.attr('edge',arrowType='normal')
