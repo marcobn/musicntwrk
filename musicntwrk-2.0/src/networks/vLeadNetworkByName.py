@@ -67,7 +67,7 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
             vector_j  = np.asarray(list(map(int,re.findall('\d+',df[j,1]))))
             if vector_i.shape[0] == vector_j.shape[0]:
                 dis,_ = minimalDistance(vector_i,vector_j,TET,distance)
-                pair = np.array([opsCheckByName(vector_i,vector_j,nam,TET) for nam in name])
+                pair = np.array([opsCheckByNameAbs(vector_i,vector_j,nam,TET) for nam in name])
                 # pair = opsCheckByName(vector_i,vector_j,name,TET)
             else:
                 if vector_i.shape[0] > vector_j.shape[0]:
@@ -76,18 +76,21 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
                 else:
                     b = vector_i 
                     a = vector_j
-                ndif = np.sort(np.array([a.shape[0],b.shape[0]]))[1] - np.sort(np.array([a.shape[0],b.shape[0]]))[0]
-                c = np.asarray(list(iter.combinations_with_replacement(b,ndif)))
-                r = np.zeros((c.shape[0],a.shape[0]))
-                for l in range(c.shape[0]):
-                    r[l,:b.shape[0]] = b
-                    r[l,b.shape[0]:] = c[l]
-                dist = np.zeros(r.shape[0])
-                for l in range(r.shape[0]):
-                    dist[l],_= minimalNoBijDistance(a,r[l],TET,distance)
-                imin = np.argmin(dist)
-                pair = np.array([opsCheckByNameAbs(a,r[imin],nam,TET) for nam in name])
-                dis = min(dist)
+                # ndif = np.sort(np.array([a.shape[0],b.shape[0]]))[1] - np.sort(np.array([a.shape[0],b.shape[0]]))[0]
+                # c = np.asarray(list(iter.combinations_with_replacement(b,ndif)))
+                # r = np.zeros((c.shape[0],a.shape[0]))
+                # for l in range(c.shape[0]):
+                #     r[l,:b.shape[0]] = b
+                #     r[l,b.shape[0]:] = c[l]
+                # dist = np.zeros(r.shape[0])
+                # for l in range(r.shape[0]):
+                #     dist[l],_= minimalDistance(a,r[l],TET,distance)
+                # imin = np.argmin(dist)
+                dis,r = minimalNoBijDistance(a,b,TET,distance)
+                print(a,b,r)
+                pair = np.array([opsCheckByNameAbs(a,r,nam,TET) for nam in name])
+                # pair = np.array([opsCheckByNameAbs(a,r[imin],nam,TET) for nam in name])
+                # dis = min(dist)
             if pair.any() == True:
                 if prob == 1:
                     tmp = pd.DataFrame([[str(i),str(j),str(1/dis)]],columns=['Source','Target','Weight'])
