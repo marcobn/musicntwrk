@@ -87,7 +87,6 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
                 #     dist[l],_= minimalDistance(a,r[l],TET,distance)
                 # imin = np.argmin(dist)
                 dis,r = minimalNoBijDistance(a,b,TET,distance)
-                print(a,b,r)
                 pair = np.array([opsCheckByNameAbs(a,r,nam,TET) for nam in name])
                 # pair = np.array([opsCheckByNameAbs(a,r[imin],nam,TET) for nam in name])
                 # dis = min(dist)
