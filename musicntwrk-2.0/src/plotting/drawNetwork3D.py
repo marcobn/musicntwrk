@@ -17,9 +17,7 @@ import networkx as nx
 import community as cm
 import plotly.graph_objects as go
 
-import networkx as nx
-import community as cm
-import plotly.graph_objects as go
+import numpy as np
 
 def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',width=800,height=800):
     # draw network in 3D using plotly
@@ -62,10 +60,13 @@ def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',wid
     def getlabel(source,target):
         tmp0 = edges[edges['Source']==source]
         tmp1 = tmp0[tmp0['Target']==target]
-        if np.array(tmp1['Label']).size == 0:
-            tmp0 = edges[edges['Source']==target]
-            tmp1 = tmp0[tmp0['Target']==source]
-        return(np.array(tmp1['Label'])[0])
+        try:
+            if np.array(tmp1['Label']).size == 0:
+                tmp0 = edges[edges['Source']==target]
+                tmp1 = tmp0[tmp0['Target']==source]
+            return(np.array(tmp1['Label'])[0])
+        except:
+            return(None)
     
     edge_label = []
     for edge in edge_list:
