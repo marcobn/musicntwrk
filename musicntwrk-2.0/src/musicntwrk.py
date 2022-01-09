@@ -1627,13 +1627,10 @@ class musicntwrk:
         sonification strategies - simple sound (spectral) or score (melodic progression)
         '''
         from .data.r_1Ddata import r_1Ddata
-        from .data.i_spectral_pyo import i_spectral_pyo
-        from .data.i_spectral import i_spectral
-        from .data.i_spectral2 import i_spectral2
-        from .data.i_spectral_pure import i_spectral_pure
-        
+
         if descriptor == 'spectrum':
             if engine == engine == 'pyo':
+                from .data.i_spectral_pyo import i_spectral_pyo
                 x, y = r_1Ddata(data)
                 s,a = i_spectral_pyo(x,y[0])
                 s.start()
@@ -1641,14 +1638,17 @@ class musicntwrk:
                 s.stop()
                 s.shutdown()
             elif engine == 'csound':
+                from .data.i_spectral import i_spectral
                 # Full csound
                 x, y = r_1Ddata(data)
                 i_spectral(x,y[0],itime=length)
             elif engine == 'csound+scipy':
+                from .data.i_spectral2 import i_spectral2
                 # csound + scipy for FIR
                 x, y = r_1Ddata(data)
                 i_spectral2(x,y[0],itime=length)
             elif engine == 'scipy':
+                from .data.i_spectral_pure import i_spectral_pure
                 # Full scipy
                 x, y = r_1Ddata(data)
                 s = i_spectral_pure(sigpath,sigfil,firpath,firsig)
