@@ -20,14 +20,6 @@ import pandas as pd
 
 from ..musicntwrk import RHYTHMSeq
 
-from ..utils.communications import *
-from ..utils.load_balancing import *
-
-# initialize parallel execution
-comm=MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
-
 def rhythmDictionary(Nc,a,REF):
 
     '''
@@ -76,18 +68,17 @@ def rhythmDictionary(Nc,a,REF):
     # find those that are Z-related (have same duration vector)
     
     ZrelT = None
-    if rank == 0:
-        # find pc sets in Z relation
-        u, indeces = np.unique(vector, return_inverse=True,axis=0)
-        ZrelT = []
-        for n in range(u.shape[0]):
-            if np.array(np.where(indeces == n)).shape[1] != 1:
-                indx = np.array(np.where(indeces == n))[0]
-                Zrel = []
-                for m in range(indx.shape[0]):
-                    name[indx[m]] = name[indx[m]]+'Z'
-                    Zrel.append(name[indx[m]])
-                ZrelT.append(Zrel)
+    # find pc sets in Z relation
+    u, indeces = np.unique(vector, return_inverse=True,axis=0)
+    ZrelT = []
+    for n in range(u.shape[0]):
+        if np.array(np.where(indeces == n)).shape[1] != 1:
+            indx = np.array(np.where(indeces == n))[0]
+            Zrel = []
+            for m in range(indx.shape[0]):
+                name[indx[m]] = name[indx[m]]+'Z'
+                Zrel.append(name[indx[m]])
+            ZrelT.append(Zrel)
                     
     # Create dictionary of rhythmic cells
     reference = []

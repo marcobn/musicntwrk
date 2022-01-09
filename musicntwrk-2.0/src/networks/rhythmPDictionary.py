@@ -20,17 +20,10 @@ import pandas as pd
 
 from ..musicntwrk import RHYTHMSeq
 
-from ..utils.communications import *
-from ..utils.load_balancing import *
 from ..utils.Sublists import *
 from ..utils.Remove import *
 from ..utils.str2frac import *
 from ..utils.str2float import *
-
-# initialize parallel execution
-comm=MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
 
 def rhythmPDictionary(N,Nc,REF):
 
