@@ -1,0 +1,154 @@
+strict digraph {
+	concentrate=false mode=KK model=subset overlap=false pad=0.2 rankdir=LR ratio=0.9 size="20,20" splines=ortho
+	graph [fontname="Helvetica Neue" fontsize=32 label="" labelloc=t nodesep=0.01]
+	node [fontname="Helvetica Neue" fontsize=16 shape=rectangle]
+	edge [arrowType=normal]
+	23
+	10
+	23 -> 10 [color=black]
+	18
+	10 -> 18 [color=black]
+	18 -> 23 [color=black]
+	19
+	23 -> 19 [color=black]
+	19 -> 10 [color=black]
+	10 -> 23 [color=black]
+	17
+	23 -> 17 [color=black]
+	5
+	17 -> 5 [color=black]
+	5 -> 10 [color=black]
+	1
+	10 -> 1 [color=black]
+	14
+	1 -> 14 [color=black]
+	14 -> 10 [color=black]
+	16
+	10 -> 16 [color=black]
+	16 -> 18 [color=black]
+	18 -> 23 [color=black]
+	6
+	23 -> 6 [color=black]
+	11
+	6 -> 11 [color=black]
+	15
+	11 -> 15 [color=black]
+	15 -> 10 [color=black]
+	10 -> 18 [color=black]
+	18 -> 23 [color=black]
+	23 -> 19 [color=black]
+	19 -> 10 [color=black]
+	10 -> 23 [color=black]
+	23 -> 10 [color=black]
+	10 -> 23 [color=black]
+	23 -> 18 [color=black]
+	18 -> 23 [color=black]
+	21
+	23 -> 21 [color=black]
+	21 -> 19 [color=black]
+	9
+	19 -> 9 [color=black]
+	9 -> 10 [color=black]
+	3
+	10 -> 3 [color=black]
+	2
+	3 -> 2 [color=black]
+	8
+	2 -> 8 [color=black]
+	0
+	8 -> 0 [color=black]
+	0 -> 10 [color=black]
+	10 -> 23 [color=black]
+	4
+	23 -> 4 [color=black]
+	7
+	4 -> 7 [color=black]
+	12
+	7 -> 12 [color=black]
+	12 -> 23 [color=black]
+	20
+	23 -> 20 [color=black]
+	20 -> 6 [color=black]
+	6 -> 11 [color=black]
+	13
+	11 -> 13 [color=black]
+	13 -> 15 [color=black]
+	15 -> 23 [color=black]
+	22
+	23 -> 22 [color=black]
+	22 -> 10 [color=black]
+	10 -> 23 [color=black]
+	0 -> 5 [arrowhead=none color=red]
+	0 -> 6 [arrowhead=none color=red]
+	1 -> 7 [arrowhead=none color=red]
+	1 -> 12 [arrowhead=none color=red]
+	1 -> 14 [arrowhead=none color=red]
+	2 -> 9 [arrowhead=none color=red]
+	2 -> 15 [arrowhead=none color=red]
+	2 -> 17 [arrowhead=none color=red]
+	2 -> 23 [arrowhead=none color=red]
+	3 -> 10 [arrowhead=none color=red]
+	4 -> 23 [arrowhead=none color=red]
+	5 -> 6 [arrowhead=none color=red]
+	5 -> 15 [arrowhead=none color=red]
+	7 -> 8 [arrowhead=none color=red]
+	7 -> 14 [arrowhead=none color=red]
+	8 -> 9 [arrowhead=none color=red]
+	9 -> 14 [arrowhead=none color=red]
+	9 -> 19 [arrowhead=none color=red]
+	10 -> 16 [arrowhead=none color=red]
+	12 -> 16 [arrowhead=none color=red]
+	13 -> 17 [arrowhead=none color=red]
+	15 -> 23 [arrowhead=none color=red]
+	18 -> 19 [arrowhead=none color=red]
+	18 -> 23 [arrowhead=none color=red]
+	19 -> 23 [arrowhead=none color=red]
+	23 [label=GBD
+]
+	10 [label="DF#A
+"]
+	18 [label=GABD
+]
+	19 [label=GAD
+]
+	17 [label="F#GBD
+"]
+	5 [label="C#EG
+"]
+	1 [label=ACE
+]
+	14 [label=EGAC
+]
+	16 [label="F#ACD
+"]
+	6 [label="C#EGA
+"]
+	11 [label="E-F#AB
+"]
+	15 [label=EGB
+]
+	21 [label="GBC#D
+"]
+	9 [label=DEGA
+]
+	3 [label="BDF#
+"]
+	2 [label=BDEG
+]
+	8 [label=DEG
+]
+	0 [label="AC#E
+"]
+	4 [label=BDFG
+]
+	7 [label=CEG
+]
+	12 [label="EF#AC
+"]
+	20 [label=GB
+]
+	13 [label="EF#GB
+"]
+	22 [label=GBCD
+]
+}
