@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 import music21 as m21
 
-def keySections(sections,GxsecDi,dnodes):
+def keySections(sections,GxsecDi,dnodes,measure=None):
     # key identification in the different regions
     # this is based on the ansatz that the tonic triad is the most connected (highest degree) 
     # node of the region's network
@@ -50,12 +50,20 @@ def keySections(sections,GxsecDi,dnodes):
             key.append(str(n.getChordStep(3).transpose(1).name))
         else:
             key.append(str(n.root()))
-            
-    keySections = pd.DataFrame(None,columns=['Section','chord range','prevalent_chord','region'])
-    for i in range(len(key)):    
-        tmp = pd.DataFrame([[str(i),str(sections[i])+'-'+str(sections[i+1])
-                            ,str(prevalent_key[i].pitchNames),key[i]]],
-                            columns=['Section','chord range','prevalent_chord','region'])
-        keySections = keySections.append(tmp)
+    
+    if measure != None:
+        keySections = pd.DataFrame(None,columns=['Section','measures','prevalent_chord','region'])
+        for i in range(len(key)):    
+            tmp = pd.DataFrame([[str(i),str(np.asarray(fmeasure)[sections[i]])+'-'+str(np.asarray(fmeasure)[sections[i+1]])
+                                ,str(prevalent_key[i].pitchNames),key[i]]],
+                                columns=['Section','measures','prevalent_chord','region'])
+            keySections = keySections.append(tmp)
+    else:
+        keySections = pd.DataFrame(None,columns=['Section','chord range','prevalent_chord','region'])
+        for i in range(len(key)):    
+            tmp = pd.DataFrame([[str(i),str(sections[i])+'-'+str(sections[i+1])
+                                ,str(prevalent_key[i].pitchNames),key[i]]],
+                                columns=['Section','chord range','prevalent_chord','region'])
+            keySections = keySections.append(tmp)
 
     return(key,keySections)
