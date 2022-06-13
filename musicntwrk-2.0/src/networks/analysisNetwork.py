@@ -1,3 +1,25 @@
+#
+# MUSIC𝄞NTWRK
+#
+# A python library for pitch class set and rhythmic sequences classification and manipulation,
+# the generation of networks in generalized music and sound spaces, and the sonification of arbitrary data
+#
+# Copyright (C) 2018 Marco Buongiorno Nardelli
+# http://www.materialssoundmusic.com, mbn@unt.edu
+#
+# This file is distributed under the terms of the
+# GNU General Public License. See the file `License'
+# in the root directory of the present distribution,
+# or http://www.gnu.org/copyleft/gpl.txt .
+#
+
+import pandas as pd
+import numpy as np
+import music21 as m21
+import networkx as nx
+import community as cm
+import matplotlib.pyplot as plt
+
 def analysisNetwork(seq,ntx):
 
     ''' 
@@ -44,3 +66,4 @@ def analysisNetwork(seq,ntx):
         return(dnodes,dedges,dcounts,avgdeg,modul,gbch,gbch_u)
     else:
         return(dnodes,dedges,dcounts)
+    
