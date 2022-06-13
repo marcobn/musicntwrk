@@ -21,7 +21,10 @@ import numpy as np
 
 def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',width=800,height=800):
     # draw network in 3D using plotly
-    net = nx.from_pandas_edgelist(edges,'Source','Target','Weight')
+    try:
+      net = nx.from_pandas_edgelist(edges,'Source','Target','Weight')
+    except:
+      net = nx.from_pandas_edgelist(edges,'Source','Target')
     spring_3D = nx.spring_layout(net,dim=3,seed=seed)
     Num_nodes = len(nodes)
 
