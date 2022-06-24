@@ -73,16 +73,20 @@ def scoreNetwork(seq,ntx,general,distance,TET):
                 a = np.asarray(seq[n-1])
                 b = np.asarray(seq[n])
                 pair,r = minimalNoBijDistance(a,b,TET,distance)
+                name = generalizedOpsName(a,r,TET,distance)[1]
+                nameAbs = generalizedOpsNameAbs(a,r,TET,distance)[1]
             else: 
                 b = np.asarray(seq[n-1])
                 a = np.asarray(seq[n])
                 pair,r = minimalNoBijDistance(a,b,TET,distance)
+                name = generalizedOpsName(r,a,TET,distance)[1]
+                nameAbs = generalizedOpsNameAbs(r,a,TET,distance)[1]
         if pair != 0:
             if general == False:
-                tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),generalizedOpsNameAbs(a,r,TET,distance)[1]]],
+                tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),nameAbs]],
                                     columns=['Source','Target','Weight','Label'])
             else:
-                tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),generalizedOpsName(a,r,TET,distance)[1]]],
+                tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),name]],
                                     columns=['Source','Target','Weight','Label'])
             dedges = dedges.append(tmp)
             
