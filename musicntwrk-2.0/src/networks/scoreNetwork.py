@@ -68,6 +68,8 @@ def scoreNetwork(seq,ntx,general,distance,TET):
             a = np.asarray(seq[n-1])
             b = np.asarray(seq[n])
             pair,r = minimalDistance(a,b,TET,distance)
+            name = generalizedOpsName(a,b,TET,distance)[1]
+            nameAbs = generalizedOpsNameAbs(a,b,TET,distance)[1]
         else:
             if len(seq[n-1]) > len(seq[n]):
                 a = np.asarray(seq[n-1])
@@ -117,3 +119,4 @@ def scoreNetwork(seq,ntx,general,distance,TET):
         return(dnodes,dedges,dcounts,avgdeg,modul,gbch,gbch_u)
     else:
         return(dnodes,dedges,dcounts)
+    
