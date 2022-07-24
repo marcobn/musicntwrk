@@ -66,7 +66,7 @@ The most computationally intensive parts of the modules can be run on parallel p
 
 **Marco Buongiorno Nardelli**
 
-Marco Buongiorno Nardelli is University Distinguished Research Professor at the University of North Texas: composer, flutist, computational materials physicist, and a member of CEMI, the Center for Experimental Music and Intermedia, and iARTA, the Initiative for Advanced Research in Technology and the Arts. He is a Fellow of the American Physical Society and of the Institute of Physics, and a Parma Recordings artist. See [here](https://www.materialssoundmusic.com/long-bio) for a longer bio-sketch.
+Marco Buongiorno Nardelli is Regents Professor at the University of North Texas: composer, flutist, computational materials physicist, and a member of CEMI, the Center for Experimental Music and Intermedia, and iARTA, the Initiative for Advanced Research in Technology and the Arts. He is a Fellow of the American Physical Society and of the Institute of Physics, and a Parma Recordings artist. See [here](https://www.materialssoundmusic.com/long-bio) for a longer bio-sketch.
 
 ## Citation
 
