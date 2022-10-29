@@ -25,7 +25,7 @@ def computeStandardizedPSCC(input_path,input_file,ncc,lmax,maxi,nbins):
     for wav in np.sort(waves):
         y, sr = librosa.load(wav)
         wf.append(y)
-    wf = np.asarray(wf)
+    wf = np.array(wf)
     # standardization of the number of sample in every sound wav
     if lmax == None:
         lwf = []

@@ -25,7 +25,7 @@ def computeStandardizedMFCC(input_path,input_file,nmel,nmfcc,lmax,maxi,nbins):
     for wav in np.sort(waves):
         y, sr = librosa.load(wav)
         wf.append(y)
-    wf = np.asarray(wf)
+    wf = np.array(wf)
     # standardization of the number of sample in every sound wav
     if lmax == None:
         lwf = []
@@ -43,7 +43,7 @@ def computeStandardizedMFCC(input_path,input_file,nmel,nmfcc,lmax,maxi,nbins):
             hopl = 512
         else:
             hopl = hopl = int((lmax/nbins)*2/2+1) #round(int(lmax/nbins)/2)*2
-        S = librosa.feature.melspectrogram(wtmp, sr=sr, n_mels=nmel,hop_length=hopl)
+        S = librosa.feature.melspectrogram(y=wtmp, sr=sr, n_mels=nmel,hop_length=hopl)
         log_S = librosa.power_to_db(S, ref=np.max)
         temp = librosa.feature.mfcc(S=log_S, n_mfcc=nmfcc)
         # normalize mfcc[0] first
