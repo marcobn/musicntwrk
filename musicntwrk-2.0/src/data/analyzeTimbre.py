@@ -33,7 +33,7 @@ def analyzeTimbre(soundfile,outlist=[],zero=1.0e-10,plot=True,crm=True,tms=True,
     var['y'] = y
     var['sr'] = sr
     # analyze onsets
-    o_env = librosa.onset.onset_strength(y, sr=sr)
+    o_env = librosa.onset.onset_strength(y=y, sr=sr)
     times = librosa.frames_to_time(np.arange(len(o_env)), sr=sr)
     onset_frames = librosa.onset.onset_detect(onset_envelope=o_env, sr=sr)
     var['onset_frames'] = onset_frames
@@ -49,7 +49,7 @@ def analyzeTimbre(soundfile,outlist=[],zero=1.0e-10,plot=True,crm=True,tms=True,
     if plot:
         plt.figure(figsize=(18,8))
         ax1 = plt.subplot(2, 1, 1)
-        librosa.display.waveplot(y[:])
+        librosa.display.waveshow(y[:])
         plt.title('Waveshape')
         plt.subplot(2, 1, 2, sharex=ax1)
         plt.plot(times, o_env, label='Onset strength')
