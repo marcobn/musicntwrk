@@ -23,7 +23,7 @@ from ..utils.floatize import floatize
 
 
 def rhythmicDesign(dictionary,nnodes,nedges,refnodes,refedges,nstart=None,seed=None,reverse=None,
-                   random=None):
+                   random=None,write=False):
     # network generator (see documentation on networkx)
     scfree = nx.barabasi_albert_graph(nnodes,nedges,seed)
     # node degree distribution
@@ -36,7 +36,7 @@ def rhythmicDesign(dictionary,nnodes,nedges,refnodes,refedges,nstart=None,seed=N
     if nstart == None:
         nstart = idx[0]
     euler_circuit = chinese_postman(scfree,nstart)
-    print('Length of Eulerian circuit: {}'.format(len(euler_circuit)))
+    if write: print('Length of Eulerian circuit: {}'.format(len(euler_circuit)))
     # reference node degree distribution
     try:
         bnet = nx.from_pandas_edgelist(refedges,'Source','Target',['Weight','Label'])
