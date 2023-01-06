@@ -12,6 +12,9 @@
 # in the root directory of the present distribution,
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
+
+import numpy as np
+
 def Remove(duplicate): 
     # function to remove duplicates from list
     final_list = [] 
