@@ -19,3 +19,13 @@ def Remove(duplicate):
         if num not in final_list: 
             final_list.append(num) 
     return final_list 
+
+def pruneList(original):
+    # function to prune list from successive equal elements
+    pruned = [original[0]]
+    for n in original:
+        if n == pruned[-1]:
+            pass
+        else:
+            pruned.append(n)
+    return np.array(pruned)
