@@ -33,8 +33,8 @@ def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None,abs
             if ch[n] < ch[n-1]: ch[n] += 12
         ch += 60
         c = []
-        for i in range(len(ch)):
-            c.append(m21.note.Note(ch[i]/fac))
+        for k in range(len(ch)):
+            c.append(m21.note.Note(ch[k]/fac))
         n = m21.chord.Chord(c)
         if i < ntot-1: 
             n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1],TET,distance)[1])
