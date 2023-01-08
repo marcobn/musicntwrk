@@ -20,6 +20,7 @@ from ..utils.generalizedOpsName import generalizedOpsName
 from ..utils.opsName import opsName
 
 def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None,abs=False,TET=12,distance='euclidean'):
+    fac = TET/12
     try:
         ntot = nseq.shape[0]
     except:
@@ -31,7 +32,10 @@ def WRITEscoreOps(nseq,w=None,outxml='./music',outmidi='./music',keysig=None,abs
         for n in range(1,len(ch)):
             if ch[n] < ch[n-1]: ch[n] += 12
         ch += 60
-        n = m21.chord.Chord(ch.tolist())
+        c = []
+        for i in range(len(ch)):
+            c.append(m21.note.Note(ch[i]/fac))
+        n = m21.chord.Chord(c)
         if i < ntot-1: 
             n.addLyric(str(i)+' '+generalizedOpsName(nseq[i],nseq[i+1],TET,distance)[1])
             if abs:
