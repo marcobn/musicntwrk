@@ -18,7 +18,7 @@ def computeCompMPS(input_path,input_file,n_mels=13,barplot=True):
     mps0 = []
     for wav in np.sort(waves):
         y, sr = librosa.load(wav)
-        S = librosa.feature.melspectrogram(y, sr=sr, n_mels=n_mels)
+        S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=n_mels)
         # Here we decompose the MPS in a one-dim component and an activation matrix
         comps, acts = librosa.decompose.decompose(S, n_components=1,sort=True)
         comps = np.reshape(comps,comps.shape[0])

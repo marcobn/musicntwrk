@@ -88,7 +88,7 @@ def analyzeTimbre(soundfile,outlist=[],zero=1.0e-10,plot=True,crm=True,tms=True,
         if plot: beat.displayRhythm(xml)
     if mps:
         # mel-scaled power (energy-squared) spectrogram
-        S = librosa.feature.melspectrogram(y, sr=sr, n_mels=16) #,hop_length=len(y))
+        S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=16) #,hop_length=len(y))
         # Convert to log scale (dB). We'll use the peak power (max) as reference.
         log_S = librosa.power_to_db(S, ref=np.max)
         librosa.display.specshow(log_S, sr=sr, x_axis='time', y_axis='mel')

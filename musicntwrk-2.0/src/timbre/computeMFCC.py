@@ -23,7 +23,7 @@ def computeMFCC(input_path,input_file,nmel,ncc,zero):
     mfcc0 = []
     for wav in np.sort(waves):
         y, sr = librosa.load(wav)
-        S = librosa.feature.melspectrogram(y, sr=sr, n_mels=nmel)
+        S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=nmel)
         log_S = librosa.power_to_db(S, ref=np.max)
         mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=ncc)
 #        # Here we take the average over a single impulse (for lack of a better measure...)

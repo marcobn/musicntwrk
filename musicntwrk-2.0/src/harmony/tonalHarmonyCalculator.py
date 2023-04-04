@@ -73,7 +73,7 @@ def tonalHarmonyCalculator():
             print('A minimal model can be downloaded from')
             print('https://github.com/marcobn/musicntwrk/tree/master/musicntwrk-2.0/examples')
             print('')
-            print('The next set of enties depend on the action that is requested by the user. They can be filled with:')
+            print('The next set of entries depend on the action that is requested by the user. They can be filled with:')
             print('')
             print('operator - voice leading operator as O(i,j,k,...) ')
             print('')

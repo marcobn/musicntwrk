@@ -35,7 +35,7 @@ def computeModifiedASCBW(input_path,input_file,scnd,method,nstep):
         maxsp = int(np.argwhere(np.abs(y) < eps)[0])
         cent = librosa.feature.spectral_centroid(y=y, sr=sr,hop_length=maxsp)
         spec_bw = librosa.feature.spectral_bandwidth(y=y, sr=sr,hop_length=maxsp)
-        S = librosa.feature.melspectrogram(y, sr=sr, n_mels=16)
+        S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=16)
         log_S = librosa.power_to_db(S, ref=np.max)
         mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=13)
         try:
