@@ -42,7 +42,7 @@ def orchestralVector(inputfile):
             except:
                 print('exception: most likely an error in the voicing of the musicxml score',\
                       'part ',p,'measure ',m)
-    orch = np.asarray(orch).T
+    orch = np.asarray(orch,dtype=object).T
     if len(orch.shape) == 1:
         print('WARNING: the number of beats per part is not constant')
         print('         check the musicxml file for internal consistency')
