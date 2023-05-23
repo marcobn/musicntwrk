@@ -63,13 +63,11 @@ def timbralNetwork(waves,vector,thup,thdw):
     #pair = sklm.pairwise_distances(vaux,vector,metric=distance)
     dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
     for i in range(nsize):
-        tmp = pd.DataFrame(None,columns=['Source','Target','Weight'])
-        tmp['Source'] = (i+ini)*np.ones(vector.shape[0],dtype=int)[:]
-        tmp['Target'] = index[:]
-        tmp['Weight'] = np.sqrt(np.sum((vaux[i,:]-vector[:,:])**2,axis=1))
-        tmp = tmp.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
-        dedges = dedges.append(tmp)
-            
+        tmp0 = (i+ini)*np.ones(vector.shape[0],dtype=int)
+        tmp1 = index[:]
+        tmp2 = np.sqrt(np.sum((vaux[i,:]-vector[:,:])**2,axis=(1,2)))
+        dedges = dedges.append(pd.DataFrame(data=np.column_stack((tmp0,tmp1,tmp2)),
+                                            columns=['Source','Target','Weight']))
     dedges = dedges.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
     dedges['Weight'] = dedges['Weight'].apply(lambda x: 1/x)
     # do some cleaning
