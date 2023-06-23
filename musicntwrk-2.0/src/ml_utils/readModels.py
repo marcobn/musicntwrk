@@ -28,7 +28,7 @@ def readModels(path,filename):
                 yield tarinfo
             elif os.path.splitext(tarinfo.name)[1] == ".dict":
                 yield tarinfo
-
+ 
     # extract data from tar files
     tar_files = list(glob.glob(os.path.join(path,filename)))
     for file in tar_files:

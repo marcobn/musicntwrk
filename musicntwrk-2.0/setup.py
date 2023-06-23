@@ -23,7 +23,11 @@ with open(path.join(this_directory, 'README.md')) as f:
 
 
 setup(name='musicntwrk',
+<<<<<<< Updated upstream
 	version='2.2.28',
+=======
+	version='2.2.25',
+>>>>>>> Stashed changes
 	description='music as data, data as music',
 	long_description=long_description,
 	long_description_content_type='text/markdown',

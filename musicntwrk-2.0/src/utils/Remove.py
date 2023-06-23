@@ -25,10 +25,14 @@ def Remove(duplicate):
 
 def pruneList(original):
     # function to prune list from successive equal elements
+    # conserving the information on multiplicity
     pruned = [original[0]]
+    mult = [1]
     for n in original:
         if n == pruned[-1]:
+            mult[-1] += 1
             pass
         else:
             pruned.append(n)
-    return np.array(pruned)
+            mult.append(1)
+    return np.array(pruned), np.array(mult)

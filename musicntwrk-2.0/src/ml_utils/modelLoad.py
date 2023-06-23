@@ -15,11 +15,11 @@
 
 import pickle
 import joblib as jlib
-import tensorflow as tf
+from tensorflow import keras
 import numpy as np
-
+ 
 def modelLoad(filename,npy=False):
-    model = tf.keras.models.load_model(filename+'.h5')
+    model = keras.models.load_model(filename+'.h5')
     scaler = jlib.load(filename+'.scaler') 
     normal = jlib.load(filename+'.normal')
     try:

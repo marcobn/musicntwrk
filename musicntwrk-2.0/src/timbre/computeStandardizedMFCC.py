@@ -24,17 +24,17 @@ def computeStandardizedMFCC(input_path,input_file,nmel,nmfcc,lmax,maxi,nbins):
     wf = []
     for wav in np.sort(waves):
         y, sr = librosa.load(wav)
-        wf.append(y)
-    wf = np.array(wf)
+        wf.append(np.array(y))
+#   wf = np.array(wf)
     # standardization of the number of sample in every sound wav
     if lmax == None:
         lwf = []
-        for n in range(wf.shape[0]):
+        for n in range(len(wf)):
             lwf.append(wf[n].shape[0])
         lwf = np.asarray(lwf)
         lmax = np.max(lwf)
     mfcc = []
-    for n in range(wf.shape[0]):
+    for n in range(len(wf)):
         if wf[n].shape[0] <= lmax:
             wtmp = np.pad(wf[n], (0, lmax-wf[n].shape[0]), 'constant')
         else:

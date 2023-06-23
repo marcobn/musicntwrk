@@ -15,11 +15,14 @@
 
 import music21 as m21
 
-def MIDIscore(yvf,dur=2,w=None,outxml='./music',outmidi='./music'):
+def MIDIscore(yvf,dvf=None,dur=2,w=None,outxml='./music',outmidi='./music'):
 	s1 = m21.stream.Stream()
 	for i in range(yvf.shape[0]):
 		n = m21.note.Note(yvf[i])
-		n.duration = m21.duration.Duration((abs(yvf[i]-yvf[i-1])+1)/dur)
+		try:
+			n.duration = m21.duration.Duration(dvf[i])
+		except:
+			n.duration = m21.duration.Duration((abs(yvf[i]-yvf[i-1])+1)/dur)
 		s1.append(n)
 	if w == 'musicxml':
 		s1.write('musicxml',outxml+'.xml')

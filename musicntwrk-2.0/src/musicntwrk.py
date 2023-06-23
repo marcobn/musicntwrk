@@ -7,7 +7,7 @@
 #
 # Copyright (C) 2018,2019,2020,2021 Marco Buongiorno Nardelli http://www.materialssoundmusic.com, mbn@unt.edu
 # This file is distributed under the terms of the GNU General Public License. See the file `License' 
-#in the root directory of the present distribution, or http://www.gnu.org/copyleft/gpl.txt .
+# in the root directory of the present distribution, or http://www.gnu.org/copyleft/gpl.txt .
 #
 
 import re, sys, time
@@ -1194,7 +1194,7 @@ class PCSrow:
         reference.append(entry)
         star = pd.DataFrame(reference,columns=['Op','Row'])
         return(star)
-        
+
 class RHYTHMSeq:
 
     def __init__(self,rseq,REF='e',ORD=False):
