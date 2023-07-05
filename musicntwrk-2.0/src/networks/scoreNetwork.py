@@ -52,16 +52,19 @@ def scoreNetwork(seq,ntx,general,distance,TET):
             for i in p.pcs:
                 tmp.append(list(dict24.keys())[list(dict24.values()).index(i)]) 
             nameseq = pd.DataFrame([[''.join(tmp)]],columns=['Label'])
-        dnodes = dnodes.append(nameseq)
+#       dnodes = dnodes.append(nameseq)
+        dnodes = pd.concat([nameseq,dnodes])
     df = np.asarray(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
     dcounts = pd.DataFrame(None,columns=['Label','Counts'])
     dff,idx,cnt = np.unique(df,return_inverse=True,return_counts=True)
     for n in range(dff.shape[0]):
         nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
-        dnodes = dnodes.append(nameseq)
+#       dnodes = dnodes.append(nameseq)
+        dnodes = pd.concat([nameseq,dnodes])
         namecnt = pd.DataFrame([[str(dff[n]),cnt[n]]],columns=['Label','Counts'])
-        dcounts = dcounts.append(namecnt)
+#       dcounts = dcounts.append(namecnt)
+        dcounts = pd.concat([namecnt,dcounts])
 
     for n in range(1,len(seq)):
         if len(seq[n-1]) == len(seq[n]):
@@ -90,7 +93,8 @@ def scoreNetwork(seq,ntx,general,distance,TET):
             else:
                 tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),name]],
                                     columns=['Source','Target','Weight','Label'])
-            dedges = dedges.append(tmp)
+#           dedges = dedges.append(tmp)
+            dedges = pd.concat([tmp,dedges])
             
 # write dataframe with pcs rather than indeces
 #           if pair != 0:
