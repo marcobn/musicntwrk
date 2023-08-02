@@ -19,13 +19,26 @@ import plotly.graph_objects as go
 
 import numpy as np
 
-def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',width=800,height=800):
+def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',arrow=True,
+                  width=800,height=800,html=False):
     # draw network in 3D using plotly
+# arrow = True    
+# nodes = bnodes.copy()
+# edges = bedges.copy()   
+# scale=5
+# seed=None
+# colorscale='haline'
+# title=''
+# width=800
+# height=800
+# html=False
     try:
-      net = nx.from_pandas_edgelist(edges,'Source','Target','Weight')
+        net = nx.from_pandas_edgelist(edges,'Source','Target','Weight',create_using=nx.Graph)
+        netD = nx.from_pandas_edgelist(edges,'Source','Target','Weight',create_using=nx.DiGraph)
     except:
-      net = nx.from_pandas_edgelist(edges,'Source','Target')
-    spring_3D = nx.spring_layout(net,dim=3,seed=seed)
+        net = nx.from_pandas_edgelist(edges,'Source','Target',create_using=nx.Graph)
+        netD = nx.from_pandas_edgelist(edges,'Source','Target',create_using=nx.DiGraph)
+    spring_3D = nx.spring_layout(netD,dim=3,seed=seed)
     Num_nodes = len(nodes)
 
     df = np.array(nodes)
@@ -33,12 +46,12 @@ def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',wid
     for i,n in enumerate(net.nodes()):
         idx.append(int(n))
     df = df[idx]
-    
+
     if len(df.shape) == 1:
         df = np.reshape(df,(len(df),1))
     nodelabel = dict(zip(np.linspace(0,len(df[:,0])-1,len(df[:,0]),dtype=int),df[:,0]))
     labels = list(nodelabel.values())
-    
+
     part = cm.best_partition(net)
     values = [part.get(node) for node in net.nodes()]
     d = nx.degree(net)
@@ -46,13 +59,13 @@ def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',wid
     dsize = np.array([(d[v]+1)*scale for v in net.nodes()])
 
     #we need to seperate the X,Y,Z coordinates for Plotly
-    
+
     x_nodes = np.array([spring_3D[str(idx[i])][0] for i,n in enumerate(df)])
     y_nodes = np.array([spring_3D[str(idx[i])][1] for i,n in enumerate(df)])
     z_nodes = np.array([spring_3D[str(idx[i])][2] for i,n in enumerate(df)])
 
     #We also need a list of edges to include in the plot
-    edge_list = net.edges()
+    edge_list = netD.edges()
 
     #we  need to create lists that contain the starting and ending coordinates of each edge.
     x_edges=[]
@@ -70,7 +83,7 @@ def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',wid
             return(np.array(tmp1['Label'])[0])
         except:
             return(None)
-    
+
     edge_label = []
     for edge in edge_list:
         #format: [beginning,ending,None]
@@ -82,9 +95,9 @@ def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',wid
 
         z_coords = [spring_3D[edge[0]][2],spring_3D[edge[1]][2],None]
         z_edges += z_coords
-        
+
         edge_label += [getlabel(edge[0],edge[1]),getlabel(edge[1],edge[0]),None]
-        
+
     #create a trace for the edges
     trace_edges = go.Scatter3d(x=x_edges,
                             y=y_edges,
@@ -105,6 +118,25 @@ def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',wid
                                       colorscale=colorscale),
                                text=labels,
                                hoverinfo='text')
+
+    if arrow:
+        #create a trace for the arrows
+        norm = np.sqrt((np.array(x_edges,dtype=float)[1::3]-np.array(x_edges,dtype=float)[0::3])**2+
+                    (np.array(y_edges,dtype=float)[1::3]-np.array(y_edges,dtype=float)[0::3])**2+
+                    (np.array(z_edges,dtype=float)[1::3]-np.array(z_edges,dtype=float)[0::3])**2)
+        trace_arrows = go.Cone(x=x_edges[1::3],
+                               y=y_edges[1::3],
+                               z=z_edges[1::3],
+                               u=(np.array(x_edges)[1::3]-np.array(x_edges)[0::3])/norm,
+                               v=(np.array(y_edges)[1::3]-np.array(y_edges)[0::3])/norm,
+                               w=(np.array(z_edges)[1::3]-np.array(z_edges)[0::3])/norm,
+                               sizemode="scaled",
+                               sizeref=1,
+                               showscale=False,
+                               anchor='tip',
+                               hoverinfo='skip',
+                               colorscale=['black','black']
+                         )
 
     #we need to set the axis for the plot 
     axis = dict(showbackground=False,
@@ -127,7 +159,13 @@ def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',wid
                     hovermode='closest')
 
     #Include the traces we want to plot and create a figure
-    data = [trace_edges, trace_nodes]
+    if arrow:
+        data = [trace_edges, trace_nodes, trace_arrows]
+    else:
+        data = [trace_edges, trace_nodes]
+    # data = [trace_arrows]
     fig = go.Figure(data=data, layout=layout)
 
     fig.show()
+    if html:
+        fig.write_html("./newfig.html")
