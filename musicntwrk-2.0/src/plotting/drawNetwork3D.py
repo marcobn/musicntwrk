@@ -20,7 +20,7 @@ import plotly.graph_objects as go
 import numpy as np
 
 def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',arrow=True,
-                  width=800,height=800,html=False):
+                  asize=1,width=800,height=800,html=False):
     # draw network in 3D using plotly
 # arrow = True    
 # nodes = bnodes.copy()
@@ -131,7 +131,7 @@ def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',arr
                                v=(np.array(y_edges)[1::3]-np.array(y_edges)[0::3])/norm,
                                w=(np.array(z_edges)[1::3]-np.array(z_edges)[0::3])/norm,
                                sizemode="scaled",
-                               sizeref=1,
+                               sizeref=asize,
                                showscale=False,
                                anchor='tip',
                                hoverinfo='skip',
