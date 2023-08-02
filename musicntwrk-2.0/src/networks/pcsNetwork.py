@@ -61,7 +61,7 @@ def pcsNetwork(dictionary,thup,thdw,distance,prob,write,pcslabel,TET):
             else:
                 nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
             nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
-            dnodes = dnodes.append(nameseq)
+            dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     else:
         dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     if write: dnodes.to_csv('nodes.csv',index=False)
@@ -88,11 +88,11 @@ def pcsNetwork(dictionary,thup,thdw,distance,prob,write,pcslabel,TET):
         tmp['Weight'] = np.sqrt(np.sum((vaux[i,:]-vector[:,:])**2,axis=1))
         tmp = tmp.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
         if prob == 1:
-            dedges = dedges.append(tmp)
+            dedges = pd.concat([dedges,tmp],ignore_index=True)
         else:
             np.random.seed(int(time.time()))
             if np.random.rand() >= prob:
-                dedges = dedges.append(tmp)
+                dedges = pd.concat([dedges,tmp],ignore_index=True)
             else:
                 pass
             
@@ -111,7 +111,7 @@ def pcsNetwork(dictionary,thup,thdw,distance,prob,write,pcslabel,TET):
         dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
         for i in range(size):
             tmp = pd.read_csv('edges'+str(i)+'.csv')
-            dedges = dedges.append(tmp)
+            dedges = pd.concat([dedges,tmp],ignore_index=True)
             os.remove('edges'+str(i)+'.csv')
         # do some cleaning
         cond = dedges.Source > dedges.Target

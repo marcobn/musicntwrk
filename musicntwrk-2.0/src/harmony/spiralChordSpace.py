@@ -110,7 +110,8 @@ def spiralChordSpace(chord,scale,octaves=3,TET=12,distance='euclidean',thdw=0.01
     for n in range(len(df)):
         s = ','
         p = s.join(df[n,0])
-        dnodes = dnodes.append(pd.DataFrame([[str(p)]],columns=['Label']))
+#       dnodes = dnodes.append(pd.DataFrame([[str(p)]],columns=['Label']))
+        dnodes = pd.concat([dnodes,pd.DataFrame([[str(p)]],columns=['Label'])],ignore_index=True)
 
 #     edges according to a metric
     thup = np.sqrt(thup)
@@ -125,7 +126,7 @@ def spiralChordSpace(chord,scale,octaves=3,TET=12,distance='euclidean',thdw=0.01
             if pair <= thup and pair >= thdw:
                 tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0]),str(int(np.round(pair[0]**2,0)))]],
                                    columns=['Source','Target','Weight','Label'])
-                dedges = dedges.append(tmp)
+                dedges = pd.concat([dedges,tmp],ignore_index=True)
     
     Gxu = nx.from_pandas_edgelist(dedges,'Source','Target',['Weight','Label'])
     

@@ -49,6 +49,7 @@ def networkHarmonyGen(mk,descriptor=None,dictionary=None,thup=None,thdw=None,nam
                 nodes,dedges = mk.network(space='vLead',ops=True,name=names[n],
                                            pcslabel=True,dictionary=dictionary,distance=distance,
                                            prob=probs[n],write=False)
-                edges = edges.append(dedges)
+#               edges = edges.append(dedges)
+                edges = pd.concat([edges,dedges],ignore_index=True)
 
     return(nodes,edges)

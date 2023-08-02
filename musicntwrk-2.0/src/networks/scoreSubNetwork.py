@@ -51,7 +51,7 @@ def scoreSubNetwork(seq,start,end,ntx,general,distance,grphtype,TET):
             for i in p.pcs:
                 tmp.append(list(dict24.keys())[list(dict24.values()).index(i)]) 
             nameseq = pd.DataFrame([[''.join(tmp)]],columns=['Label'])
-#       dnodes = dnodes.append(nameseq)
+#       dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
         dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     df = np.asarray(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
@@ -59,7 +59,7 @@ def scoreSubNetwork(seq,start,end,ntx,general,distance,grphtype,TET):
     dff,idx,cnt = np.unique(df,return_inverse=True,return_counts=True)
     for n in range(dff.shape[0]):
         nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
-#       dnodes = dnodes.append(nameseq)
+#       dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
         dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
         namecnt = pd.DataFrame([[str(dff[n]),cnt[n]]],columns=['Label','Counts'])
 #       dcounts = dcounts.append(namecnt)
@@ -87,7 +87,7 @@ def scoreSubNetwork(seq,start,end,ntx,general,distance,grphtype,TET):
 #                 else:
 #                     tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(0),opsName(a,r,TET)]],
 #                                         columns=['Source','Target','Weight','Label'])
-#                   dedges = dedges.append(tmp)
+#                   dedges = pd.concat([dedges,tmp],ignore_index=True)
                     dedges = pd.concat([dedges,tmp],ignore_index=True)
             else:
                 if n >= start and n < end:
@@ -96,7 +96,7 @@ def scoreSubNetwork(seq,start,end,ntx,general,distance,grphtype,TET):
 #                 else:
 #                     tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(0),generalizedOpsName(a,r,TET)[1]]],
 #                                         columns=['Source','Target','Weight','Label'])
-#                   dedges = dedges.append(tmp)
+#                   dedges = pd.concat([dedges,tmp],ignore_index=True)
                     dedges = pd.concat([dedges,tmp],ignore_index=True)
     
     if ntx:

@@ -32,14 +32,14 @@ def analysisNetwork(seq,ntx):
     dnodes = pd.DataFrame(None,columns=['Label'])
     for n in range(len(seq)):
         nameseq = pd.DataFrame([[seq[n]]],columns=['Label'])
-        dnodes = dnodes.append(nameseq)
+        dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     df = np.asarray(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
     dcounts = pd.DataFrame(None,columns=['Label','Counts'])
     dff,idx,cnt = np.unique(df,return_inverse=True,return_counts=True)
     for n in range(dff.shape[0]):
         nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
-        dnodes = dnodes.append(nameseq)
+        dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
         namecnt = pd.DataFrame([[str(dff[n]),cnt[n]]],columns=['Label','Counts'])
         dcounts = dcounts.append(namecnt)
 
@@ -47,7 +47,7 @@ def analysisNetwork(seq,ntx):
         pair = seq[n-1] == seq[n]
         if not pair:
             tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n])]],columns=['Source','Target'])
-            dedges = dedges.append(tmp)
+            dedges = pd.concat([dedges,tmp],ignore_index=True)
 
 
     if ntx:

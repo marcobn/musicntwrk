@@ -34,20 +34,20 @@ def orchestralNetwork(seq,distance,TET):
     for n in range(len(seq)):
         nameseq = pd.DataFrame([np.array2string(seq[n]).replace(" ","").replace("[","").replace("]","")],\
                                columns=['Label'])
-        dnodes = dnodes.append(nameseq)
+        dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     df = np.asarray(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
     dff,idx = np.unique(df,return_inverse=True)
     for n in range(dff.shape[0]):
         nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
-        dnodes = dnodes.append(nameseq)
+        dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     for n in range(1,len(seq)):
         a = np.asarray(seq[n-1])
         b = np.asarray(seq[n])
         pair,r = minimalDistance(a,b,TET,distance)
         tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(pair+0.1)]],
                            columns=['Source','Target','Weight'])
-        dedges = dedges.append(tmp)
+        dedges = pd.concat([dedges,tmp],ignore_index=True)
     
     # evaluate average degree and modularity
     gbch = nx.from_pandas_edgelist(dedges,'Source','Target','Weight',create_using=nx.DiGraph())

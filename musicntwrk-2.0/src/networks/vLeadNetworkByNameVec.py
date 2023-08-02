@@ -40,7 +40,7 @@ def vLeadNetworkByNameVec(dictionary,name,distance,prob,write,pcslabel,TET):
             else:
                 nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
             nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
-            dnodes = dnodes.append(nameseq)
+            dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     else:
         dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     if write: dnodes.to_csv('nodes.csv',index=False)
@@ -69,7 +69,7 @@ def vLeadNetworkByNameVec(dictionary,name,distance,prob,write,pcslabel,TET):
     for n in range(ix.shape[0]):
         if pair[ix[n],iy[n]]:
             tmp = pd.DataFrame([[str(ix[n]),str(iy[n]),str(1/dis[ix[n],iy[n]])]],columns=['Source','Target','Weight'])
-            dedges = dedges.append(tmp)
+            dedges = pd.concat([dedges,tmp],ignore_index=True)
 
     # write csv for edges
     if write: dedges.to_csv('edges.csv',index=False)

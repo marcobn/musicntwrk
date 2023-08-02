@@ -46,13 +46,13 @@ def timbralNetwork(waves,vector,thup,thdw):
     dnodes = pd.DataFrame(None,columns=['Label'])
     for n in range(len(waves)):
         nameseq = pd.DataFrame([waves[n].split('/')[-1].split('.')[0]],columns=['Label'])
-        dnodes = dnodes.append(nameseq)
+        dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     df = np.array(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
     dff,idx = np.unique(df,return_inverse=True)
     for n in range(dff.shape[0]):
         nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
-        dnodes = dnodes.append(nameseq)
+        dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     
     N = vector.shape[0]
     index = np.linspace(0,vector.shape[0]-1,vector.shape[0],dtype=int)
@@ -83,7 +83,7 @@ def timbralNetwork(waves,vector,thup,thdw):
         dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
         for i in range(size):
             tmp = pd.read_csv('edges'+str(i)+'.csv')
-            dedges = dedges.append(tmp)
+            dedges = pd.concat([dedges,tmp],ignore_index=True)
             os.remove('edges'+str(i)+'.csv')
         # do some cleaning
         cond = dedges.Source > dedges.Target

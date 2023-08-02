@@ -84,7 +84,7 @@ def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,write,TET):
     for j in range(N):
         if pair[0,j] <= thup_e and pair[0,j] >= thdw_e:
             tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0,j])]],columns=['Source','Target','Weight'])
-            dedges = dedges.append(tmp)
+            dedges = pd.concat([dedges,tmp],ignore_index=True)
     # write csv for ego's edges
     if write: dedges.to_csv('edges_ego.csv',index=False)   
     edges_ego = dedges     
@@ -103,7 +103,7 @@ def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,write,TET):
             tmp['Source'] = (i+ini)*np.ones(N,dtype=int)[:]
             tmp['Target'] = index[:]
             tmp['Weight'] = pair[i,:]
-            dedges = dedges.append(tmp)
+            dedges = pd.concat([dedges,tmp],ignore_index=True)
         dedges = dedges.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
         dedges['Weight'] = dedges['Weight'].apply(lambda x: 1/x)
         # do some cleaning
@@ -118,7 +118,7 @@ def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,write,TET):
             dedges = pd.DataFrame(None,columns=['Source','Target','Weight'])
             for i in range(size):
                 tmp = pd.read_csv('edges'+str(i)+'.csv')
-                dedges = dedges.append(tmp)
+                dedges = pd.concat([dedges,tmp],ignore_index=True)
                 os.remove('edges'+str(i)+'.csv')
             # write csv for edges
             if write: dedges.to_csv('edges_alters.csv',index=False)
@@ -133,7 +133,7 @@ def pcsEgoNetwork(label,dictionary,thup_e,thdw_e,thup,thdw,distance,write,TET):
                 pair = sklm.pairwise.paired_euclidean_distances(vector_i.reshape(1, -1),vector_j.reshape(1, -1))
                 if pair <= thup and pair >= thdw:
                     tmp = pd.DataFrame([[str(i),str(j),str(1/pair[0])]],columns=['Source','Target','Weight'])
-                    dedges = dedges.append(tmp)
+                    dedges = pd.concat([dedges,tmp],ignore_index=True)
 
         # write csv for alters' edges
         if write: dedges.to_csv('edges_alters.csv',index=False)

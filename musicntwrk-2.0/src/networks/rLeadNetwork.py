@@ -60,12 +60,12 @@ def rLeadNetwork(dictionary,thup,thdw,distance,prob,write):
             if pair < thup and pair > thdw:
                 if prob == 1:
                     tmp = pd.DataFrame([[str(i),str(j),str(pair)]],columns=['Source','Target','Weight'])
-                    dedges = dedges.append(tmp)
+                    dedges = pd.concat([dedges,tmp],ignore_index=True)
                 else:
                     r = np.random.rand()
                     if r <= prob:
                         tmp = pd.DataFrame([[str(i),str(j),str(pair)]],columns=['Source','Target','Weight'])
-                        dedges = dedges.append(tmp)
+                        dedges = pd.concat([dedges,tmp],ignore_index=True)
                     else:
                         pass
 

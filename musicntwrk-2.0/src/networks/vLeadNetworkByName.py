@@ -49,7 +49,7 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
             else:
                 nn = ''.join(m21.chord.Chord(p.normalOrder().tolist()).pitchNames)
             nameseq = pd.DataFrame([[str(nn)]],columns=['Label'])
-            dnodes = dnodes.append(nameseq)
+            dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     else:
         dnodes = pd.DataFrame(df[:,0],columns=['Label'])
     if write: dnodes.to_csv('nodes.csv',index=False)
@@ -93,12 +93,12 @@ def vLeadNetworkByName(dictionary,name,distance,prob,write,pcslabel,TET):
             if pair.any() == True:
                 if prob == 1:
                     tmp = pd.DataFrame([[str(i),str(j),str(1/dis)]],columns=['Source','Target','Weight'])
-                    dedges = dedges.append(tmp)
+                    dedges = pd.concat([dedges,tmp],ignore_index=True)
                 else:
                     r = np.random.rand()
                     if r <= prob:
                         tmp = pd.DataFrame([[str(i),str(j),str(1/dis)]],columns=['Source','Target','Weight'])
-                        dedges = dedges.append(tmp)
+                        dedges = pd.concat([dedges,tmp],ignore_index=True)
                     else:
                         pass
 
