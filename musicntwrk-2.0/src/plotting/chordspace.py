@@ -53,7 +53,7 @@ from music21 import *
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-for s in ['keymap.all_axes', 'keymap.back', 'keymap.forward', 'keymap.fullscreen', 'keymap.grid', 'keymap.home', 
+for s in ['keymap.back', 'keymap.forward', 'keymap.fullscreen', 'keymap.grid', 'keymap.home', 
 			'keymap.pan', 'keymap.quit', 'keymap.save', 'keymap.xscale', 'keymap.yscale', 'keymap.zoom']:
 	plt.rcParams[s] = ''
 
