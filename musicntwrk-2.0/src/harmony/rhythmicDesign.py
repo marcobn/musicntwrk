@@ -59,10 +59,10 @@ def rhythmicDesign(dictionary,nnodes,nedges,refnodes,refedges,nstart=None,seed=N
         label = np.asarray(refnodes)[eudict[int(euler_circuit[i][0])]].tolist()[0]
         if random:
             dur = RHYTHMSeq(np.random.permutation(list(map(floatize,list(map(
-                    lambda x: fr.Fraction(x),dict_cell.loc[label][0].split())))))).rseq
+                    lambda x: fr.Fraction(x),dict_cell.loc[label].iloc[0].split())))))).rseq
         else:
             dur = RHYTHMSeq(np.array(list(map(floatize,list(map(
-                    lambda x: fr.Fraction(x),dict_cell.loc[label][0].split())))))).rseq
+                    lambda x: fr.Fraction(x),dict_cell.loc[label].iloc[0].split())))))).rseq
         for j in range(len(dur)):
             eulerseq.append(m21.duration.Duration(4*dur[j]))
 
