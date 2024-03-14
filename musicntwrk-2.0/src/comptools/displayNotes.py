@@ -29,7 +29,7 @@ def displayNotes(part_list,chord=False,show=None):
                     n.duration = m21.duration.Duration(4*s.dur)
                     p.append(n)
                 except:
-                    p.append(m21.note.Rest(s.dur))
+                    p.append(m21.note.Rest(4*s.dur))
             score.insert(0,p)
         if show == None: 
             score.show()

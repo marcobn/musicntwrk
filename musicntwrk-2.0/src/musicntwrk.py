@@ -746,6 +746,7 @@ class PCmidiR:
             else:
                 pass
 
+        L = len(scala)
         if len(scala) == 1:
             scala = scala[0]
     
@@ -786,7 +787,7 @@ class PCmidiR:
             for l in range(len(scala)):
                 pitches.append(PCmidiR([scala[l][idx[l]]]).midi[0])
             seq = [pitches]
-            for n in range(L):
+            for n in range(len(scala)):
                 idx += Tr
                 pitches = []
                 for l in range(len(scala)):
@@ -799,7 +800,7 @@ class PCmidiR:
                         return
                 seq.append(pitches)
                 idx = idx[Pr]
-            return(seq)
+            return(seq,idx)
     
     def displayNotes(self,show=True,xml=False,chord=False):
         '''
