@@ -19,6 +19,7 @@ from tensorflow.keras.models import Sequential,Model
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras.layers import LeakyReLU
+import tensorflow as tf
 
 from .modelDump import modelDump
 from .prepareDataSet import prepareDataSet
@@ -61,9 +62,10 @@ def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,nu
         model.add(Dropout(0.3))
         model.add(Dense(num_classes, activation='softmax'))
 
-        model.compile(optimizer='adam',
-                                    loss='sparse_categorical_crossentropy',
-                                    metrics=['accuracy'])
+        optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=0.001)
+        model.compile(optimizer=optimizer,
+                      loss='sparse_categorical_crossentropy',
+                      metrics=['accuracy'])
 
         train = model.fit(x_train, y_train, epochs=epoch, verbose=verb,validation_data=(x_test,y_test))
 

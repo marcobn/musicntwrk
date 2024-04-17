@@ -19,7 +19,7 @@ import joblib as jlib
 
 def modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res,train):
     filename = str(hex(int(time.time())))+'_'+str(round(res,3))
-    model.save(filename+'.h5')
+    model.save(filename+'.keras')
     np.save(filename+'.test',x_test)
     np.save(filename+'.name_test',y_test)
     np.save(filename+'.train',x_train)
@@ -29,7 +29,7 @@ def modelDump(model,x_train,y_train,x_test,y_test,scaler,normal,res,train):
     with open(filename+'.train.dict','wb') as file_pi:
         pickle.dump(train.history, file_pi)
     os.system('tar cvf '+filename+'.tar '+filename+'*')
-    os.system('rm '+filename+'.h5')
+    os.system('rm '+filename+'.keras')
     os.system('rm '+filename+'*.npy')
     os.system('rm '+filename+'.scaler')
     os.system('rm '+filename+'.normal')

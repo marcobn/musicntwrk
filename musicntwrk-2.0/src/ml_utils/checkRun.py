@@ -15,7 +15,7 @@
 
 import matplotlib.pyplot as plt
 import matplotlib.style as ms
-ms.use('seaborn-muted')
+ms.use('seaborn-v0_8-muted')
 
 def checkRun(train,modelfiles):
     # plot accuracy and loss for training and validation sets over epochs

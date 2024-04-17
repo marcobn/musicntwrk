@@ -19,7 +19,7 @@ from tensorflow import keras
 import numpy as np
  
 def modelLoad(filename,npy=False):
-    model = keras.models.load_model(filename+'.h5')
+    model = keras.models.load_model(filename+'.keras')
     scaler = jlib.load(filename+'.scaler') 
     normal = jlib.load(filename+'.normal')
     try:

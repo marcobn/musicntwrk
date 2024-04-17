@@ -20,7 +20,7 @@ def readModels(path,filename):
 
     def extract_files(members):
         for tarinfo in members:
-            if os.path.splitext(tarinfo.name)[1] == ".h5": 
+            if os.path.splitext(tarinfo.name)[1] == ".keras": 
                 yield tarinfo
             elif os.path.splitext(tarinfo.name)[1] == ".normal":
                 yield tarinfo
@@ -38,7 +38,7 @@ def readModels(path,filename):
         tar.close()
 
     # load model parameters, scaler and normalizer for each model
-    modelfiles = list(glob.glob(os.path.join(path,'*.h5')))
+    modelfiles = list(glob.glob(os.path.join(path,'*.keras')))
     ynew = []
     models = {}
     scalers = {}
@@ -47,11 +47,11 @@ def readModels(path,filename):
     n = 0 
     for file in modelfiles:
         try:
-            models[str(n)],scalers[str(n)],normals[str(n)],trdicts[str(n)] = modelLoad(str(file[+2:-3]))
+            models[str(n)],scalers[str(n)],normals[str(n)],trdicts[str(n)] = modelLoad(str(file[+2:-6]))
         except:
-            models[str(n)],scalers[str(n)],normals[str(n)] = modelLoad(str(file[+2:-3]))
+            models[str(n)],scalers[str(n)],normals[str(n)] = modelLoad(str(file[+2:-6]))
             trdicts[str(n)] = None
         n += 1
-        os.system('rm '+str(file[+2:-3])+'.h5 '+str(file[+2:-3])+'.scaler '+str(file[+2:-3])+'.normal '+str(file[+2:-3])+'.train.dict')
+        os.system('rm '+str(file[+2:-6])+'.keras '+str(file[+2:-6])+'.scaler '+str(file[+2:-6])+'.normal '+str(file[+2:-6])+'.train.dict')
     return(models,scalers,normals,trdicts,modelfiles)
 
