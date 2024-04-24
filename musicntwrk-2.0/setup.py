@@ -10,6 +10,8 @@ networks = os.path.join('src','networks')
 plotting = os.path.join('src','plotting')
 timbre = os.path.join('src','timbre')
 utils = os.path.join('src','utils')
+comptools = os.path.join('src','comptools')
+msctools = os.path.join('src','msctools')
 
 extras = {
 	'with_MPI': ['mpi4py']
@@ -24,7 +26,7 @@ with open(path.join(this_directory, 'README.md')) as f:
 
 setup(name='musicntwrk',
 
-	version='2.3.0',
+	version='2.3.2',
 
 	description='music as data, data as music',
 	long_description=long_description,

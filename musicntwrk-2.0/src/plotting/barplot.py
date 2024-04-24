@@ -16,7 +16,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.style as ms
-ms.use('seaborn-muted')
+ms.use('seaborn-v0_8-muted')
 
 def barplot(spectrum,colormap=plt.cm.coolwarm,flip=True):
 	# print the mfcc0 matrix for all sounds

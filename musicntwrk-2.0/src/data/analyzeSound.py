@@ -19,7 +19,7 @@ import librosa.display
 
 import matplotlib.pyplot as plt
 import matplotlib.style as ms
-ms.use('seaborn-muted')
+ms.use('seaborn-v0_8-muted')
 
 from ..musicntwrk import PCSet
 from ..musicntwrk import RHYTHMSeq

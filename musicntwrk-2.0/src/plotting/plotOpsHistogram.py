@@ -19,7 +19,7 @@ from ..utils.generalizedOpsHistogram import generalizedOpsHistogram
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.style as ms
-ms.use('seaborn-muted')
+ms.use('seaborn-v0_8-muted')
 
 #def plotOpsHistogram(newvalues,newcounts,fx=15,fy=4):
 def plotOpsHistogram(edges,fx=15,fy=4,show=True):
