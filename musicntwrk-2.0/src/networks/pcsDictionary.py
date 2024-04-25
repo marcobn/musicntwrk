@@ -135,7 +135,8 @@ def pcsDictionary(Nc,row,a,order,prob,TET):
                 r = np.random.rand()
                 if r <= prob:
                     tmp = pd.DataFrame([[str(df[i,0]),str(df[i,1]),str(df[i,2])]],columns=['class','pcs','interval'])
-                    pruned = pruned.append(tmp)
+                    # pruned = pruned.append(tmp)
+                    pruned = pd.concat([pruned,tmp],ignore_index=True)
             dictionary = pruned
         
     return(dictionary,ZrelT)

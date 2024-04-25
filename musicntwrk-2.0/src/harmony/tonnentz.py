@@ -19,30 +19,31 @@ def tonnentz(x,y):
     tnz = pd.DataFrame(None,columns=['','','','','','','','',''])
     tmp = pd.DataFrame([[str((4*y)%12),'',str((x+3*y)%12),'',str((2*x+2*y)%12),'',str((3*x+y)%12),'',str((4*x)%12)]],
                        columns=['','','','','','','','',''])
-    tnz = tnz.append(tmp)
+    # tnz = tnz.append(tmp)
+    tnz = pd.concat([tnz,tmp],ignore_index=True)
     tmp = pd.DataFrame([['',str((3*y)%12),'',str((x+2*y)%12),'',str((2*x+y)%12),'',str((3*x)%12),'']],
                        columns=['','','','','','','','',''])
-    tnz = tnz.append(tmp)
+    tnz = pd.concat([tnz,tmp],ignore_index=True)
     tmp = pd.DataFrame([[str((-x+3*y)%12),'',str((2*y)%12),'',str((x+y)%12),'',str((2*x)%12),'',str((3*x-y)%12)]],
                        columns=['','','','','','','','',''])
-    tnz = tnz.append(tmp)
+    tnz = pd.concat([tnz,tmp],ignore_index=True)
     tmp = pd.DataFrame([['',str((-x+2*y)%12),'',str(y%12),'',str(x%12),'',str((2*x-y)%12),'']],
                        columns=['','','','','','','','',''])
-    tnz = tnz.append(tmp)
+    tnz = pd.concat([tnz,tmp],ignore_index=True)
     tmp = pd.DataFrame([[str((-2*x+2*y)%12),'',str((-x+y)%12),'',str(0),'',str((x-y)%12),'',str((2*x-2*y)%12)]],
                        columns=['','','','','','','','',''])
-    tnz = tnz.append(tmp)
+    tnz = pd.concat([tnz,tmp],ignore_index=True)
     tmp = pd.DataFrame([['',str((-2*x+y)%12),'',str(-x%12),'',str(-y%12),'',str((x-2*y)%12),'']],
                        columns=['','','','','','','','',''])
-    tnz = tnz.append(tmp)
+    tnz = pd.concat([tnz,tmp],ignore_index=True)
     tmp = pd.DataFrame([[str((-3*x+y)%12),'',str(-2*x%12),'',str((-x-y)%12),'',str(-2*y%12),'',str((x-3*y)%12)]],
                        columns=['','','','','','','','',''])
-    tnz = tnz.append(tmp)
+    tnz = pd.concat([tnz,tmp],ignore_index=True)
     tmp = pd.DataFrame([['',str(-3*x%12),'',str((-2*x-y)%12),'',str((-x-2*y)%12),'',str(-3*y%12),'']],
                        columns=['','','','','','','','',''])
-    tnz = tnz.append(tmp)
+    tnz = pd.concat([tnz,tmp],ignore_index=True)
     tmp = pd.DataFrame([[str(-4*x%12),'',str((-3*x-y)%12),'',str((-2*x-2*y)%12),'',str((-x-3*y)%12),'',str(-4*y%12)]],
                        columns=['','','','','','','','',''])
-    tnz = tnz.append(tmp)
+    ttnz = pd.concat([tnz,tmp],ignore_index=True)
 
     return(tnz)

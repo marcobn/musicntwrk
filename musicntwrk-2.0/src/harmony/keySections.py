@@ -57,13 +57,15 @@ def keySections(sections,GxsecDi,dnodes,measure=None):
             tmp = pd.DataFrame([[str(i),str(np.asarray(fmeasure)[sections[i]])+'-'+str(np.asarray(fmeasure)[sections[i+1]])
                                 ,str(prevalent_key[i].pitchNames),key[i]]],
                                 columns=['Section','measures','prevalent_chord','region'])
-            keySections = keySections.append(tmp)
+            # keySections = keySections.append(tmp)
+            keySections = pd.concat([keySections,tmp],ignore_index=True)
     else:
         keySections = pd.DataFrame(None,columns=['Section','chord range','prevalent_chord','region'])
         for i in range(len(key)):    
             tmp = pd.DataFrame([[str(i),str(sections[i])+'-'+str(sections[i+1])
                                 ,str(prevalent_key[i].pitchNames),key[i]]],
                                 columns=['Section','chord range','prevalent_chord','region'])
-            keySections = keySections.append(tmp)
+            # keySections = keySections.append(tmp)
+            keySections = pd.concat([keySections,tmp],ignore_index=True)
 
     return(key,keySections)

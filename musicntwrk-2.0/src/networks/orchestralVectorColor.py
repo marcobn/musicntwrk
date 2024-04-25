@@ -26,7 +26,8 @@ def orchestralVectorColor(orch,dnodes,part,color='coolwarm'):
     pdict = pd.DataFrame(None,columns=['vec','part'])
     for n in range(len(part)):
         tmp = pd.DataFrame( [[dnodes.iloc[int(list(part.keys())[n])][0], list(part.values())[n]]], columns=['vec','part'] )
-        pdict = pdict.append(tmp)
+        # pdict = pdict.append(tmp)
+        pdict = pd.concat([pdict,tmp],ignore_index=True)
     dict_vec = pdict.set_index("vec", drop = True)
     orch_color = np.zeros(orch.shape)
     for i in range(orch.shape[0]):
