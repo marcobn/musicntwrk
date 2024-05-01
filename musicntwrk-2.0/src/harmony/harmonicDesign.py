@@ -99,6 +99,7 @@ def harmonicDesign(mk,nnodes,refnodes,refedges,nedges=2,dualedge=3,nstart=None,s
         eunodes,euedges,_,_,_,_,_ = mk.network(space='score',seq=eulerseq,ntx=True,general=True,
                                                distance='euclidean',grphtype='directed')
         drawNetwork(nodes=eunodes,edges=euedges,grphtype='directed')
+        return(eulerseq,eunodes,euedges,avgdeg,None)
     if write:
         WRITEscoreOps(eulerseq,w=write)
     
