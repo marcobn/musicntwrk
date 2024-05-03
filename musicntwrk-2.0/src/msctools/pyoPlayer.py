@@ -10,7 +10,7 @@ import pyo
 
 from .decorators import threading_decorator
 
-import msctools.cfg as cfg
+import musicntwrk.msctools.cfg as cfg
 
 class pyoClip(pyoObject):
 	

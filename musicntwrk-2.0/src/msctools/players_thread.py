@@ -14,7 +14,103 @@ from .devices import Spat
 from .osctools import client
 from .decorators import threading_decorator
 
-import .cfg as cfg
+import musicntwrk.msctools.cfg as cfg
+
+@threading_decorator
+def playerCube(clips,clipsdur,track,delay=0.0,source=None,random=False,X0=0.0,Y0=1.0,Z0=0.0,azi=0.0,ele=0.0,mode='network',external=None,nxmodel='barabasi_albert_graph',*args):
+	''' 
+	Play clips in sequence waiting for next clip in following mode
+	mode = "network"    : sequence defined by the eulerian path on a network
+						: network models can be found here: 
+						: https://networkx.org/documentation/stable/reference/generators.html
+						: arguments are passed through *args
+	mode = "sequential" : plays the clips in descending order
+	mode = "random"     : plays clips in random order
+	mode = "external"   : plays clip with a user supplied sequence
+	'''
+	# delay the start of playback
+	time.sleep(delay)
+	while True:
+		if cfg.stop[track]:
+			break
+		if mode == 'network':
+			mynetx = getattr(nx,nxmodel)
+			Gx = mynetx(*args)
+			chino = chinese_postman(Gx,None,verbose=False)
+			seq = [chino[0][0]]
+			for s in range(1,len(chino)):
+				seq.append(chino[s][1])
+				if cfg.stop[track]:
+					break
+		elif mode == 'sequential':
+			seq = np.linspace(0,len(clips[track])-1,len(clips[track]),dtype=int).tolist()
+		elif mode == 'random':
+			seq = np.linspace(0,len(clips[track])-1,len(clips[track]),dtype=int).tolist()
+			np.random.shuffle(seq)
+		elif mode == 'external':
+			seq = external
+		else:
+			print('mode not implemented')
+		for n in range(len(seq)):
+			# set position of Spat source if needed
+			if random:
+				X = 2.0*np.random.rand() - 1.0
+				Spat(source).car(X,Y0,Z0,azi,ele)
+			else:
+				Spat(source).car(X0,Y0,Z0,azi,ele)
+			client("/live/clip/fire",[track,seq[n]],cfg.HOST,cfg.PORT).send()
+			time.sleep(np.abs(clipsdur[track][seq[n]]+np.random.rand()*cfg.sleep[track]))
+			if cfg.stop[track]:
+				break
+
+@threading_decorator
+def playerDome(clips,clipsdur,track,delay=0.0,source=None,random=False,azi=0.0,ele=0.0,radius=1.0,azispan=0.0,elespan=0.0,mode='network',external=None,nxmodel='barabasi_albert_graph',*args):
+	''' 
+	Play clips in sequence waiting for next clip in following mode
+	mode = "network"    : sequence defined by the eulerian path on a network
+						: network models can be found here: 
+						: https://networkx.org/documentation/stable/reference/generators.html
+						: arguments are passed through *args
+	mode = "sequential" : plays the clips in descending order
+	mode = "random"     : plays clips in random order
+	mode = "external"   : plays clip with a user supplied sequence
+	'''
+	# delay the start of playback
+	time.sleep(delay)
+	while True:
+		if cfg.stop[track]:
+			break
+		if mode == 'network':
+			mynetx = getattr(nx,nxmodel)
+			Gx = mynetx(*args)
+			chino = chinese_postman(Gx,None,verbose=False)
+			seq = [chino[0][0]]
+			for s in range(1,len(chino)):
+				seq.append(chino[s][1])
+				if cfg.stop[track]:
+					break
+		elif mode == 'sequential':
+			seq = np.linspace(0,len(clips[track])-1,len(clips[track]),dtype=int).tolist()
+		elif mode == 'random':
+			seq = np.linspace(0,len(clips[track])-1,len(clips[track]),dtype=int).tolist()
+			np.random.shuffle(seq)
+		elif mode == 'external':
+			seq = external
+		else:
+			print('mode not implemented')
+		for n in range(len(seq)):
+			# set position of Spat source if needed
+			if random:
+				azi = np.random.randint(0,360)
+				ele = np.random.randint(0,90)
+				Spat(source).deg(azi,ele,radius,azispan,elespan)
+			else:
+				Spat(source).deg(azi,ele,radius,azispan,elespan)
+			client("/live/clip/fire",[track,seq[n]],cfg.HOST,cfg.PORT).send()
+			time.sleep(np.abs(clipsdur[track][seq[n]]+np.random.rand()*cfg.sleep[track]))
+			if cfg.stop[track]:
+				break
+
 
 @threading_decorator
 def playerA(clips,clipsdur,track,delay=0.0,source=None,random=False,Y0=1.0,Z0=0.0,azi=0.0,ele=0.0,mode='network',external=None,nxmodel='barabasi_albert_graph',*args):

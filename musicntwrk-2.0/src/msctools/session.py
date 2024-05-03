@@ -9,7 +9,7 @@
 import time
 
 from .base import *
-import .cfg as cfg
+import musicntwrk.msctools.cfg as cfg
 
 def trackList(session):
 	num_tracks = session.num_tracks()

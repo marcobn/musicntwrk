@@ -13,7 +13,7 @@ from .networks import *
 from .devices import Spat
 from .osctools import client
 
-import .cfg as cfg
+import musicntwrk.msctools.cfg as cfg
 
 def playerA(clips,clipsdur,track,delay=0.0,source=None,random=False,Y0=1.0,Z0=0.0,azi=0.0,ele=0.0,mode='network',external=None,nxmodel='barabasi_albert_graph',*args):
 	''' 

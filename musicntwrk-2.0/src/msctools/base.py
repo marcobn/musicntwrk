@@ -10,7 +10,7 @@ from scipy.io import wavfile
 
 from .osctools import client
 from .converters import *
-import msctools.cfg as cfg
+import musicntwrk.msctools.cfg as cfg
 
 # base classes
 

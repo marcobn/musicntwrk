@@ -9,7 +9,7 @@ import numpy as np
 
 from .converters import *
 from .devices import Spat
-import msctools.cfg as cfg
+import musicntwrk.msctools.cfg as cfg
 
 # Dynamics
 
