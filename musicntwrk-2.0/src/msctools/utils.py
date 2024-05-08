@@ -7,6 +7,10 @@
 # utility functions
 
 import glob
+import musicntwrk.msctools.cfg as cfg
+from .decorators import threading_decorator
+from tqdm import tqdm
+import time
 
 def importSoundfiles(dirpath='./',filepath='./'):
 	# reading wavefiles
@@ -20,3 +24,9 @@ def importSoundfiles(dirpath='./',filepath='./'):
 		print('error in file reading',dirpath+filepath)
 		pass
 	return(fil)
+
+@threading_decorator
+def timer(sec):
+    nstep = sec/cfg.TICK
+    for i in tqdm(range(int(nstep))):
+        time.sleep(cfg.TICK)

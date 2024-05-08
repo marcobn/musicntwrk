@@ -148,7 +148,7 @@ def lineCycle(source,device,X0,Y0,Z0,T,cycle=1,dir='r',*args):
 	nt0 = int((X0+1)/2*nt)
 	# Formula to correct for the delay in the Spat OSC messaging server (empirical!!!)
 	wait = (T-0.0028*nt)/nt
-	X = np.linspace(-1,1,nt)
+	X = np.linspace(-X0,X0,nt)
 	Y = np.linspace(Y0,Y0,nt)
 	Z = np.linspace(Z0,Z0,nt)
 	if dir == 'r':

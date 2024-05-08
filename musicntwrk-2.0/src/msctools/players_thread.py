@@ -52,12 +52,21 @@ def playerCube(clips,clipsdur,track,delay=0.0,source=None,random=False,X0=0.0,Y0
 		else:
 			print('mode not implemented')
 		for n in range(len(seq)):
+			# print(source)
 			# set position of Spat source if needed
-			if random:
+			if random and source != None:
+				# print('random')
 				X = 2.0*np.random.rand() - 1.0
 				Spat(source).car(X,Y0,Z0,azi,ele)
 			else:
-				Spat(source).car(X0,Y0,Z0,azi,ele)
+				# print('not random')
+				if source != None:
+					# print('source')
+					Spat(source).car(X0,Y0,Z0,azi,ele)
+				else:
+					# print('no source')
+					# source = None
+					pass
 			client("/live/clip/fire",[track,seq[n]],cfg.HOST,cfg.PORT).send()
 			time.sleep(np.abs(clipsdur[track][seq[n]]+np.random.rand()*cfg.sleep[track]))
 			if cfg.stop[track]:

@@ -189,6 +189,16 @@ class Clip:
 		sr, wav = wavfile.read(fil)
 		nsamples = wav.size/wav.shape[1]
 		return(nsamples/sr)
+
+	def gain(self,gain=db2value(0.0),mode='set'):
+		if mode == 'setdb':
+			client("/live/clip/set/gain",[self.n,self.c,db4value(gain)],self.host,self.port).send()
+		if mode == 'set':
+			client("/live/clip/set/gain",[self.n,self.c,gain],self.host,self.port).send()
+		if mode == 'get':
+			client("/live/clip/get/gain",[self.n,self.c],self.host,self.port).send()
+			time.sleep(cfg.TICK)
+			return(value2db(cfg.data[1]))
 	
 class ClipSlot:
 	
