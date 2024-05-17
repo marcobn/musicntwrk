@@ -112,7 +112,12 @@ class Track:
 			return(cfg.data[1])
 		
 	def panning(self,pan=0,mode='set'):
-		client("/live/track/set/panning",[self.n,pan],self.host,self.port).send()
+		if mode == 'set':
+			client("/live/track/set/panning",[self.n,pan],self.host,self.port).send()
+		if mode == 'get':
+			client("/live/track/get/panning",[self.n],self.host,self.port).send()
+			time.sleep(cfg.TICK)
+			return(cfg.data[1]*50)
 		
 	def arrangement(self,mode='name'):
 		if mode == 'name':

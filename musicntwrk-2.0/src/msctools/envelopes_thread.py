@@ -110,6 +110,88 @@ def setVol(tracks,tracklist,V):
 	for tr in tracklist:
 		tracks[tr].volume(V,mode='set')
 		
+# Panning Live
+
+@threading_decorator			
+def lineCycleLive(tracks,tracklist,pan0,T,cycle=1,dir='r',*args):
+	# Spans the whole range [-1.0,1.0] starting from an arbitrary position in time T
+	# dir='r' starts movement in r direction ('l' for left)
+	assert type(tracklist) == list, 'must be a list of tracks'
+	if dir == 'r':
+		c0 = 0
+	else:
+		c0 = 1
+	nt = int(T/cfg.CLOCK)
+	nt0 = int((pan0+1)/2*nt)
+	
+	X = np.linspace(-pan0,pan0,nt)
+
+	if dir == 'r':
+		for i in range(nt0,nt):
+			time.sleep(cfg.CLOCK)
+			for tr in tracklist:
+				tracks[tr].panning(X[i*(-1)**c0])
+			if cfg.stop_source[tracklist]: break
+	else:
+		for i in range(nt0)[::-1]:
+			time.sleep(cfg.CLOCK)
+			for tr in tracklist:
+				tracks[tr].panning(X[i])
+			if cfg.stop_source[tracklist]: break
+	if c0 == 1: cycle += 1
+	for c in range((c0+1),cycle):
+		for i in range(nt):
+			time.sleep(cfg.CLOCK)
+			for tr in tracklist:
+				tracks[tr].panning(X[i*(-1)**c0])
+			if cfg.stop_source[tracklist]: break
+		if cfg.stop_source[tracklist]: break
+
+@threading_decorator			
+def linePingPongLive(tracks,tracklist,pan0,T,cycle=1,dir='r',*args):
+    # Spans the whole range [-1.0,1.0] starting from an arbitrary position in time T
+    # dir='r' starts movement in r direction ('l' for left)
+    assert type(tracklist) == list, 'must be a list of tracks'
+    if dir == 'r':
+        c0 = 0
+    else:
+        c0 = 1
+    nt = int(T/cfg.CLOCK)
+    nt0 = int((pan0+1)/2*nt)
+    
+    X = np.linspace(-pan0,pan0,nt)
+    
+    if dir == 'r':
+        for c in range(cycle):
+            for i in range(nt):
+                time.sleep(cfg.CLOCK)
+                for tr in tracklist:
+                    tracks[tr].panning(X[i*(-1)**c0])
+                if cfg.stop_source[tracklist]: break
+            c0 = (c0+1)%2
+            for i in range(nt):
+                time.sleep(cfg.CLOCK) 
+                for tr in tracklist:
+                    tracks[tr].panning(X[i*(-1)**c0])
+                if cfg.stop_source[tracklist]: break
+            c0 = (c0+1)%2
+            if cfg.stop_source[tracklist]: break
+    elif dir == 'l':
+        for c in range(cycle):
+            for i in range(nt):
+                time.sleep(cfg.CLOCK)
+                for tr in tracklist:
+                    tracks[tr].panning(X[i*(-1)**c0])
+                if cfg.stop_source[tracklist]: break
+            c0 = (c0+1)%2
+            for i in range(nt):
+                time.sleep(cfg.CLOCK) 
+                for tr in tracklist:
+                    tracks[tr].panning(X[i*(-1)**c0])
+                if cfg.stop_source[tracklist]: break
+            c0 = (c0+1)%2
+            if cfg.stop_source[tracklist]: break
+
 # Position (generic device)
 
 @threading_decorator		
