@@ -192,8 +192,17 @@ class Clip:
 		time.sleep(cfg.TICK)
 		fil = cfg.data[2]
 		sr, wav = wavfile.read(fil)
-		nsamples = wav.size/wav.shape[1]
+		try:
+			nsamples = wav.size/wav.shape[1]
+		except:
+			nsamples = wav.size
 		return(nsamples/sr)
+
+	def length(self):
+		client("/live/clip/get/length",[self.n,self.c],self.host,self.port).send()
+		time.sleep(cfg.TICK)
+		return(cfg.data[2])
+
 
 	def gain(self,gain=db2value(0.0),mode='set'):
 		if mode == 'setdb':
@@ -204,6 +213,14 @@ class Clip:
 			client("/live/clip/get/gain",[self.n,self.c],self.host,self.port).send()
 			time.sleep(cfg.TICK)
 			return(value2db(cfg.data[1]))
+
+	def pitch(self,pitch=0,mode='set'):
+		if mode == 'set':
+			client("/live/clip/set/pitch_coarse",[self.n,self.c,pitch],self.host,self.port).send()
+		if mode == 'get':
+			client("/live/clip/get/pitch_coarse",[self.n,self.c],self.host,self.port).send()
+			time.sleep(cfg.TICK)
+			return(cfg.data[1])
 	
 class ClipSlot:
 	
