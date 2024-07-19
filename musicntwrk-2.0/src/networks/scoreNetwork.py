@@ -60,11 +60,9 @@ def scoreNetwork(seq,ntx,general,distance,TET):
     dff,idx,cnt = np.unique(df,return_inverse=True,return_counts=True)
     for n in range(dff.shape[0]):
         nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
-#       dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
         dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
         namecnt = pd.DataFrame([[str(dff[n]),cnt[n]]],columns=['Label','Counts'])
-#       dcounts = dcounts.append(namecnt)
-        dcounts = pd.concat([dnodes,namecnt],ignore_index=True)
+        dcounts = pd.concat([dcounts,namecnt],ignore_index=True)
 
     for n in range(1,len(seq)):
         if len(seq[n-1]) == len(seq[n]):
