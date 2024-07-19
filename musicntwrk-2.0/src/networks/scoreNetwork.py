@@ -52,7 +52,6 @@ def scoreNetwork(seq,ntx,general,distance,TET):
             for i in p.pcs:
                 tmp.append(list(dict24.keys())[list(dict24.values()).index(i)]) 
             nameseq = pd.DataFrame([[''.join(tmp)]],columns=['Label'])
-#       dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
         dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
     df = np.asarray(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
@@ -91,7 +90,6 @@ def scoreNetwork(seq,ntx,general,distance,TET):
             else:
                 tmp = pd.DataFrame([[str(idx[n-1]),str(idx[n]),str(1/pair),name]],
                                     columns=['Source','Target','Weight','Label'])
-#           dedges = pd.concat([dedges,tmp],ignore_index=True)
             dedges = pd.concat([dedges,tmp],ignore_index=True)
             
 # write dataframe with pcs rather than indeces
