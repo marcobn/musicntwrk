@@ -26,7 +26,7 @@ with open(path.join(this_directory, 'README.md')) as f:
 
 setup(name='musicntwrk',
 
-	version='2.3.7',
+	version='2.3.8',
 
 	description='music as data, data as music',
 	long_description=long_description,
