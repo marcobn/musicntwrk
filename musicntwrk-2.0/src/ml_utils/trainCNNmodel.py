@@ -62,7 +62,8 @@ def trainCNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,nu
         model.add(Dropout(0.3))
         model.add(Dense(num_classes, activation='softmax'))
 
-        optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=0.001)
+        # optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=0.001)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
         model.compile(optimizer=optimizer,
                       loss='sparse_categorical_crossentropy',
                       metrics=['accuracy'])

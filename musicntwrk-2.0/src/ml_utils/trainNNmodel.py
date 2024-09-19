@@ -40,7 +40,8 @@ def trainNNmodel(mfcc,label,gpu=0,cpu=4,niter=100,nstep=10,neur=16,test=0.08,num
             tf.keras.layers.Dense(2*nnn, activation=tf.nn.relu),
             tf.keras.layers.Dropout(0.2),
             tf.keras.layers.Dense(num_classes, activation=tf.nn.softmax)])
-        optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=0.001)
+        # optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=0.001)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
         model.compile(optimizer=optimizer,
                       loss='sparse_categorical_crossentropy',
                       metrics=['accuracy'])
