@@ -18,6 +18,94 @@ from .decorators import threading_decorator
 import musicntwrk.msctools.cfg as cfg
 
 @threading_decorator
+def simplePlayerP(clips=None,track=0,delay=0.0,offset=1.0,panning=None,gain=1.0,impulse=None,bal=0.25,
+            mode='network',external=None,nxmodel='barabasi_albert_graph',*args):
+    ''' 
+    Play clips in sequence waiting for next clip in following mode
+    mode = "network"    : sequence defined by the eulerian path on a network
+                        : network models can be found here: 
+                        : https://networkx.org/documentation/stable/reference/generators.html
+                        : arguments are passed through *args
+    mode = "sequential" : plays the clips in descending order
+    mode = "random"     : plays clips in random order
+    mode = "external"   : plays clip with a user supplied sequence
+    '''
+
+    def sleep(sec):
+        # internal scope function to pause execution while controlling the termination of the thread
+        ntx = int(sec/cfg.TICK)
+        for n in range(ntx):
+            time.sleep(cfg.TICK)
+            if cfg.stop[track]:
+                if panout.isPlaying(): 
+                    panout.setMul(pyo.SigTo(value=0.0, time=3.0, init=gain))
+                    panout.stop(wait=3.0)
+                    rev.stop(wait=3.0)
+                    snd.stop(wait=3.0)
+                    try:
+                        pan.stop(wait=3.0)
+                    except:
+                        pass
+                    time.sleep(3.0)
+                break
+        snd.stop()
+        stop = True
+        return(stop)
+        
+    if clips == None:
+        return('no clips provided')
+    time.sleep(offset)
+    while True:
+        time.sleep(cfg.TICK)
+        if cfg.stop[track]:
+            break
+        if mode == 'network':
+            mynetx = getattr(nx,nxmodel)
+            Gx = mynetx(*args)
+            chino = chinese_postman(Gx,None,verbose=False)
+            seq = [chino[0][0]]
+            for s in range(1,len(chino)):
+                seq.append(chino[s][1])
+                if cfg.stop[track]:
+                    break
+        elif mode == 'sequential':
+            seq = np.linspace(0,len(clips)-1,len(clips),dtype=int).tolist()
+        elif mode == 'random':
+            seq = np.linspace(0,len(clips)-1,len(clips),dtype=int).tolist()
+            np.random.shuffle(seq)
+        elif mode == 'external':
+            seq = external
+        else:
+            print('mode not implemented')
+        for n in range(len(seq)):
+            # set panning
+            if panning == 'random':
+                pan = np.random.rand()
+            elif isinstance(panning,float) or isinstance(panning,int):
+                pan = panning
+            elif panning == 'LR':
+                pan = pyo.SigTo(value=1.0, time=pyo.sndinfo(clips[n])[1], init=0.0)
+            elif panning == 'RL':
+                pan = pyo.SigTo(value=0.0, time=pyo.sndinfo(clips[n])[1], init=1.0)
+            else:
+                print('panning not defined')
+            snd = pyo.SfPlayer(clips[seq[n]])
+            if impulse != None:
+                rev = pyo.CvlVerb(snd,impulse,bal=bal,mul=2*gain)
+            else:
+                rev = snd
+            panout = pyo.SPan(rev,outs=2,pan=pan,mul=gain).out()
+            stop = sleep(pyo.sndinfo(clips[seq[n]])[1]+delay*np.random.rand())
+            panout.stop()
+            rev.stop()
+            snd.stop()
+            try:
+                pan.stop()
+            except:
+                pass
+            if stop: break
+
+@threading_decorator
 def playerP(clips=None,track=0,delay=0.0,offset=1.0,panning=None,gain=1.0,impulse=None,bal=0.25,
             mode='network',external=None,nxmodel='barabasi_albert_graph',*args):
     ''' 
