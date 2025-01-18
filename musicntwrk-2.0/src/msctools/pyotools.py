@@ -18,7 +18,7 @@ from .decorators import threading_decorator
 import musicntwrk.msctools.cfg as cfg
 
 @threading_decorator
-def simplePlayerP(clips=None,track=0,delay=0.0,offset=1.0,panning=None,gain=1.0,impulse=None,bal=0.25,
+def simplePlayerP(clips=None,dur=None,track=0,delay=0.0,offset=1.0,panning=None,gain=1.0,impulse=None,bal=0.25,
             mode='network',external=None,nxmodel='barabasi_albert_graph',*args):
     ''' 
     Play clips in sequence waiting for next clip in following mode
@@ -89,13 +89,13 @@ def simplePlayerP(clips=None,track=0,delay=0.0,offset=1.0,panning=None,gain=1.0,
                 pan = pyo.SigTo(value=0.0, time=pyo.sndinfo(clips[n])[1], init=1.0)
             else:
                 print('panning not defined')
-            snd = pyo.SfPlayer(clips[seq[n]])
+            snd = clips[seq[n]].play()
             if impulse != None:
                 rev = pyo.CvlVerb(snd,impulse,bal=bal,mul=2*gain)
             else:
                 rev = snd
             panout = pyo.SPan(rev,outs=2,pan=pan,mul=gain).out()
-            stop = sleep(pyo.sndinfo(clips[seq[n]])[1]+delay*np.random.rand())
+            stop = sleep(dur[seq[n]]+delay*np.random.rand())
             panout.stop()
             rev.stop()
             snd.stop()
@@ -391,6 +391,20 @@ def importSoundfiles(dirpath='./',filepath='./',mult=0.1,gain=1.0):
         for file in glob.glob(dirpath+filepath):
             i = int(file.split('.')[3])
             fil[i] = file
+            obj[i] = pyo.SfPlayer(file,mul=mult*gain).stop()
+    except:
+        print('error in file reading')
+        pass
+    
+    return(obj,fil)
+
+def importSoundfilesT(dirpath='./',filepath='./',mult=0.1,gain=1.0):
+    # reading wavefiles
+    try:
+        obj = [None]*len(glob.glob(dirpath+filepath))
+        fil = [None]*len(glob.glob(dirpath+filepath))
+        for i,file in enumerate(sorted(glob.glob(dirpath+filepath))):
+            fil[i] = pyo.sndinfo(file)[1]
             obj[i] = pyo.SfPlayer(file,mul=mult*gain).stop()
     except:
         print('error in file reading')
