@@ -1,7 +1,7 @@
 #
 # msctools: my collection of composing and performing tools in python
 #
-# © 2023 Marco Buongiorno Nardelli
+# © 2025 Marco Buongiorno Nardelli
 #
 
 import numpy as np
@@ -31,6 +31,10 @@ COMM_B = 18081
 COMM_C = 18082
 COMM_D = 18083
 HOST = "127.0.0.1"
+
+CLICK = 0
+COUNTER = 0
+PLAY = False
 
 CLEANALL = False
 MASTER_STOP = False
