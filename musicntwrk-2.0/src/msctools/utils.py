@@ -9,7 +9,7 @@
 import glob
 import musicntwrk.msctools.cfg as cfg
 from .decorators import threading_decorator
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 import time
 
 def importSoundfiles(dirpath='./',filepath='./'):
