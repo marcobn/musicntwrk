@@ -394,7 +394,7 @@ def importSoundfiles(dirpath='./',filepath='./',mult=0.1,gain=1.0,sorted=False):
                 obj[i] = pyo.SfPlayer(file,mul=mult*gain).stop()
         else:
             for i,file in enumerate(glob.glob(dirpath+filepath)):
-                fil[i] = file
+                fil[i] = pyo.sndinfo(file)[1]
                 obj[i] = pyo.SfPlayer(file,mul=mult*gain).stop()
     except:
         print('error in file reading',dirpath)
