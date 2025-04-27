@@ -84,9 +84,9 @@ def simplePlayerP(clips=None,dur=None,track=0,delay=0.0,offset=1.0,panning=None,
             elif isinstance(panning,float) or isinstance(panning,int):
                 pan = panning
             elif panning == 'LR':
-                pan = pyo.SigTo(value=1.0, time=pyo.sndinfo(clips[n])[1], init=0.0)
+                pan = pyo.SigTo(value=1.0, time=dur[n], init=0.0)
             elif panning == 'RL':
-                pan = pyo.SigTo(value=0.0, time=pyo.sndinfo(clips[n])[1], init=1.0)
+                pan = pyo.SigTo(value=0.0, time=dur[n], init=1.0)
             else:
                 print('panning not defined')
             snd = clips[seq[n]].play()
