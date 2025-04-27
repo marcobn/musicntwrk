@@ -383,17 +383,21 @@ def pause(sec,last,*args):
         return(exit)
     
 
-def importSoundfiles(dirpath='./',filepath='./',mult=0.1,gain=1.0):
+def importSoundfiles(dirpath='./',filepath='./',mult=0.1,gain=1.0,sorted=False):
     # reading wavefiles
     try:
         obj = [None]*len(glob.glob(dirpath+filepath))
         fil = [None]*len(glob.glob(dirpath+filepath))
-        for file in glob.glob(dirpath+filepath):
-            i = int(file.split('.')[3])
-            fil[i] = file
-            obj[i] = pyo.SfPlayer(file,mul=mult*gain).stop()
+        if sorted:
+            for i,file in enumerate(sorted(glob.glob(dirpath+filepath))):
+                fil[i] = pyo.sndinfo(file)[1]
+                obj[i] = pyo.SfPlayer(file,mul=mult*gain).stop()
+        else:
+            for i,file in enumerate(glob.glob(dirpath+filepath)):
+                fil[i] = file
+                obj[i] = pyo.SfPlayer(file,mul=mult*gain).stop()
     except:
-        print('error in file reading')
+        print('error in file reading',dirpath)
         pass
     
     return(obj,fil)

@@ -66,8 +66,11 @@ def timbralNetwork(waves,vector,thup,thdw):
         tmp0 = (i+ini)*np.ones(vector.shape[0],dtype=int)
         tmp1 = index[:]
         tmp2 = np.sqrt(np.sum((vaux[i,:]-vector[:,:])**2,axis=(1,2)))
-        dedges = dedges.append(pd.DataFrame(data=np.column_stack((tmp0,tmp1,tmp2)),
-                                            columns=['Source','Target','Weight']))
+        temp = pd.DataFrame(data=np.column_stack((tmp0,tmp1,tmp2)),
+                                            columns=['Source','Target','Weight'])
+        dedges = pd.concat([dedges,temp],ignore_index=True)
+        # dedges = dedges.append(pd.DataFrame(data=np.column_stack((tmp0,tmp1,tmp2)),
+        #                                     columns=['Source','Target','Weight']))
     dedges = dedges.query('Weight<='+str(thup)).query('Weight>='+str(thdw))
     dedges['Weight'] = dedges['Weight'].apply(lambda x: 1/x)
     # do some cleaning

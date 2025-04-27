@@ -72,7 +72,7 @@ def drawNetwork3D(nodes,edges,scale=5,seed=None,colorscale='haline',title='',arr
     y_edges=[]
     z_edges=[]
 
-    #need to fill these with all of the coordiates
+    #need to fill these with all of the coordinates
     def getlabel(source,target):
         tmp0 = edges[edges['Source']==source]
         tmp1 = tmp0[tmp0['Target']==target]
