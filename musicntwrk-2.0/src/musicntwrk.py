@@ -1489,7 +1489,7 @@ class musicntwrk:
 
         
     def network(self,space=None,label=None,dictionary=None,thup=None,thdw=None,thup_e=None,thdw_e=None,distance=None,prob=None,write=None,\
-                pcslabel=None,vector=None,ops=None,name=None,ntx=None,general=None,seq=None,sub=None,start=None,end=None,grphtype=None,\
+                pcslabel=None,vector=None,ops=None,name=None,ntx=None,general=None,unique=None,seq=None,sub=None,start=None,end=None,grphtype=None,\
                 wavefil=None,cepstrum=None,color=None):
         '''
         define networks in the musical space specified in 'space': pcs (reg and ego), vLead (reg, vec, name and nameVec), 
@@ -1538,10 +1538,10 @@ class musicntwrk:
         if space == 'score' and sub != True:
             from .networks.scoreNetwork import scoreNetwork
             if ntx:
-                nodes,edges,counts,deg,modul,Gxfull,Gxufull = scoreNetwork(seq,ntx,general,distance,TET=self.TET)
+                nodes,edges,counts,deg,modul,Gxfull,Gxufull = scoreNetwork(seq,ntx,unique,general,distance,TET=self.TET)
                 return(nodes,edges,counts,deg,modul,Gxfull,Gxufull)
             else:
-                nodes, edges, counts = scoreNetwork(seq,ntx,general,distance,TET=self.TET)
+                nodes, edges, counts = scoreNetwork(seq,ntx,unique,general,distance,TET=self.TET)
                 return(nodes, edges, counts)
         
         if space == 'score' and sub:
