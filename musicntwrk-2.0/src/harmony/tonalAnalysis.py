@@ -107,7 +107,7 @@ def string2Chord(ch,key):
     rn = m21.roman.romanNumeralFromChord(m21.chord.Chord(s),m21.key.Key(key)).figure
     return(s,rn)
 
-def transMatrix(Gedges,idx,key='C',N=10):
+def transMatrix(Gnodes,Gedges,idx,key='C',N=10):
     # calculate weights of edges of directional network (transition probability matrix)
     idsec = idx
     edge,weight = np.unique(np.array(Gedges[idsec][["Source","Target"]],dtype=int),return_counts=True,axis=0)
