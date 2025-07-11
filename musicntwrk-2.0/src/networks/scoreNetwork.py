@@ -25,7 +25,7 @@ from ..utils.minimalDistance import minimalDistance
 from ..utils.minimalNoBijDistance import minimalNoBijDistance
 from ..utils.generalizedOpsName import generalizedOpsName, generalizedOpsNameAbs
 
-def scoreNetwork(seq,ntx,unique,general,distance,TET):
+def scoreNetwork(seq,ntx,general,distance,TET):
     
     ''' 
     •	generates the directional network of chord progressions from any score in musicxml format
@@ -56,12 +56,7 @@ def scoreNetwork(seq,ntx,unique,general,distance,TET):
     df = np.asarray(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
     dcounts = pd.DataFrame(None,columns=['Label','Counts'])
-    if unique:
-        dff,idx,cnt = np.unique(df,return_inverse=True,return_counts=True)
-    else:
-        dff = df
-        idx = range(len(df))
-        cnt = np.ones(len(df))
+    dff,idx,cnt = np.unique(df,return_inverse=True,return_counts=True)
     for n in range(dff.shape[0]):
         nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
         dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
