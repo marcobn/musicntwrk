@@ -24,7 +24,8 @@ def keySections(sections,GxsecDi,dnodes,measure=None):
     prevalent_key = []
     for n in range(len(sections)-1):
         prevalent_chord = str(dnodes.set_index("Label", drop = True).\
-                                iloc[int(sorted((value, key) for (key,value) in GxsecDi[n].degree)[-1][1])]).split()[2].replace(",","")
+                    iloc[int(sorted((value, key) for (key,value) in GxsecDi[n].degree)[-1][1]\
+                             .replace('[','').replace(']',''))]).split()[2].replace(",","")
         ccc = []
         for char in prevalent_chord:
             ccc.append(char)

@@ -56,7 +56,7 @@ def scoreNetwork(seq,ntx,general,distance,TET):
     df = np.asarray(dnodes)
     dnodes = pd.DataFrame(None,columns=['Label'])
     dcounts = pd.DataFrame(None,columns=['Label','Counts'])
-    dff,idx,cnt = np.unique(df,return_inverse=True,return_counts=True)
+    dff,idx,cnt = np.unique(df.flatten(),return_inverse=True,return_counts=True)
     for n in range(dff.shape[0]):
         nameseq = pd.DataFrame([[str(dff[n])]],columns=['Label'])
         dnodes = pd.concat([dnodes,nameseq],ignore_index=True)
