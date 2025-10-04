@@ -110,7 +110,7 @@ class PCSet:
         '''
         return((pivot-self.pcs)%self.TET)
 
-    def I(self):
+    def I0(self):
         '''
         •	inverse operation: (-pcs modulo TET)
         '''
@@ -640,7 +640,7 @@ class PCmidiR:
         •	I operation, including voice-leading preserving contextual inversion
         '''
         if not isinstance(p,list):
-            return(PCmidiR(p-self.midi+p))
+            return(PCmidiR(p-self.midi))
         else:
             # fixed pitches are given as indeces of the chord
             if len(p) > 2:
@@ -889,7 +889,7 @@ class MIDIset:
         •	I operation, including voice-leading preserving contextual inversion
         '''
         if not isinstance(p,list):
-            self.midi = p-self.midi+p
+            self.midi = p-self.midi
         else:
             # fixed pitches are given as indeces of the chord
             if len(p) > 2:
