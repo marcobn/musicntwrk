@@ -18,6 +18,7 @@ import fractions as fr
 from math import gcd
 
 class PCSet:
+    """Pitch-class set abstraction supporting common set-theoretic operations in arbitrary TET systems."""
 
     def __init__(self,pcs,TET=12,UNI=True,ORD=True):
         '''
@@ -89,7 +90,7 @@ class PCSet:
         return(np.unique((self.pcs*t)%self.TET//1).astype(int))
         
     def multiplyBoulez(self,b):
-        # Boulez pitch class multiplication of a x b
+        """Apply Boulez pitch-class multiplication by ``b`` and return the resulting normal order."""
         ivec = self.LISVector()
         m = []
         for i in range(ivec.shape[0]-1):
@@ -149,7 +150,7 @@ class PCSet:
         return(np.histogram(itv,bins)[0])
 
     def Op(self,name):
-        # operate on the pcs with a generic distance operator
+        """Operate on the set with the distance operator encoded by ``name``."""
         from .utils.Remove import Remove
         
         def plusAndMinusPermutations(items):
@@ -181,7 +182,7 @@ class PCSet:
         return(Remove(outset))
         
     def VLOp(self,name):
-        # operate on the pcs with a normal-ordered voice-leading operator
+        """Operate on the set with the voice-leading operator encoded by ``name``."""
         
         op = []
         for num in re.findall("[-\d]+", name):
@@ -260,6 +261,7 @@ class PCSet:
             return(c)
 
 class PCSetR:
+    """Pitch-class set wrapper that preserves numpy arrays during transformations and comparisons."""
 
     def __init__(self,pcs,TET=12,UNI=True,ORD=True):
         '''
@@ -332,7 +334,7 @@ class PCSetR:
         return(PCSetR(np.unique((self.pcs*t)%self.TET//1,TET=self.TET).astype(int)))
         
     def multiplyBoulez(self,b):
-        # Boulez pitch class multiplication of a x b
+        """Apply Boulez pitch-class multiplication by ``b`` returning a new set."""
         ivec = self.LISVector()
         m = []
         for i in range(ivec.shape[0]-1):
@@ -386,7 +388,7 @@ class PCSetR:
         return(np.histogram(itv,bins)[0])
 
     def Op(self,name):
-        # operate on the pcs with a distance operator O({x})
+        """Operate on the set with the distance operator ``O`` described by ``name``."""
         
         def plusAndMinusPermutations(items):
             for p in iter.permutations(items):
@@ -419,7 +421,7 @@ class PCSetR:
         return(PCSetR(Remove(outset),TET=self.TET))
         
     def VLOp(self,name,norm=True):
-        # operate on the pcs with a (normal-ordered )relational operator R({x})
+        """Apply the voice-leading operator ``R`` to the set, optionally normalising first."""
         op = []
         for num in re.findall("[-\d]+", name):
             op.append(int(num))
@@ -432,7 +434,7 @@ class PCSetR:
             return(PCSetR(selfto,TET=self.TET))
     
     def NROp(self,ops=None):
-        # operate on the triad with a Neo-Rienmannian Operator
+        """Apply a Neo-Riemannian operator (P, L, or R) to the set."""
         x = self.pcs[1]-self.pcs[0]
         y = self.pcs[2]-self.pcs[1]
         if ops == None:
@@ -446,7 +448,7 @@ class PCSetR:
             return(PCSetR((2*x+y-self.pcs)%self.TET,TET=self.TET))
 
     def opsNameVL(self,b,norm=True):
-        # given two vectors returns the name of the (normal-ordered) voice-leading operator R that connects them
+        """Return the name of the minimal voice-leading operator relating ``self`` to ``b``."""
         if norm:
             a = self.normalOrder().pcs
             b = b.normalOrder().pcs  
@@ -475,8 +477,7 @@ class PCSetR:
         return('R('+np.array2string(diff,separator=',').replace(" ","").replace("[","").replace("]","")+')')
 
     def opsNameO(self,b):
-        # given two vectors returns the name of the distance 
-        # operator O that connects them
+        """Return the distance operator name that maps ``self`` onto ``b``."""
         a = np.sort(self.pcs)
         b = np.sort(b.pcs)
         d = np.zeros((b.shape[0]),dtype=int) 
@@ -532,6 +533,7 @@ class PCSetR:
         return(Fname)
 
 class PCmidiR:
+    """Container for MIDI pitch collections with utilities for set-theoretic and contrapuntal operations."""
     
     def __init__(self,midi,UNI=False,ORD=False,TET=12):
         '''
@@ -658,7 +660,7 @@ class PCmidiR:
                 return(PCmidiR(tmp))
 
     def VLOp(self,name):
-        # operate on the pcs with a normal-ordered relational operator R({x})
+        """Apply the specified voice-leading operator to the MIDI chord."""
         op = []
         for num in re.findall("[-\d]+", name):
             op.append(int(num))
@@ -667,7 +669,7 @@ class PCmidiR:
         return(PCmidiR(selfto))
     
     def opsNameVL(self,b):
-        # given two vectors returns the name of the normal-ordered voice-leading operator R that connects them
+        """Return the name of the voice-leading operator that maps ``self`` to ``b``."""
         a = self.midi
         b = b.midi  
         diff = b-a
@@ -825,6 +827,7 @@ class PCmidiR:
             return(c)
 
 class MIDIset:
+    """Mutable MIDI pitch collection that exposes voice-leading and sequencing utilities."""
     
     def __init__(self,midi,UNI=False,ORD=False,TET=12):
         '''
@@ -866,6 +869,7 @@ class MIDIset:
         self.TET = TET
 
     def pitches(self):
+        """Return the pitch names associated with the stored MIDI numbers."""
         if isinstance(self.midi,list):
             self.midi = np.array(self.midi)
         if isinstance(self.midi[0].tolist(),int) or isinstance(self.midi[0].tolist(),float):
@@ -904,7 +908,7 @@ class MIDIset:
                     self.midi = inv + octave*12
                 
     def VLOp(self,name):
-        # operate on the pcs with a normal-ordered relational operator R({x})
+        """Apply the relational voice-leading operator encoded in ``name`` to the set."""
         op = []
         for num in re.findall("[-\d]+", name):
             op.append(int(num))
@@ -971,6 +975,7 @@ class MIDIset:
         return((np.roll(self.midi,-1)-self.midi)%self.TET)
     
     def exchange(self,voices=[0,1],mode=[1,-1]):
+        """Return a new ordering where the specified voices exchange octaves."""
         tmp = np.sort(self.midi.tolist())
         tmp[voices] += np.array(mode)*self.TET
         return(tmp.tolist())
@@ -1141,22 +1146,37 @@ class MIDIset:
 
 
 class PCSrow:
+    """Helper for manipulating twelve-tone rows via T/I/R/M/Q transformations."""
 #     Helper class for 12-tone rows operations (T,I,R,M,Q)
+
     def __init__(self,pcs,TET=12):
+        """Initialise the row with a pitch-class sequence modulo ``TET``."""
         self.pcs = np.array(pcs)%TET
         self.TET = TET
+
     def normalOrder(self):
+        """Return the row in normal order with the first element at zero."""
         self.pcs -= self.pcs[0]
         return(PCSrow(self.pcs%self.TET))
+
     def intervals(self):
+        """Return the ordered interval sequence (LIS vector) of the row."""
         return((np.roll(self.pcs,-1)-self.pcs)%self.TET)
+
     def T(self,t=0):
+        """Return the transposed row by ``t`` semitones."""
         return(PCSrow((self.pcs+t)%self.TET,TET=self.TET))
+
     def I(self,pivot=0):
+        """Return the inversion of the row around the given ``pivot``."""
         return(PCSrow((pivot-self.pcs)%self.TET,TET=self.TET))
+
     def R(self,t=0):
+        """Return the retrograde of the row optionally followed by ``t`` transposition."""
         return(PCSrow(self.pcs[::-1]).T(t))
+
     def Q(self):
+        """Return the Morris and Starr Q-transformation of the row."""
         lisv = PCSrow(self.pcs).intervals()
         lisvQ = np.roll(lisv,np.where(lisv==6)[0][1]-np.where(lisv==6)[0][0])
         Qrow = [0]
@@ -1164,10 +1184,14 @@ class PCSrow:
             Qrow.append((Qrow[-1]+n)%self.TET)
         Qrow.pop()
         return(PCSrow(Qrow))
+
     def M(self):
+        """Return the multiplication of the row by five modulo ``TET``."""
         return(PCSrow((self.pcs*5)%self.TET//1,TET=self.TET))
+
     def constellation(self):
 #         Following Morris and Starr
+        """Return the Morris and Starr constellation table for the row."""
         reference = []
         entry = ['P',str(self.pcs),str(self.I().pcs),str(self.M().I().pcs),str(self.M().pcs)]
         reference.append(entry)
@@ -1180,8 +1204,10 @@ class PCSrow:
         reference.append(entry)
         star = pd.DataFrame(reference,columns=['','P','I','IM','M'])
         return(star)
+
     def star(self):
 #         star of the row in prime form
+        """Return the star (P, I, R, Q, M) of the row."""
         reference = []
         entry = ['P',(self.pcs)]
         reference.append(entry)
@@ -1197,6 +1223,7 @@ class PCSrow:
         return(star)
 
 class RHYTHMSeq:
+    """Representation of rhythmic sequences with set-theoretic and transformational utilities."""
 
     def __init__(self,rseq,REF='e',ORD=False):
         '''
@@ -1361,6 +1388,7 @@ class RHYTHMSeq:
                             .replace('(','').replace(')','').replace('\n','').replace('[','').replace(']',''))
         
     def binrep(self):
+        """Return the binary onset representation of the rhythm sequence."""
         bincoding = []
         for n in self.reduce2GCD()[:-1]:
             for i in range(int(n)):
@@ -1371,8 +1399,7 @@ class RHYTHMSeq:
         return(bincoding)
     
     def rhythm_canon(self,pattern=None):
-        # Finds the minimal length sequence of a rhythmic pattern and its augmentations that 
-        # produces a homogeneous pulse of beats (from ANDRANIK TANGIAN, Perspective of New Music, 2003)
+        """Generate a rhythmic canon following Tangian's algorithm for homogeneous pulses."""
         
         # seed pattern
         if pattern == None:
@@ -1447,8 +1474,10 @@ class RHYTHMSeq:
         return
 
 class musicntwrk:
+    """Facade providing access to MUSIC𝄞NTWRK dictionaries, networks, harmony, timbre, and sonification tools."""
     
     def __init__(self,TET=12):
+        """Initialise the facade with the desired equal-temperament divisor."""
         self.TET = TET
         
     def dictionary(self,space=None,N=None,Nc=None,order=None,row=None,a=None,prob=None,REF=None,scorefil=None,music21=None,
