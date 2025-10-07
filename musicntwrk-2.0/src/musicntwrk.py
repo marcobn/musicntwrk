@@ -120,7 +120,7 @@ class PCSet:
         '''
         •	most compact normal 0 order between pcs and its inverse
         '''
-        s_orig = self.pcs
+        s_orig = self.pcs.copy()
         sn = np.sum((self.normalOrder()-self.normalOrder()[0])%self.TET)
         self.pcs = self.I()
         si = np.sum((self.normalOrder()-self.normalOrder()[0])%self.TET)
@@ -210,7 +210,7 @@ class PCSet:
         if self.TET != 12:
             print('Forte class defined only for 12-TET')
             return()
-        Fname = m21.chord.Chord(self.primeForm().pcs.tolist()).forteClass
+        Fname = m21.chord.Chord(self.primeForm().tolist()).forteClass
         return(Fname) 
            
     def commonName(self):
@@ -287,7 +287,7 @@ class PCSetR:
         
         # trivial sets
         if len(self.pcs) == 1:
-            return(PCSetR(self.pcs-self.pcs[0],TET=self.TET))
+            return(PCSetR(self.pcs-self.pcs[0],TET=self.TET,ORD=False,UNI=False))
 #        if len(self.pcs) == 2:
 #            return(PCSetR(self.pcs,TET=self.TET))
 
@@ -313,7 +313,7 @@ class PCSetR:
                 pcs_norm = np.roll(self.pcs,nroll)
                 break
         if np.array(np.where(dist == dist.min())).shape[1] != 1: pcs_norm = self.pcs
-        return(PCSetR(pcs_norm,TET=self.TET))
+        return(PCSetR(pcs_norm,TET=self.TET,ORD=False,UNI=False))
 
     def normal0Order(self):
         '''
@@ -352,23 +352,23 @@ class PCSetR:
         '''
         •	I operation: (-pcs modulo TET)
         '''
-        return(PCSetR((pivot-self.pcs)%self.TET,TET=self.TET))
+        return(PCSetR((pivot-self.pcs)%self.TET,TET=self.TET,ORD=False,UNI=False))
 
     def primeForm(self):
         '''
         •	most compact normal 0 order between pcs and its I
         '''
-        s_orig = self.pcs
+        s_orig = self.pcs.copy()
         sn = np.sum((self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET)
         self.pcs = self.I().pcs
         si = np.sum((self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET)
         if sn <= si:
             self.pcs = s_orig
-            return(PCSetR((self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET,TET=self.TET))
+            return(PCSetR((self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET,TET=self.TET,ORD=False,UNI=False))
         else:
             tmp = (self.normalOrder().pcs-self.normalOrder().pcs[0])%self.TET
             self.pcs = s_orig
-            return(PCSetR(tmp,TET=self.TET))
+            return(PCSetR(tmp,TET=self.TET,ORD=False,UNI=False))
 
     def intervalVector(self):
         '''
