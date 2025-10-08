@@ -16,6 +16,8 @@ import music21 as m21
 from functools import reduce
 import fractions as fr
 from math import gcd
+from .utils.Remove import Remove
+from .utils.flatten import flatten
 
 class PCSet:
     """Pitch-class set abstraction supporting common set-theoretic operations in arbitrary TET systems."""
@@ -96,7 +98,7 @@ class PCSet:
         for i in range(ivec.shape[0]-1):
             mm = (b+ivec[i])%self.TET
             m.append(mm.tolist())
-        return(PCSet(Remove(flatten(m+b)),TET).normalOrder())
+        return(PCSet(Remove(flatten(m+b)),self.TET).normalOrder())
     
     def zeroOrder(self):
         '''
