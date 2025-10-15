@@ -45,7 +45,7 @@ def rhythmNetwork(dictionary,thup,thdw,distance,prob,write):
     '''
 
     # Create network of rhythmic cells from the rhythmDictionary 
-    
+    dictionary = pd.read_csv('16-5.csv')
     df = np.asarray(dictionary)
     
     dim = np.asarray(list(map(int,re.findall('\d+',df[0,2])))).shape[0]

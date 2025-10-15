@@ -12,6 +12,10 @@
 # in the root directory of the present distribution,
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
+
+import numpy as np
+import sklearn.metrics as sklm
+
 def vectorDistance(a,b,distance='euclidean'):
     '''
     •	calculates the distance between two vectors (duration or inteval)

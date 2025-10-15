@@ -89,16 +89,16 @@ def rhythmPDictionary(N,Nc,REF):
     
     # clean dictionary
     for n in range(len(dictionary)):
-        dictionary.loc[n].iloc[1] = str(RHYTHMSeq(str2frac(dictionary.loc[n].iloc[1])).normalOrder())\
+        dictionary.iloc[n, 1] = str(RHYTHMSeq(str2frac(dictionary.iloc[n, 1])).normalOrder())\
         .replace('Fraction','').replace(', ','/').replace('(','').replace(')','')\
         .replace('\n','').replace('[','').replace(']','')
     dictionary = dictionary.drop_duplicates(subset=['r-seq', 'r-vec']).reset_index(drop=True)
     
     # rename entries in ascending order and check for non-retrogradability
     for n in range(len(dictionary)):
-        dictionary.loc[n].iloc[0] = str(Nc)+'-'+str(n+1)
-        if RHYTHMSeq(str2frac(dictionary.loc[n].iloc[1])).isNonRetro(): 
-            dictionary.loc[n].iloc[0] += 'N'
+        dictionary.iloc[n, 0] = str(Nc)+'-'+str(n+1)
+        if RHYTHMSeq(str2frac(dictionary.iloc[n, 1])).isNonRetro(): 
+            dictionary.iloc[n, 0] += 'N'
     
     # find those that are Z-related (have same interval onset vector)
     
@@ -112,8 +112,8 @@ def rhythmPDictionary(N,Nc,REF):
             indx = np.array(np.where(indeces == n))[0]
             Zrel = []
             for m in range(indx.shape[0]):
-                dictionary.loc[indx[m]].iloc[0] = dictionary.loc[indx[m]].iloc[0]+'Z'
-                Zrel.append(dictionary.loc[indx[m]].iloc[0])
+                dictionary.iloc[indx[m], 0] = dictionary.iloc[indx[m], 0]+'Z'
+                Zrel.append(dictionary.iloc[indx[m], 0])
             ZrelT.append(Zrel)    
     return(dictionary,ZrelT)
 
