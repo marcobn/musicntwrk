@@ -13,31 +13,41 @@
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
-def orchestralVectorColor(orch,dnodes,part,color='coolwarm'):
-    '''
+
+def orchestralVectorColor(orch, dnodes, part, color="coolwarm"):
+    """
     Produces the sequence of the orchestration vectors color-coded according to the modularity class they belong
     Requires the output of orchestralNetwork()
-    '''
+    """
     cmap = plt.get_cmap(color)
-    pdict = pd.DataFrame(None,columns=['vec','part'])
+    pdict = pd.DataFrame(None, columns=["vec", "part"])
     for n in range(len(part)):
-        tmp = pd.DataFrame( [[dnodes.iloc[int(list(part.keys())[n])][0], list(part.values())[n]]], columns=['vec','part'] )
+        key = int(str(list(part.keys())[n]).replace("[", "").replace("]", ""))
+        tmp = pd.DataFrame(
+            [[dnodes.iloc[key][0], list(part.values())[n]]], columns=["vec", "part"]
+        )
         # pdict = pdict.append(tmp)
-        pdict = pd.concat([pdict,tmp],ignore_index=True)
-    dict_vec = pdict.set_index("vec", drop = True)
+        pdict = pd.concat([pdict, tmp], ignore_index=True)
+    dict_vec = pdict.set_index("vec", drop=True)
     orch_color = np.zeros(orch.shape)
     for i in range(orch.shape[0]):
-        orch_color[i,:] = orch[i,:] * \
-            (dict_vec.loc[np.array2string(orch[i][:]).replace(" ","").replace("[","").replace("]","")][0]+1)
+        orch_color[i, :] = orch[i, :] * (
+            dict_vec.loc[
+                np.array2string(orch[i][:])
+                .replace(" ", "")
+                .replace("[", "")
+                .replace("]", "")
+            ][0]
+            + 1
+        )
 
     axprops = dict(xticks=[], yticks=[])
-    barprops = dict(aspect='auto', cmap=cmap, interpolation='nearest')
+    barprops = dict(aspect="auto", cmap=cmap, interpolation="nearest")
     fig = plt.figure()
     ax1 = fig.add_axes([0.1, 0.1, 3.1, 0.7], **axprops)
     ax1.matshow(orch_color[:].T, **barprops)
     plt.show()
-
